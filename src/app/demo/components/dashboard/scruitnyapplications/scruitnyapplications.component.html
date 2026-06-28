@@ -1,0 +1,196 @@
+<style>
+    /* WebKit (Chrome, Safari) */
+    ::-webkit-scrollbar {
+        width: 6px; /* Adjust the width as needed */
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color: #ddd; /* Adjust the color as needed */
+    }
+
+    .required-field {
+     color: red;
+     margin-left: 4px; /* Adjust the margin as needed for spacing */
+   }
+
+   .table-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.p-datatable {
+  flex: 1;
+  overflow-y: auto;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  background-color: #f2f2f2;
+  z-index: 2;
+}
+
+   
+</style>
+
+<div class="grid">
+
+    <div class="col-12 lg:col-6 xl:col-3">
+        <div class="card mb-0" href="#" (click)="FilterStatus(2)" style="cursor: pointer;">
+            <div class="flex justify-content-between mb-3">
+                <div>
+                    <span class="block text-500 font-medium mb-3 text-orange-500"><b>Submitted</b></span>
+                    <div class="text-900 font-medium text-xl text-orange-500">{{dashboard.Submitted}}</div>
+                </div>
+                <div class="flex align-items-center justify-content-center bg-orange-100 border-round" [ngStyle]="{width: '2.5rem', height: '2.5rem'}">
+                    <i class="pi pi-file text-orange-500 text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 lg:col-6 xl:col-3">
+        <div class="card mb-0" href="#" (click)="FilterStatus(1)" style="cursor: pointer;">
+            <div class="flex justify-content-between mb-3">
+                <div>
+                    <span class="block text-500 font-medium mb-3 text-blue-500"><b>Incomplete</b></span>
+                    <div class="text-900 font-medium text-xl text-blue-500">{{dashboard.Incomplete}}</div>
+                </div>
+                <div class="flex align-items-center justify-content-center bg-blue-100 border-round" [ngStyle]="{width: '2.5rem', height: '2.5rem'}">
+                    <i class="pi pi-file text-blue-500 text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 lg:col-6 xl:col-3">
+        <div class="card mb-0" href="#" (click)="FilterStatus(3)" style="cursor: pointer;">
+            <div class="flex justify-content-between mb-3">
+                <div>
+                    <span class="block text-500 font-medium mb-3 text-green-500"><b>Approved</b></span>
+                    <div class="text-900 font-medium text-xl text-green-500">{{dashboard.Approved}}</div>
+                </div>
+                <div class="flex align-items-center justify-content-center bg-green-100 border-round" [ngStyle]="{width: '2.5rem', height: '2.5rem'}">
+                    <i class="pi pi-file text-green-500 text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 lg:col-6 xl:col-3">
+        <div class="card mb-0" href="#" (click)="FilterStatus(4)" style="cursor: pointer;">
+            <div class="flex justify-content-between mb-3">
+                <div>
+                    <span class="block text-500 font-medium mb-3 text-red-500"><b>Rejected</b></span>
+                    <div class="text-900 font-medium text-xl text-red-500">{{dashboard.Rejected}}</div>
+                </div>
+                <div class="flex align-items-center justify-content-center bg-red-100 border-round" [ngStyle]="{width: '2.5rem', height: '2.5rem'}">
+                    <i class="pi pi-file text-red-500 text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+   
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <h5><b>Grant Applications</b></h5>
+                 
+                        <!-- <button pButton pRipple label="New" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+                        <button pButton pRipple label="Delete" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedProducts()" [disabled]="!selectedProducts || !selectedProducts.length"></button> -->
+                    </div>
+                </ng-template>
+
+                <ng-template pTemplate="right">
+                    <!-- <p-dropdown [options]="AffliationType" [(ngModel)]="selectedDrop" 
+                        placeholder="Select Affiliation Type" [showClear]="true" 
+                        class="w-full" (onChange)="onDropdownChange($event)">
+                    </p-dropdown> -->
+                    <!-- <p-fileUpload mode="basic" accept="image/*" [maxFileSize]="1000000" label="Import" chooseLabel="Import" class="mr-2 inline-block"></p-fileUpload> -->
+                    <button pButton pRipple label="Export" icon="pi pi-upload" class="p-button-success w-full ml-3" (click)="exportToExcel()"></button>
+                    <!-- Add this button after your table -->
+                    <!-- <button pButton type="button" icon="pi pi-file-excel" label="Export to Excel" class="p-button-success" (click)="exportToExcel()"></button> -->
+                </ng-template>
+            </p-toolbar>
+
+            <!-- <div class="grid">
+                <div class="col-12 lg:col-6 xl:col-4">
+                    <h5>Grant Applications</h5>
+                </div>
+                <div class="col-12 lg:col-6 xl:col-6">
+                    <p-dropdown [options]="AffliationType" [(ngModel)]="selectedDrop" 
+                        placeholder="Select Affiliation Type" [showClear]="true" 
+                        class="w-full" (onChange)="onDropdownChange($event)">
+                    </p-dropdown>
+                </div>
+            </div> -->
+            
+            <p-table #table [exportFilename]="filename" [value]="applications" [columns]="cols" [paginator]="true" [rows]="15" [showCurrentPageReport]="true"  currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" responsiveLayout="scroll" class="mt-5" >
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Sr. No</th>
+                        <th field="InstituteName">Institute Name</th>
+                        <th pSortableColumn="Principal Name">Principal Name <p-sortIcon field="PrincipalName"></p-sortIcon></th>
+                        <!-- <th pSortableColumn="price">CNIC <p-sortIcon field="price"></p-sortIcon></th> -->
+                        <th pSortableColumn="Mobile">Mobile <p-sortIcon field="Mobile"></p-sortIcon></th>
+                        <th pSortableColumn="Email">Email <p-sortIcon field="Email"></p-sortIcon></th>
+                        <th pSortableColumn="OwnerName">OwnerName <p-sortIcon field="OwnerName"></p-sortIcon></th>
+                        <!-- <th pSortableColumn="price">Institution Address <p-sortIcon field="price"></p-sortIcon></th> -->
+                        <th field="ApplicationStatus">Application Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-app let-rowIndex="rowIndex">
+                    <tr>
+                        <td style="width: 30%; min-width: 7rem;">{{rowIndex + 1}}</td>
+                        <td style="width: 35%; min-width: 7rem;">{{app.InstituteName}}</td>
+                        <td style="width: 30%; min-width: 7rem;">{{app.PrincipalName}}</td>
+                        <!-- <td style="width: 35%; min-width: 7rem;">{{app.Cnic}}</td> -->
+                        <td style="width: 30%; min-width: 7rem;">{{app.Mobile}}</td>
+                        <td style="width: 10%; min-width: 7rem;">{{app.Email}}</td>
+                        <td style="width: 30%; min-width: 7rem;">{{app.InstituteOwnedByHead ? app.PrincipalName : app.OwnerName}}</td>
+
+                        <!-- <td style="width: 35%; min-width: 7rem;">{{app.InstitutionAdress}}</td> -->
+
+                        <td *ngIf="app.StatusId == 1">
+                            <p-badge value="Incomplete" severity="info" ></p-badge>
+                        </td>
+                        <td *ngIf="app.StatusId == 2">
+                            <p-badge value="Submitted" severity="warning" ></p-badge>
+                        </td>
+                        
+                        <td *ngIf="app.StatusId == 3">
+                            <p-badge value="Approved" severity="success" ></p-badge>
+                        </td>
+
+                        <td *ngIf="app.StatusId == 4">
+                            <p-badge value="Rejected" severity="danger" ></p-badge>
+                        </td>
+
+                        <!-- <td *ngIf="app.IsLocked" style="width: 20%; min-width: 7rem;" class="text-900 font-medium text-xl text-green-500">{{app.IsLocked ? 'Submitted' : 'Incomplete' }}</td>
+                        <td *ngIf="!app.IsLocked" style="width: 20%; min-width: 7rem;" class="text-900 font-medium text-xl text-orange-500">{{app.IsLocked ? 'Submitted' : 'Incomplete' }}</td> -->
+
+                        <td style="width: 15%;">
+                            <button pButton pRipple type="button"  icon="pi pi-eye" class="p-button p-component p-button-text p-button-icon-only" (click)="navigateToDetails(app.GrantApplicationId, app.UserId)"></button>
+                        </td>
+
+                    </tr>
+                </ng-template>
+            </p-table>
+
+        </div>
+    </div>
+
+    <!-- <div class="col-12 xl:col-12">
+        <div class="card"></div>
+    </div> -->
+       
+</div>
+
+
+

@@ -1,0 +1,130 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+
+            <p-table #dt [value]="healthFacilityStations" responsiveLayout="scroll">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Health Facility Stations</h5>
+                        <span>
+                            <button pButton pRipple type="button" icon="pi pi-plus" class="p-button-rounded" (click)="openNew()" title="Add New"></button>
+                        </span>
+                    </div>
+                    <div>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search" style="margin-top: 0px"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..." style="width: 100%; margin-top: 10px;"/>
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th pSortableColumn="serialNo">SR<p-sortIcon field="serialNo"></p-sortIcon></th>
+                        <th pSortableColumn="healthFacility">Health Facility<p-sortIcon field="healthFacility"></p-sortIcon></th>
+                        <th pSortableColumn="station">Station<p-sortIcon field="station"></p-sortIcon></th>
+                        <th pSortableColumn="sequence">Sequence <p-sortIcon field="sequence"></p-sortIcon></th>
+                        <th pSortableColumn="createdBy">Created By <p-sortIcon field="createdBy"></p-sortIcon></th>
+                        <th pSortableColumn="active">Active <p-sortIcon field="active"></p-sortIcon></th>
+                        <th>Action</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-healthFacilityStations let-rowIndex="rowIndex">
+                    <tr>
+                        <td style="width:5rem;">
+                            <b>{{((filterModel.PageNumber-1)*filterModel.PageSize)+rowIndex+1}}</b>
+                        </td>
+                        <td style="width:30%; min-width:10rem;">
+                            <span class="p-column-title">Health Facility</span>
+                            {{healthFacilityStations.HealthFacilityName}}
+                        </td>
+
+                        <td style="width:30%; min-width:10rem;">
+                            <span class="p-column-title">Station</span>
+                            {{healthFacilityStations.StationProfileName}}
+                        </td>
+                        <td style="width:30%; min-width:10rem;">
+                            <span class="p-column-title">Sequence</span>
+                            {{healthFacilityStations.SequenceNo}}
+                        </td>
+
+                        <td style="width:30%; min-width:10rem;">
+                            <span class="p-column-title">Created By</span>
+                            {{healthFacilityStations.CreatedByName}}
+                            <br />
+                            <small class="font9">{{healthFacilityStations.CreatedOn | date: 'medium'}}</small>
+                        </td>
+                        <td style="width:10%; min-width: 10rem;"><span class="p-column-title">Status</span>
+                            <p-badge [value]="healthFacilityStations.IsActive ? 'Active' : 'Not Active'" severity="{{healthFacilityStations.IsActive ? 'success' : 'danger'}}" styleClass="mr-2"></p-badge>
+                        </td>
+                        <td>
+                            <div class="flex">
+                                <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editSection(healthFacilityStations)"></button>
+                                <button *ngIf="showDeleteListItem" pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" (click)="deleteSection(healthFacilityStations)"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="footer">
+                    <tr>
+                        <td colspan="9">
+                            <p-paginator [rows]="10" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [totalRecords]="filterModel.TotalRecords || 0" [rowsPerPageOptions]="[10,20,30,50,100]" (onPageChange)="paginate($event)"></p-paginator>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <p-dialog [(visible)]="healthFacilityStationDialog" [style]="{width: '600px',height:'600px'}" header="Health Facility Stations" position="center" [draggable]="false" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+
+                <form [formGroup]="healthFacilityStationForm" class="pt-5">
+
+                
+                    <div class="field">
+                        <label for="status">Health Facility</label>
+                        <p-dropdown [virtualScroll]="true" [virtualScrollItemSize]="50" [options]="healthFacilities" formControlName="HealthFacilityId" [filter]="true" [showClear]="true" optionLabel="Name" optionValue="Id" placeholder="Select Health Facility" ></p-dropdown>
+                    </div>
+
+                    <div class="formgrid grid">
+                        <div class="field col">
+                            <label for="stations">Station</label>
+                            <p-dropdown [virtualScroll]="true" [virtualScrollItemSize]="50" [options]="listStations" formControlName="StationProfileId" [filter]="true" [showClear]="true" optionLabel="Name" optionValue="ProfileId" placeholder="Select Station" ></p-dropdown>
+                        </div>
+                    </div>
+                    <!-- <div class="field">
+                        <label for="status">Station</label>
+                        <p-dropdown [virtualScroll]="true" [virtualScrollItemSize]="50" [options]="listStations" formControlName="StationProfileId" [filter]="true" [showClear]="true" optionLabel="Name" optionValue="StationProfileId" placeholder="Select Station" ></p-dropdown>
+                    </div> -->
+                    <div class="field">
+                        <label for="status">Active</label><br>
+                        <p-inputSwitch  formControlName="IsActive"></p-inputSwitch>
+                    </div>
+
+                </form>
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Cancel" type="button" class="p-button-danger" (click)="hideDialog()"></button>
+                <button pButton pRipple label="Save" type="button" [disabled]="!this.healthFacilityStationForm.valid" (click)="saveHealthFacilityStation()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <!-- Start Dialog Delete Profile -->
+
+        <p-dialog [(visible)]="deleteHealthFacilityStationDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center mt-3">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="healthFacilityStation">Are you sure you want to delete <b>{{healthFacilityStation.HealthFacilityName}}</b> Station <b>{{healthFacilityStation.StationProfileName}}</b>?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" type="button" label="No" class="p-button-danger"  (click)="deleteHealthFacilityStationDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" type="button"  label="Yes"  (click)="confirmDelete()"></button>
+
+            </ng-template>
+        </p-dialog>
+
+        <!-- End Dialog Delete Profile -->
+
+    </div>
+</div>

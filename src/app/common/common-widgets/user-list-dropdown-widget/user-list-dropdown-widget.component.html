@@ -1,0 +1,16 @@
+
+<div *ngIf="userFilterFormGroup" [formGroup]="userFilterFormGroup" class="grid">
+    <div class="col-12 md:col-12 lg:col-12">
+        <label for="user"> User </label>
+        <p-multiSelect [options]="userList" optionLabel="Name" optionValue="Id" [style]="{width: '100%'}"
+        formControlName="user" [virtualScroll]="true" [virtualScrollItemSize]="50"  [filter]="true" [showClear]="true" placeholder="Select a User"></p-multiSelect>
+    </div>
+</div>
+
+<div *ngIf="!userFilterFormGroup" class="grid">
+    <div class="col-12 md:col-12 lg:col-12">
+        <label for="user"> User</label>
+        <p-multiSelect [options]="userList" optionLabel="Name" optionValue="Id" [style]="{width: '100%'}"
+        [(ngModel)]="userFilterModel.User" [virtualScroll]="true" [virtualScrollItemSize]="50" [filter]="true" [showClear]="true" placeholder="Select a User"></p-multiSelect>
+    </div>
+</div>

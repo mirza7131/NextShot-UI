@@ -1,0 +1,107 @@
+<div class="grid">
+    <p-toast></p-toast>
+    <div class="col-12">
+        <div class="card mb-0">
+
+            <div class="grid fluid mb-3">
+                <div class="col-12 md:col-12 lg:col-12">
+                    <label for="mrNo"><b>MR No.</b></label>
+                    <p-inputMask [(ngModel)]="Mrno"
+                    [showClear]="true" 
+                    mask="MRN-99999-999-999999999" placeholder="MRN-xxxxx-xxx-xxxxxxxxx"
+                    [style]="{width: '100%'}"
+                    (onClear)="clearRecord()" 
+                    (keyup.enter)="searchRecord()"
+                    (onComplete)="searchRecord()" 
+                    ></p-inputMask>
+                </div>
+            </div>
+
+            <div *ngIf="(PatientData  | json) != ({} | json)">
+                <h3 class="m-0">Patient Detail</h3>
+                <hr style="border-color:#6c757d">
+                
+                <div class="grid">
+
+                    <div class="col-3">
+                        <p class="m-0"><strong>Name</strong></p>
+                    </div>
+                    <div class="col-3">
+                        <p class="m-0">{{PatientData.FullName}}</p>
+                    </div>
+
+                    <div class="col-3">
+                        <p class="m-0"><strong>Guardian</strong></p>
+                    </div>
+                    <div class="col-3">
+                        <p class="m-0">{{PatientData.GuardianName}}</p>
+                    </div>
+
+                    <div class="col-3">
+                        <p class="m-0"><strong>CNIC</strong></p>
+                    </div>
+                    <div class="col-3">
+                        <p class="m-0">{{PatientData.Cnic}}</p>
+                    </div>
+
+                    <div class="col-3">
+                        <p class="m-0"><strong>Age</strong></p>
+                    </div>
+                    <div class="col-3">
+                        <p class="m-0">{{calculateAge(PatientData.Dob)}}</p>
+                    </div>
+
+                    <div class="col-3">
+                        <p class="m-0"><strong>Mobile No.</strong></p>
+                    </div>
+                    <div class="col-3">
+                        <p class="m-0">{{PatientData.MobileNo}}</p>
+                    </div>
+
+                    <div class="col-3">
+                        <p class="m-0"><strong>Province</strong></p>
+                    </div>
+                    <div class="col-3">
+                        <p class="m-0">{{PatientData.Province.Name}}</p>
+                    </div>
+
+                    <div class="col-3">
+                        <p class="m-0"><strong>Division</strong></p>
+                    </div>
+                    <div class="col-3">
+                        <p class="m-0">{{PatientData.Division.Name}}</p>
+                    </div>
+
+                    <div class="col-3">
+                        <p class="m-0"><strong>District</strong></p>
+                    </div>
+                    <div class="col-3">
+                        <p class="m-0">{{PatientData.District.Name}}</p>
+                    </div>
+
+                    <div class="col-3">
+                        <p class="m-0"><strong>Tehsil</strong></p>
+                    </div>
+                    <div class="col-3">
+                        <p class="m-0">{{PatientData.Tehsil.Name}}</p>
+                    </div>
+
+                </div>
+
+            </div>
+            
+            <div *ngIf="ShowPatientHistory">
+                <hr style="border-color:#6c757d">
+                <h3 class="m-0">Patient History</h3>
+                <hr style="border-color:#6c757d">
+
+                <div class="grid" *ngIf="ShowPatientHistory">
+                    <div class="col-12">
+                        <app-list-patient-history [patientId]="PatientData.PatientId"></app-list-patient-history>
+                    </div>
+                </div>
+            </div>
+           
+        </div>
+    </div>
+</div>

@@ -1,0 +1,115 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <!-- Table Component -->
+            <p-table #dt [value]="errorLogs">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Error Logs</h5>
+                        <!-- <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <button pButton pRipple type="button" icon="pi pi-plus" class="p-button-rounded" (click)="openNew()" title="Add New"></button>
+                        </span> -->
+                    </div>
+                    <div class="block mt-3 md:mt-3">
+                        <input pInputText type="text" [(ngModel)]="filterModel.SearchString" placeholder="Search..." style="width: 90%;"/>
+                        <button  type="submit" pButton pRipple icon="pi pi-search" (click)="onSearch()"  [style]="{'margin-left':'10px'}" styleClass="p-button-sm"></button>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Sr#</th>
+                        <th pSortableColumn="Message">Message <p-sortIcon field="Message"></p-sortIcon></th>
+                        <th pSortableColumn="Method">Method <p-sortIcon field="Method"></p-sortIcon></th>
+                        <th pSortableColumn="Route">Route <p-sortIcon field="Route"></p-sortIcon></th>
+                        <th>Action</th>
+
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-errorLog let-rowIndex="rowIndex">
+                    <tr>
+                        <td style="width:5rem;">
+                            <b>{{((filterModel.PageNumber-1)*filterModel.PageSize)+rowIndex+1}}</b>
+                        </td>
+                        <td style="width:30%; min-width:10rem;">
+                            <span class="p-column-title">Message</span>
+                            <p [innerHTML]="errorLog.Message"></p>
+                        </td>
+                        <td style="width:30%; min-width:8rem;">
+                            <span class="p-column-title">Method</span>
+                            {{errorLog.Method}}
+                        </td>
+                        <td style="width:20%; min-width:10rem;">
+                            <span class="p-column-title">Route</span>
+                            {{errorLog.Route}}
+                        </td>
+                        <td>
+                            <div class="flex">
+                                <!-- <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editProfile(profile)"></button>
+                                <button *ngIf="showDeleteListItem" pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="deleteProfile(profile)"></button> -->
+                                <button pButton pRipple icon="pi pi-eye" title="View Patient Visit" class="p-button-rounded p-button-warning mr-2" (click)="showDetail(errorLog)" ></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="footer">
+                    <tr>
+                        <td colspan="6">
+                            <p-paginator [rows]="10" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [totalRecords]="filterModel.TotalRecords || 0" [rowsPerPageOptions]="[10,20,30,50,100]" (onPageChange)="paginate($event)"></p-paginator>
+                        </td>
+                    </tr>
+
+                </ng-template>
+            </p-table>
+            <!-- End Table Component -->
+        </div>
+    </div>
+</div>
+
+<p-dialog [(visible)]="viewDialog" [style]="{width: '700px'}" header="Error Log Detail" position="center" [draggable]="false" [modal]="true" class="p-fluid" (onHide)="hideDialog()">
+    <ng-template pTemplate="content">
+
+        <div class="grid mt-3">
+
+            <div class="col-4">
+              <b>Message:</b>
+            </div>
+            <div class="col-8">
+                <p>{{errorLog.Message}}</p>
+            </div>
+
+            <div class="col-4">
+                <b>Route:</b>
+            </div>
+            <div class="col-8">
+                {{errorLog.Route}}
+            </div>
+
+            <div class="col-4">
+                <b>Inner Exception:</b>
+            </div>
+            <div class="col-8">
+                {{errorLog.Route}}
+            </div>
+
+        </div>
+
+        <h4>Stack Traces:</h4>
+        <div class="grid">
+           
+            <div class="col-12">
+                <div class="grid m-1">
+                    <div class="col-12 text-wrap border-round bg-gray-300 ">
+                       {{errorLog.StackTrace}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton pRipple label="Close" type="button" class="p-button-danger" (click)="hideDialog()"></button>
+    </ng-template>
+</p-dialog>
+

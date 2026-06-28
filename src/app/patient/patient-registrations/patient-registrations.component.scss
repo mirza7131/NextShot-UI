@@ -1,0 +1,108 @@
+.f14 {
+  font-size: 12px;
+}
+
+.btn-right {
+  float: right;
+}
+
+.persons-table {
+  width: 100% !important;
+}
+
+.persons-table td {
+  width: 0% !important;
+  padding: 5px !important;
+  border: 1px solid black;
+}
+
+.btncallnext {
+  height: 100px;
+  margin-top: 30px;
+}
+
+.disableScroll {
+  overflow-y: hidden;
+  overflow-x: hidden;
+}
+
+.qrcode {
+  background-color: black !important;
+}
+
+.label-inverse-info {
+  border: 1px solid;
+  border-color: #2dcee3;
+  color: #2dcee3 !important;
+}
+
+.patientFingerPrint {
+  border: 1.5px solid black;
+}
+
+:host ::ng-deep .p-tabview-panels {
+  padding-top: 10px;
+}
+
+:host ::ng-deep .p-tabview-panels .search-tab {
+  padding-top: 10px;
+}
+
+:host ::ng-deep .p-tabview-panels {
+  min-height: 490px;
+}
+
+
+
+.align-text {
+  border: none;
+  text-align: right;
+  padding-right: 8%;
+}
+
+
+:host ::ng-deep .vitalRegistration .p-dialog-header {
+  justify-content: end;
+}
+
+
+:host ::ng-deep .p-dialog .p-dialog-header .p-dialog-title {
+  font-size: 1.8rem;
+}
+
+:host ::ng-deep .userRestriction .p-dialog-header {
+  justify-content: end;
+  font-size: 1.8rem;
+}
+
+:host ::ng-deep .patientRecord .p-dialog .p-dialog-header .p-dialog-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+:host ::ng-deep .vitalRegistration .p-dialog .p-dialog-header .p-dialog-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+:host ::ng-deep .vitalRegistration .p-dialog-header-icon.p-dialog-header-close.p-link {
+  position: absolute;
+  top: -11px;
+  right: -13px;
+  background: #ccc;
+}
+
+
+.page .preview .slip {
+  padding: 30px;
+  height: 13.7cm;
+  border-radius: 5px
+}
+
+
+.borderImage {
+  border-top: 2px solid;
+  border-color: #dee2e6;
+  border-image: linear-gradient(to left, transparent -20%, rgb(27, 120, 237) 44% 85%, rgba(27, 120, 237, 0.49) 90%) 1 0 0 0/3px;
+  padding-top: 10px;
+}

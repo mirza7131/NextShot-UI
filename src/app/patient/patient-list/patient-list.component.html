@@ -1,0 +1,204 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <!-- <div class="flex justify-content-end pb-3">
+                <button pButton pRipple type="button" icon="pi pi-plus" class="p-button-rounded"  title="Add New" (click)="openNew()" ></button>
+            </div> -->
+
+            <!-- Card Filter     -->
+            <div class="mb-4" *ngIf="showFilters">
+                <p-panel header="Filter" [toggleable]="true"  [collapsed]="true" class="line-height-3 m-0">
+                    <div class="grid p-fluid">
+
+                        <app-user-level-filter-widget class="col-12 md:col-12 lg:col-12 pb-0" 
+                            [userLevelFiltersModel]="filterModel" 
+                            [IsUserLevel]="true" 
+                            [IsUserFilter]="true"
+                            [IsCnicFilter]="true"
+                            [IsMobileNoFilter]="true"
+                            [IsMrnoFilter]="true"
+                            [UserRoleConst]="roleConstant.Registration"
+                        ></app-user-level-filter-widget>
+
+                        <div class="col-12 md:col-4 lg:col-3">
+                            <label for="lastname2">&nbsp;</label>
+                            <div class="flex">
+                                <button pButton pRipple type="button" icon="pi pi-filter" label="Search" class="p-button-primary p-button-outlined mr-2"  title="Submit Filter" (click)="submitFilter()" ></button>
+                                <button pButton pRipple type="button" icon="pi pi-filter-slash" label="Clear" class="p-button-danger p-button-outlined"  title="Clear Filter" (click)="clearFilter()" ></button>
+                            </div>
+                        </div>
+                    </div>
+                </p-panel>
+            </div>
+            <!-- End Card Filter -->
+
+
+            <!-- Table Component -->
+            <p-table #dt [value]="patients">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">All Patients</h5>
+                        <button  *ngIf="showFilters" pButton pRipple (click)="router.navigate(['/patient/registration'])" type="button" icon="pi pi-plus" class="p-button-rounded"  title="Add New" ></button>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th >Sr#</th>
+                        <th pSortableColumn="FullName">Patient Name <p-sortIcon field="FullName"></p-sortIcon></th>
+                        <th pSortableColumn="Cnic">CNIC <p-sortIcon field="Cnic"></p-sortIcon></th>
+                        <th pSortableColumn="MobileNo">Mobile No.<p-sortIcon field="MobileNo"></p-sortIcon></th>
+                        <th pSortableColumn="Mrno">MR No. <p-sortIcon field="Mrno"></p-sortIcon></th>
+                        <th pSortableColumn="CreatedBy">Created By <p-sortIcon field="CreatedBy"></p-sortIcon></th>
+                        <th>Action</th>
+
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-patient let-rowIndex="rowIndex">
+                    <tr>
+                        <td style="width:2rem;">
+                            <b>{{((filterModel.PageNumber-1)*filterModel.PageSize)+rowIndex+1}}</b>
+                        </td>
+
+                        <td style="min-width:2rem;">
+                            {{patient.FullName}}
+                        </td>
+                        <td style="min-width:8rem;">
+                            {{patient.Cnic}}
+                        </td>
+                        <td style="min-width:8rem;">
+                            {{patient.MobileNo}}
+                        </td>
+                        <td style="min-width:10rem;">
+                            {{patient.Mrno}}
+                        </td>
+
+                        <td style="min-width:10rem;">
+                            {{patient.CreatedBy}}
+                            <br />
+                            <small class="font9">{{patient.CreatedOn | date: 'medium'}}</small>
+                        </td>
+
+                        <td style="min-width:10rem;">
+                            <div class="flex">
+                                <button pButton pRipple icon="pi pi-eye" class="p-button-rounded p-button-warning mr-2" (click)="showPatientVisits(patient)"></button>
+                                <!-- <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editPatient(patient)"></button>
+                                <button *ngIf="showDeleteListItem" pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="deletePatient(patient)"></button> -->
+                         </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="footer">
+                    <tr>
+                        <td colspan="8">
+                            <p-paginator [rows]="10" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [totalRecords]="filterModel.TotalRecords || 0" [rowsPerPageOptions]="[10,20,30,50,100]" (onPageChange)="paginate($event)"></p-paginator>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+            <!-- End Table Component -->
+
+        </div>
+
+        <!-- Patient Dialog -->
+        <p-dialog [(visible)]="patientDialog" [style]="{width: '1000px',height:'700px'}" header="Patient Details" position="center" [draggable]="false" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content" >
+
+                <form [formGroup]="patientForm" class="pt-5">
+
+                    <div class="formgrid grid">
+
+                        <div class="field col">
+                            <label for="name">Name</label><br>
+                            <span class="p-float-label p-input-icon-right">
+                                <input type="text" autocomplete="off" pInputText id="name" formControlName="FullName"  />
+                            </span>
+                        </div>
+
+                        <div class="field col">
+                            <label for="name">CNIC</label><br>
+                            <span class="p-float-label p-input-icon-right">
+                                <p-inputMask id="" mask="99999-9999999-9" formControlName="Cnic" placeholder="xxxxx-xxxxxxx-x" ></p-inputMask>
+                            </span>
+                        </div>
+
+                        <div class="field col">
+                            <label for="name">Mobile No</label><br>
+                            <span class="p-float-label p-input-icon-right">
+                                <input type="text" autocomplete="off" pInputText id="name" formControlName="MobileNo"  />
+                            </span>
+                        </div>
+
+                        <div class="field col">
+                            <label for="name">Mr No.</label><br>
+                            <span class="p-float-label p-input-icon-right">
+                                <input type="text" autocomplete="off" pInputText id="name" formControlName="Mrno"  />
+                            </span>
+                        </div>
+
+                    </div>
+
+                    <div class="formgrid grid">
+
+                        <div class="field col">
+                            <label for="name">Guardian Name</label><br>
+                            <span class="p-float-label p-input-icon-right">
+                                <input type="text" autocomplete="off" pInputText id="name" formControlName="GuardianName"  />
+                            </span>
+                        </div>
+
+                        <div class="field col">
+                            <label for="name">DOB</label><br>
+                            <span class="p-float-label p-input-icon-right">
+                                <p-calendar formControlName="Dob"  dateFormat="dd-mm-yy"></p-calendar>
+                            </span>
+                        </div>
+
+                        <div class="field col">
+                            <label for="name">Age</label><br>
+                            <span class="p-float-label p-input-icon-right">
+                                <input type="text" autocomplete="off" pInputText id="name" formControlName="Age"  />
+                            </span>
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Cancel" type="button" class="p-button-danger" (click)="hideDialog()"></button>
+                <button pButton pRipple label="Save" type="button" (click)="savePatient()"></button>
+
+            </ng-template>
+        </p-dialog>
+        <!-- End Dialog -->
+
+        <!-- Dialog Delete Patient -->
+
+        <p-dialog [(visible)]="deletePatientDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center mt-3">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="patient">Are you sure you want to delete <b>{{patient.FullName}}</b>?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" type="button" label="No" class="p-button-danger"  (click)="deletePatientDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" type="button"  label="Yes"  (click)="confirmDelete()"></button>
+
+            </ng-template>
+        </p-dialog>
+
+        <!-- End Dialog Delete Patient -->
+
+
+        <!-- Patient Visit List Dialog -->
+        <p-dialog [modal]="true" [keepInViewport]="true" [(visible)]="showPatientVisitDialog" [style]="{width: '1500px',height:'1000px'}" header="Patient Visits" position="center" [draggable]="false" [modal]="true" class="p-fluid">
+          <div *ngIf="showPatientVisitDialog"><app-patient-visit [isPopup]="true" [patientCnic]="showPatientVisitCnic"></app-patient-visit></div>
+        </p-dialog>
+        <!-- End Patient Visit List Dialog -->
+
+    </div>
+</div>
+
+

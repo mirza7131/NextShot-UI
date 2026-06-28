@@ -1,0 +1,130 @@
+<p-table [value]="historyData" styleClass="p-datatable-sm" [scrollable]="true" scrollHeight="500px"
+    [tableStyle]="{'min-width': '100%'}">
+    <ng-template pTemplate="header">
+        <tr>
+            <th>SrNo.</th>
+            <th>Hospital Name</th>
+            <th>Speciality</th>
+            <th>Daignoses</th>
+            <th>Created By</th>
+            <th class="text-center">Action</th>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-history let-rowIndex="rowIndex">
+        <tr>
+            <td>{{rowIndex + 1}}</td>
+            <td>{{history.HealthFacilityName}}</td>
+            <td>
+                <!-- {{history.DepartementLookupName}}
+                / -->
+                {{history.SectionLookupName}}
+            </td>
+            <td>{{history.DiseasesName }}</td>
+            <td>
+                <b>{{history.DiagnosedBy}}&nbsp;({{history.DiagnosedByDesignation}})</b>
+                <br />
+                {{history.CreatedOn | date: 'medium' }}
+            </td>
+            <td class="text-center">
+                <i class="pi pi-eye mr-2" title="View Prescription" (click)="patientPreviousRecord(history)"></i>
+                <i *ngIf="history.HasLabTest" class="pi pi-tablet mr-2" title="Lab Report"  (click)="patientLabTestRecord(history)"></i>
+            </td>
+
+        </tr>
+    </ng-template>
+</p-table>
+
+<!-- Start Dialog Print Doctor -->
+
+<p-dialog [(visible)]="doctorReciptDialog" header="Doctor Receipt" [modal]="true"
+    [style]="{width:'1000px',height:'1000px'}">
+    <ng-template pTemplate="content">
+        <app-genral-andphysiotherapist-doctor-print *ngIf="doctorReciptDialog" 
+            [formType]="formType"
+            [patientVisitId]="patientVisitId"
+            [patientDaignosedId]="patientDiagnoseId"></app-genral-andphysiotherapist-doctor-print>
+        <!-- <app-doctor-recipt-print  *ngIf="doctorReciptDialog" [patientVisitId]="patientVisitId" [patientDiagnoseId]="patientDiagnoseId"></app-doctor-recipt-print> -->
+    </ng-template>
+</p-dialog>
+<!-- End Dialog Print Doctor -->
+
+<!-- Start Dialog Print Doctor -->
+<!-- <p-dialog [(visible)]="doctorReciptDialog" header="Doctor Receipt" [modal]="true" [style]="{width:'1000px',height:'1000px'}">
+    <ng-template pTemplate="content">
+      <app-genral-andphysiotherapist-doctor-print  *ngIf="doctorReciptDialog" [patientVisitId]="patientVisitId" [patientDaignosedId]="patientDiagnoseId"></app-genral-andphysiotherapist-doctor-print>
+    </ng-template>
+</p-dialog> -->
+<!-- <p-dialog [(visible)]="PhysioTherapydoctorReciptDialog" header="Doctor Receipt" [modal]="true" [style]="{width:'1000px',height:'1000px'}">
+    <ng-template pTemplate="content">
+
+      <app-physio-therapy-doctor-recipt  *ngIf="PhysioTherapydoctorReciptComponent" [patientVisitId]="patientVisitId" [patientDaignosedId]="patientDiagnoseId"></app-physio-therapy-doctor-recipt>
+    </ng-template>
+</p-dialog> -->
+<!-- End Dialog Print Lab -->
+
+<!-- Start Dialog Print Lab Test -->
+
+<p-dialog [(visible)]="labTestDialog" header="Lab Tests" [modal]="true" [style]="{width:'1000px',height:'1000px'}">
+    <ng-template pTemplate="content">
+
+        <div class="mt-3">
+            <div class="grid">
+                <div class="col-12 md:col-6 lg:col-4"
+                    *ngFor="let testItem of testListData; index as i; first as isFirst">
+                    <div class="surface-card shadow-2 p-3 border-round">
+                        <div class="flex justify-content-between mb-3">
+                            <div>
+                                <span class="block text-500 font-medium mb-3">{{testItem.LabTestName}}</span>
+                                <div class="text-900 font-medium text-xl"
+                                    *ngIf="!testItem.IsSampleCollected && !testItem.IsReportGenerated && !testItem.IsSampleRejected">
+                                    Pending</div>
+                                <div class="text-900 font-medium text-xl"
+                                    *ngIf="testItem.IsSampleCollected && !testItem.IsReportGenerated && !testItem.IsSampleRejected">
+                                    Sample Collected</div>
+                                <div class="text-900 font-medium text-xl"
+                                    *ngIf="testItem.IsSampleCollected && testItem.IsReportGenerated && !testItem.IsSampleRejected">
+                                    Report Generated</div>
+                                <div class="text-900 font-medium text-xl" *ngIf="testItem.IsSampleRejected">Sample
+                                    Rejected</div>
+                            </div>
+
+                            <div  (click)="onClickXRAYResult(testItem)"
+                            *ngIf="testItem.LabTestTypeShortName == 'LTXRAY'  && testItem.LabTestImage"
+                            class="flex align-items-center justify-content-center bg-blue-100 border-round"
+                            style="width:2.5rem;height:2.5rem; cursor:pointer;margin-left: 58px;"> 
+                            <i class="pi pi-image text-blue-500 text-xl"  title="Image View"></i>
+                            </div>
+                            <div
+                            *ngIf="testItem.LabTestTypeShortName == 'LTXRAY' && testItem.LabTestImage == null "
+                            class="flex align-items-center justify-content-center bg-blue-100 border-round"
+                            style="width:2.5rem;height:2.5rem;margin-left: 58px;cursor:pointer;"> 
+                            <i class="pi pi-image text-red-500 text-xl" title="Image Still Not Uploaded"></i>
+                            </div>
+                            <div (click)="showLabTestDetail(testItem)"
+                                class="flex align-items-center justify-content-center bg-blue-100 border-round"
+                                style="width:2.5rem;height:2.5rem; cursor:pointer;"> 
+                                <i class="pi pi-eye text-blue-500 text-xl"  title="Report View"></i>
+                            </div>
+
+                        </div>
+                        <div>
+                            <span class="text-green-500 font-medium">Advised By </span>
+                            <span class="text-500">{{testItem.AdvisedBy}}</span>
+                        </div>
+                        <div>
+                            <span class="text-green-500 font-medium">Advise On </span>
+                            <span class="text-500">{{testItem.AdvisedOn | date : 'medium'}}</span>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="testListData.length < 1"></div>
+            </div>
+        </div>
+
+        <app-pathology-recipt *ngIf="pathalogyReceiptComponent"
+            [LabTestID]="reciptPatientLabTestId"></app-pathology-recipt>
+        <img *ngIf="XrayImage" style="margin: auto; text-align:center; display:block; max-width: 700px;" src={{this.imgLink}} >
+    </ng-template>
+</p-dialog>
+<!-- End Dialog Print Lab Test -->
+

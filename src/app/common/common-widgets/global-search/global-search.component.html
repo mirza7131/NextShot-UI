@@ -1,0 +1,70 @@
+<p-button  styleClass="p-button-sm" label="Global Search" [style]="{'float':'right', 'width':'100%'}" (click)="opendailogue()" icon="pi pi-search" ></p-button>
+
+<p-dialog header="Global Search" [(visible)]="displayGlobalSearch" (onHide)="closedailogue()" [style]="{width: '80vw' ,height:'30vw'}">
+    <div class="grid" class="mt-5">
+        <div class="col-12 md:col-12">
+            <p-table #dt [value]="patientQueueDataList">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Patient-Search</h5>
+                    </div>
+                    <div class="block mt-3 md:mt-3">
+                        <input pInputText type="text"  [(ngModel)]="SearchString" placeholder="Search by Token-No , MR-No , CNIC" style="width: 90%;" (keyup.enter)="getGlobalSearch()"/>
+                        <button type="submit" pButton pRipple icon="pi pi-search" [style]="{'margin-left':'10px'}" (click)="getGlobalSearch()" styleClass="p-button-sm" ></button>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <!-- <th pSortableColumn="code">Sr #</th> -->
+                        <th>Token-No.</th>
+                        <th>CNIC</th>
+                        <th>MR-No.</th>
+                        <th>Patient Name</th>
+                        <th>Department & Section Name</th>
+                        <th>Occupied</th>
+                        <th>Patient-Relation</th>
+                        <th>Action</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-queue let-rowIndex="rowIndex">
+
+                    <tr>
+                        <!-- <td style="width:5rem;">
+                            <b>{{((filterModel.PageNumber-1)*filterModel.PageSize)+rowIndex+1}}</b>
+                        </td> -->
+                        <td>
+                            <span class="p-column-title">Token No.</span>{{queue?.TokenNo}}
+                        </td>
+                        <td>
+                            <span class="p-column-title">CNIC</span> {{queue?.CNIC}}
+                        </td>
+                        <td>
+                            <span class="p-column-title">MR No.</span> {{queue?.Mrno}}
+                        </td>
+                        <td>
+                            <span class="p-column-title">Patient Name</span> {{queue?.FullName}}
+                        </td>
+                        <td>
+                            <span class="p-column-title">Department & Section Name</span> <strong>{{queue?.DepartmentName}}</strong>  /
+                            <span class="p-column-title">Department & Section Name</span> <strong>{{queue?.SectionName}} </strong>
+                        </td>
+                        <td>
+                            <!-- <span class="p-column-title">Occupied</span> {{queue?.IsOccupied?"Yes":"No"}}  <br> -->
+                            <p-badge [value]="queue?.IsOccupied ? 'Yes' : 'No '" severity="{{queue?.IsOccupied ? 'success' : 'danger'}}"
+                            styleClass="mr-2"></p-badge> <br>
+                            <span class="p-column-title">Occupied</span> <strong>{{queue?.OccupiedByName}}</strong>
+                        </td>
+                        <td>
+                            <span class="p-column-title">Patient Relation</span> {{queue?.Relation}}
+                        </td>
+                        <td>
+                            <div class="flex">
+                                <p-button styleClass="p-button-sm" label="Select" (click)="selectdPatient(queue)"  [style]="{'float':'right'}"></p-button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</p-dialog>

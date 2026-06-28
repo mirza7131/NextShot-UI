@@ -1,0 +1,225 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <!-- <div class="flex justify-content-end pb-3">
+            </div> -->
+
+            <!-- <p-table #dt [value]="roles" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['Name','ShortName','IsActive']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" selectionMode="multiple" [rowHover]="true" dataKey="RoleId">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Manage Roles</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th pSortableColumn="code">Name <p-sortIcon field="code"></p-sortIcon></th>
+                        <th pSortableColumn="name">Short Name <p-sortIcon field="name"></p-sortIcon></th>
+                        <th pSortableColumn="inventoryStatus">Active <p-sortIcon field="inventoryStatus"></p-sortIcon></th>
+                        <th>Action</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-role>
+                    <tr>
+                        <td style="width:30%; min-width:10rem;">
+                            <span class="p-column-title">Name</span>
+                            {{role.Name}}
+                        </td>
+                        <td style="width:30%; min-width:8rem;">
+                            <span class="p-column-title">Short Name</span>
+                            {{role.ShortName}}
+                        </td>
+                        <td style="width:30%; min-width: 10rem;"><span class="p-column-title">Status</span>
+                            <p-badge [value]="role.IsActive ? 'Active' : 'Not Active'" severity="{{role.IsActive ? 'success' : 'danger'}}" styleClass="mr-2"></p-badge>
+                        </td>
+                        <td>
+                            <div class="flex">
+                                <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editRole(role)"></button>
+                                <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" (click)="deleteRole(role)"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table> -->
+
+            <!-- Table Component -->
+            <p-table #dt [value]="roles">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Manage Roles</h5>
+                        <span>
+                        <button pButton pRipple type="button" icon="pi pi-plus" class="p-button-rounded" (click)="openNew()" title="Add New"></button>
+                        </span>
+
+                    </div>
+                    <div class="block mt-3 md:mt-3">
+                        <input pInputText type="text" [(ngModel)]="filterModel.SearchString" placeholder="Search..." style="width: 90%;"/>
+                        <button  type="submit" pButton pRipple icon="pi pi-search" (click)="onSearch()"  [style]="{'margin-left':'10px'}" styleClass="p-button-sm"></button>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th pSortableColumn="sr">SR</th>
+                        <th pSortableColumn="Name">Name <p-sortIcon field="Name"></p-sortIcon></th>
+                        <th pSortableColumn="ShortName">Short Name <p-sortIcon field="ShortName"></p-sortIcon></th>
+                        <th pSortableColumn="IsActive">Active <p-sortIcon field="IsActive"></p-sortIcon></th>
+                        <th>Action</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-role let-rowIndex="rowIndex">
+                    <tr>
+                        <td style="width:5rem;">
+                            <b>{{((filterModel.PageNumber-1)*filterModel.PageSize)+rowIndex+1}}</b>
+                        </td>
+                        <td style="width:30%; min-width:10rem;">
+                            <span class="p-column-title">Name</span>
+                            {{role.Name}}
+                        </td>
+                        <td style="width:30%; min-width:8rem;">
+                            <span class="p-column-title">Short Name</span>
+                            {{role.ShortName}}
+                        </td>
+                        <td style="width:30%; min-width: 10rem;"><span class="p-column-title">Status</span>
+                            <p-badge [value]="role.IsActive ? 'Active' : 'Not Active'" severity="{{role.IsActive ? 'success' : 'danger'}}" styleClass="mr-2"></p-badge>
+                        </td>
+                        <td>
+                            <div class="flex">
+                                <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editRole(role)"></button>
+                                <button *ngIf="showDeleteListItem" pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="deleteRole(role)"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="footer">
+                    <tr>
+                        <td colspan="5">
+                            <p-paginator [rows]="10" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [totalRecords]="filterModel.TotalRecords || 0" [rowsPerPageOptions]="[10,20,30,50,100]" (onPageChange)="paginate($event)"></p-paginator>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+            <!-- End Table Component -->
+
+        </div>
+
+        <!-- Dialog Create New Role -->
+        <p-dialog [(visible)]="roleDialog" [style]="{width: '1000px',height:'1000px'}" header="{{dialogHeaderText}}" position="center" [draggable]="false" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content" >
+                <form [formGroup]="roleForm" class="pt-5" (ngSubmit)="submitForm()">
+
+                    <div class="formgrid grid">
+
+                        <div class="field col">
+
+                            <label for="name">Name</label>
+                            <span class="p-float-label p-input-icon-right">
+                                <input type="text" autocomplete="off" pInputText id="Name" formControlName="Name"   [ngClass]="{'ng-invalid ng-dirty' : (submitted && !roleFormControl.Name.valid) || (roleFormControl.Name.touched && !roleFormControl.Name.dirty)}"/>
+                                <i class="pi pi-check text-green-700" *ngIf="roleFormControl.Name.valid"></i>
+                                <i class="pi pi-times text-red-500" *ngIf="(submitted && !roleFormControl.Name.valid) || (roleFormControl.Name.touched && !roleFormControl.Name.dirty)"></i>
+                            </span>
+                        </div>
+
+                        <div class="field col">
+                            <label for="name">Short Name</label>
+                            <span class="p-float-label p-input-icon-right">
+                                <input type="text" autocomplete="off" pInputText id="ShortName" formControlName="ShortName"  [ngClass]="{'ng-invalid ng-dirty' : (submitted && !roleFormControl.ShortName.valid) || (roleFormControl.ShortName.touched && !roleFormControl.ShortName.dirty)}"/>
+                                <i class="pi pi-check text-green-700" *ngIf="roleFormControl.ShortName.valid"></i>
+                                <i class="pi pi-times text-red-500" *ngIf="(submitted && !roleFormControl.ShortName.valid) || (roleFormControl.ShortName.touched && !roleFormControl.ShortName.dirty)"></i>
+                            </span>
+                        </div>
+
+
+                        
+                        <div class="field col">
+                            <label for="name">Routing URL</label>
+                            <span class="p-float-label p-input-icon-right">
+                                <input type="text" autocomplete="off" pInputText id="routingUrl" formControlName="routingUrl"  [ngClass]="{'ng-invalid ng-dirty' : (submitted && !roleFormControl.routingUrl.valid) || (roleFormControl.routingUrl.touched && !roleFormControl.routingUrl.dirty)}"/>
+                                <i class="pi pi-check text-green-700" *ngIf="roleFormControl.routingUrl.valid"></i>
+                                <i class="pi pi-times text-red-500" *ngIf="(submitted && !roleFormControl.routingUrl.valid) || (roleFormControl.routingUrl.touched && !roleFormControl.routingUrl.dirty)"></i>
+                            </span>
+                        </div>
+
+                        <div class="field col">
+                            <label for="status" class="mb-3">Active</label><br>
+                            <p-inputSwitch formControlName="IsActive"></p-inputSwitch>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="grid">
+                    <div class="col-10 text-color"><h5>Modules</h5></div>
+                    <div class="col-2"><span class="align-items-end">Select All</span><p-inputSwitch (onChange)="selectAll($event)"></p-inputSwitch></div>
+                </div>
+                <div class="card">
+                    <ng-container *ngFor="let module of roleMenus;let i= index">
+
+                        <div class="grid mt-3 mb-3 border-1 border-round-sm border-300 surface-50">
+                            <div class="col-11 text-lg text-color uppercase"><b>{{i+1}} - {{module.Name}}</b></div>
+                            <div class="col-1"><p-inputSwitch [(ngModel)]="module.HasAccess" (onChange)="toggle($event,i)"></p-inputSwitch></div>
+                            <div class="col-12" *ngIf="module.HasAccess">
+                                <p-table [value]="module.ChildMenu || []" >
+                                    <ng-template pTemplate="caption">
+                                        <div class="table-header">
+                                            Menus
+                                        </div>
+                                    </ng-template>
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Has Access</th>
+                                            <th>Can Read</th>
+                                            <th>Can Write</th>
+                                            <th>Can Edit</th>
+                                            <th>Can Delete</th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="body" let-menu>
+                                        <tr>
+                                            <td>{{menu.Name}}</td>
+                                            <td><p-inputSwitch [(ngModel)]="menu.HasAccess" (onChange)="menuHasAccessSelection($event,menu,i)" ></p-inputSwitch></td>
+                                            <td><p-inputSwitch [(ngModel)]="menu.CanRead" [disabled]="!menu.HasAccess"></p-inputSwitch></td>
+                                            <td><p-inputSwitch [(ngModel)]="menu.CanWrite" [disabled]="!menu.HasAccess"></p-inputSwitch></td>
+                                            <td><p-inputSwitch [(ngModel)]="menu.CanEdit" [disabled]="!menu.HasAccess"></p-inputSwitch></td>
+                                            <td><p-inputSwitch [(ngModel)]="menu.CanDelete" [disabled]="!menu.HasAccess"></p-inputSwitch></td>
+                                        </tr>
+                                    </ng-template>
+                                </p-table>
+                            </div>
+                        </div>
+
+
+                    </ng-container>
+                </div>
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Cancel" type="button" class="p-button-danger" (click)="hideDialog()"></button>
+                <button pButton pRipple label="Save" [disabled]="!this.roleForm.valid" type="button" (click)="submitForm()"></button>
+            </ng-template>
+        </p-dialog>
+        <!-- End Dialog Create New Role -->
+
+        <!-- Dialog Delete Role -->
+
+        <p-dialog [(visible)]="deleteRoleDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center mt-3">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="role">Are you sure you want to delete <b>{{role.Name}}</b>?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" type="button" label="No" class="p-button-danger"  (click)="deleteRoleDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" type="button"  label="Yes"  (click)="confirmDelete()"></button>
+
+            </ng-template>
+        </p-dialog>
+
+        <!-- End Dialog Delete Role -->
+
+    </div>
+</div>
+
+

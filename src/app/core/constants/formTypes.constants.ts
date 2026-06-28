@@ -1,0 +1,29 @@
+export class FormTypes {
+    public static generalForm = 'generalForm';
+    public static drugAddictForm = 'drugAddictForm';
+    public static unknownForm = 'unknownForm';
+    public static drugAddict = 'Drug Addict';
+    public static mortaury = 'Mortaury';
+    public static patientRegistration = 'Patient Registration';
+    public static Known = 'Known';
+    public static unknown = 'Unknown';
+    public static PsychiatryOPD = 'Psychiatry OPD';
+    public static SpeechTherapyForm = 'SpeechTherapyForm';
+    public static PhysiotherapyFormOPD = "PhysiotherapyFormOPD";
+    public static PhysiotherapyFormIPD = "PhysiotherapyFormIPD";
+    public static GeneralForm = "GeneralForm";
+    public static TbForm = "TbForm";
+    public static SocialWelfareForm = "SocialWelfareForm";
+    public static HCPForm = "HCPForm";
+    public static SurgeryForm = "SurgeryForm";
+    public static PsychiatryForm = "PsychiatryForm";
+    public static NutritionForm = "NutritionForm";
+    public static NutritionFormIPD = "NutritionFormIPD";
+    public static RespiratoryForm = "RespiratoryForm";
+    public static RespiratoryFormIPD = "RespiratoryFormIPD";
+    public static PsychologyForm = "PsychologyForm";
+    public static OccupationalTherapyForm = "OccupationalTherapyForm";
+    public static TechnologyForm = "TechnologyForm";
+    public static EMCMLEFORM = "EMCMLEFORM";
+    public static PoliceKhidmatForm = "PoliceKhidmatForm";
+}

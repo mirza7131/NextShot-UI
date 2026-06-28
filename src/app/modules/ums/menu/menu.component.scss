@@ -1,0 +1,43 @@
+.file-upload-button {
+    background-color: #1b78ed;
+    border-radius: 4%;
+    height: 3rem;
+    overflow: hidden;
+    position: relative;
+    width: 10rem;
+    border: 0px;
+    cursor: pointer;
+
+  &::after {
+    content: 'Upload ⇪';
+    color: #fff;
+    font-size: 1.5rem;
+    text-align: center;
+  }
+
+  input[type="file"] {
+        font-size: 100px;
+        left: 0;
+        opacity: 0;
+        position: absolute;
+        top: 0;
+    }
+}
+
+.file-info {
+  color: #999;
+  font-family: Lato;
+  margin-left: 0.5rem;
+}
+
+.close{
+    position: absolute;
+    border-radius: 0px;
+    background-color: #f9a306;
+    border: 0px;
+    cursor: pointer;
+}
+
+.p-relative{
+    position:relative;
+}

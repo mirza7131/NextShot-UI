@@ -1,0 +1,9 @@
+.disabled-dropdown {
+    opacity: 0.5; /* Adjust the opacity to visually represent the disabled state */
+    pointer-events: none; /* Prevent user interaction with the disabled dropdown */
+  }
+
+  .required-field {
+    color: red;
+    margin-left: 4px; /* Adjust the margin as needed for spacing */
+}

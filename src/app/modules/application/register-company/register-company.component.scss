@@ -1,0 +1,27 @@
+.required-field {
+    color: red;
+    margin-left: 4px; /* Adjust the margin as needed for spacing */
+}
+.head {
+    // background-color: #007ad9;   /* Background color */
+    // color: white;                /* Text color */
+    padding: 15px 20px;          /* Padding around the text */
+    border-radius: 6px 6px 6px 6px;  /* Rounded corners on top */
+    font-family: 'Arial', sans-serif; /* Font styling */
+    text-align: center;          /* Center the heading */
+  //  font-size: 2rem;           /* Increase font size */
+    font-weight: bolder;           /* Make the heading bold */
+    letter-spacing: 1px;         /* Slight letter spacing for the heading */
+  }
+  
+  /* Optional: Adding shadow to the header for more emphasis */
+  .head h4 {
+    margin: 0;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); /* Light shadow to text */
+  }
+  .btn-container {
+    display: flex;                 /* Enable Flexbox */
+    justify-content: center;       /* Center horizontally */
+    align-items: center;           /* Center vertically */
+    height: 10vh;                 /* Make the container take the full height of the viewport */
+  } 

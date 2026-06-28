@@ -1,0 +1,130 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <!-- <div class="flex justify-content-end pb-3">
+            </div> -->
+            <p-table #dt [value]="departments">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Manage Departments</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                        <button pButton pRipple type="button" icon="pi pi-plus" class="p-button-rounded" (click)="openNew()" title="Add New"></button>
+                        </span>
+                    </div>
+                    <div class="block mt-3 md:mt-3">
+                        <input pInputText type="text" [(ngModel)]="filterModel.SearchString" placeholder="Search..." style="width: 90%;"/>
+                        <button  type="submit" pButton pRipple icon="pi pi-search" (click)="onSearch()"  [style]="{'margin-left':'10px'}" styleClass="p-button-sm"></button>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th >SR</th>
+                        <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
+                        <th pSortableColumn="displayname">Display Name <p-sortIcon field="displayname"></p-sortIcon></th>
+                        <th pSortableColumn="description">Description<p-sortIcon field="description"></p-sortIcon></th>
+                        <th pSortableColumn="active">Active <p-sortIcon field="active"></p-sortIcon></th>
+                        <th>Action</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-department let-rowIndex="rowIndex">
+                    <tr>
+                        <td style="width:5rem;">
+                            <b>{{((filterModel.PageNumber-1)*filterModel.PageSize)+rowIndex+1}}</b>
+                        </td>
+                        <td style="width:30%; min-width:10rem;">
+                            <span class="p-column-title">Name</span>
+                            {{department.Name}}
+                        </td>
+                        <td style="width:30%; min-width:8rem;">
+                            <span class="p-column-title">Display Name</span>
+                            {{department.DisplayName}}
+                        </td>
+                        <td style="width:30%; min-width:8rem;">
+                            <span class="p-column-title">Discription</span>
+                            {{department.Description}}
+                        </td>
+                        <td style="width:30%; min-width: 10rem;"><span class="p-column-title">Status</span>
+                            <p-badge [value]="department.IsActive ? 'Active' : 'Not Active'" severity="{{department.IsActive ? 'success' : 'danger'}}" styleClass="mr-2"></p-badge>
+                        </td>
+                        <td>
+                            <div class="flex">
+                                <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editDepartment(department)"></button>
+                                <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" (click)="deleteDepartment(department)"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="footer">
+                    <tr>
+                        <td colspan="8">
+                            <p-paginator [rows]="10" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [totalRecords]="filterModel.TotalRecords || 0" [rowsPerPageOptions]="[10,20,30,50,100]" (onPageChange)="paginate($event)"></p-paginator>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <p-dialog [(visible)]="departmentDialog" [style]="{width: '450px'}" header="Department" position="center" [draggable]="false" [modal]="true" class="p-fluid bgBlue">
+            <ng-template pTemplate="content" >
+
+                <form [formGroup]="departmentForm" class="pt-5">
+
+                    <div class="field">
+                        <label for="name">Name</label>
+                        <span class="p-float-label p-input-icon-right">
+                            <input type="text" autocomplete="off" formControlName="Name" id="Name" autocomplete="off" pInputText [ngClass]="{'ng-invalid ng-dirty': (submitted && !labDepartmentControl.Name.valid) || (labDepartmentControl.Name.touched && !labDepartmentControl.Name.dirty)}">
+                            <i class="pi pi-check text-green-700" *ngIf="labDepartmentControl.Name.valid"></i>
+                            <i class="pi pi-times text-red-500" *ngIf="(submitted && !labDepartmentControl.Name.valid) || (labDepartmentControl.Name.touched && !labDepartmentControl.Name.dirty)"></i>
+                        </span>
+                    </div>
+
+                    <div class="field">
+                        <label for="name">Display Name</label>
+                        <span class="p-float-label p-input-icon-right">
+                            <input type="text" autocomplete="off" formControlName="DisplayName" id="Name" autocomplete="off" pInputText [ngClass]="{'ng-invalid ng-dirty': (submitted && !labDepartmentControl.DisplayName.valid) || (labDepartmentControl.DisplayName.touched && !labDepartmentControl.DisplayName.dirty)}">
+                            <i class="pi pi-check text-green-700" *ngIf="labDepartmentControl.DisplayName.valid"></i>
+                            <i class="pi pi-times text-red-500" *ngIf="(submitted && !labDepartmentControl.DisplayName.valid) || (labDepartmentControl.DisplayName.touched && !labDepartmentControl.DisplayName.dirty)"></i>
+                        </span>
+                    </div>
+
+                    <div class="field">
+                        <label for="name">Description</label>
+                        <span class="p-float-label p-input-icon-right">
+                            <input type="text"  autocomplete="off" pInputText id="name" formControlName="Description" />
+                        </span>
+                    </div>
+
+                    <div class="field">
+                        <label for="status" class="mb-3">Active</label><br>
+                        <p-inputSwitch  formControlName="IsActive"></p-inputSwitch>
+                    </div>
+
+                </form>
+
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+
+                <button pButton pRipple label="Cancel" type="button" class="p-button-danger" (click)="hideDialog()"></button>
+                <button pButton pRipple label="Save" [disabled]="!this.departmentForm.valid" type="button" (click)="saveDepartment()"></button>
+
+            </ng-template>
+        </p-dialog>
+
+         <!-- Start Dialog Delete Lab Test -->
+        <p-dialog [(visible)]="deleteDepartmentDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center mt-3">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="department">Are you sure you want to delete <b>{{department.Name}}</b>?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" type="button" label="No" class="p-button-danger"  (click)="deleteDepartmentDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" type="button"  label="Yes"  (click)="confirmDelete()"></button>
+
+            </ng-template>
+        </p-dialog>
+
+        <!-- End Dialog Delete Lab Test -->
+    </div>
+</div>

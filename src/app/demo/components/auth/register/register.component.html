@@ -1,0 +1,92 @@
+<style>
+    /* WebKit (Chrome, Safari) */
+    ::-webkit-scrollbar {
+        width: 6px; /* Adjust the width as needed */
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color: #ddd; /* Adjust the color as needed */
+    }
+
+    .required-field {
+     color: red;
+     margin-left: 4px; /* Adjust the margin as needed for spacing */
+   }
+   
+</style>
+
+<p-toast key="tst"></p-toast>
+
+
+<div class="surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen">
+    <div class="flex flex-column align-items-center justify-content-center" >
+        <img src="assets/layout/images/mobilelogo.png"   height="60" alt="logo">
+       
+        <div style="border-radius:56px; padding:0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%);">
+            <div class="surface-card py-8 px-5 sm:px-8" style="border-radius:53px;">
+          
+                <div class="text-center">
+                    <!-- <img src="assets/demo/images/login/avatar.png" alt="Image" height="50" class="mb-1"> -->
+                     <div class="text-900 text-3xl font-medium mb-3">Grant Application Management System</div>
+                    <span class="text-600 font-medium">Register Institute</span>
+                </div>
+
+
+                <div class="card mt-2" style="font-size: 15px !important; overflow-y: auto !important; max-height: 60vh; scrollbar-width: thin !important;">
+                    <div>
+                        <label for="Divison" class="block text-900 text-xl font-medium mb-1">Division<span class="required-field">*</span></label>
+                        <p-dropdown [options]="divisions"  [(ngModel)]="selectedDivision" placeholder="Select a Division" [showClear]="true" styleClass="mb-2 w-full md:w-30rem" inputStyleClass="w-full p-1" (onChange)="onDropdownChange($event,'division')"></p-dropdown>
+                    
+                        <label for="District" class="block text-900 text-xl font-medium mb-1">District<span class="required-field">*</span></label>
+                        <p-dropdown [options]="filteredDistricts"  [(ngModel)]="selectedDistrict" placeholder="Select a District" [showClear]="true" styleClass="mb-2 w-full" inputStyleClass="w-full p-1" (onChange)="onDropdownChange($event,'district')"></p-dropdown>
+                        
+    
+                        <label for="Tehsil" class="block text-900 text-xl font-medium mb-1">Tehsil<span class="required-field">*</span></label>
+                        <p-dropdown [options]="filteredTehsils" [(ngModel)]="selectedTehsil" placeholder="Select a Tehsil" [showClear]="true" styleClass="mb-2 w-full" inputStyleClass="w-full p-1" (onChange)="onDropdownChange($event,'tehsil')"></p-dropdown>
+    
+                        <label for="Institute" class="block text-900 text-xl font-medium mb-1">Institution Name<span class="required-field">*</span></label>
+                        <input id="Institute" type="text" placeholder="Institute Name" [(ngModel)]="register.InstitutionName" pInputText class="w-full mb-2" style="padding:1rem">
+    
+                        <label for="InstituteAdress" class="block text-900 text-xl font-medium mb-1">Institution Adress<span class="required-field">*</span></label>
+                        <input id="InstituteAdress" type="text-area" placeholder="address" [(ngModel)]="register.InstitutionAdress" pInputText class="w-full  mb-2" style="padding:1rem">
+    
+                        <!-- <label for="CNIC" class="block text-900 text-xl font-medium mb-2">CNIC</label>
+                        <input id="CNIC" type="text" placeholder="CNIC" pInputText mask="99999-9999999-9" class="w-full md:w-30rem mb-5" style="padding:1rem"> -->
+    
+                        <label for="CNIC" class="block text-900 text-xl font-medium mb-1">CNIC<span class="required-field">*</span></label>
+                        <p-inputMask inputId="inputmask" mask="99999-9999999-9" [(ngModel)]="register.CNIC" class="w-full md:w-30rem mb-2" styleClass="mb-2 w-full"></p-inputMask>
+    
+                        <label for="CNIC" class="block text-900 text-xl font-medium mb-1">Mobile No<span class="required-field">*</span></label>
+                        <p-inputMask inputId="inputmask" mask="9999-9999999" [(ngModel)]="register.MobileNumber" class="w-full md:w-30rem mb-2" styleClass="mb-2 w-full"></p-inputMask>
+    
+                        <!-- <label for="Mobile" class="block text-900 text-xl font-medium mb-2">Mobile No</label>
+                        <input id="Mobile" type="text" mask="0300-494922600" placeholder="Mobile Number" pInputText class="w-full md:w-30rem mb-5" style="padding:1rem"> -->
+    
+                        <label for="email1" class="block text-900 text-xl font-medium mb-1">Email<span class="required-field">*</span></label>
+                        <input id="email1" type="text" placeholder="Email address" [(ngModel)]="register.Email" pInputText class="w-full mb-5" style="padding:1rem">
+    
+                        <label for="password1" class="block text-900 font-medium text-xl mb-1">Password<span class="required-field">*</span></label>
+                        <p-password id="password1" [(ngModel)]="password" placeholder="Password" [(ngModel)]="register.Password" [toggleMask]="true" styleClass="mb-2" inputStyleClass="w-full p-3 md:w-30rem"></p-password>
+    
+    
+                        <div class="flex align-items-center justify-content-between mb-5 gap-5">
+                            <div class="flex align-items-center">
+                                <!-- <p-checkbox id="rememberme1" [binary]="true" styleClass="mr-2"></p-checkbox> -->
+                                <!-- <label for="rememberme1">Remember me</label> -->
+                            </div>
+                            <a [routerLink]="['/auth/login']" class="font-medium no-underline ml-2 mt-2 text-right cursor-pointer" style="color: var(--primary-color)">Already have a account</a>
+                        </div>
+                        <button pButton pRipple [loading]="loading" [disabled]="!register.CNIC ||  !register.Email || !register.Password || !register.MobileNumber || !register.CNIC || !register.InstitutionAdress || !register.InstitutionName || !selectedDivision || !selectedDistrict || !selectedTehsil" (click)="Register()" type="button" label="Register" class="w-full p-3 text-xl p-button">
+                            
+                        </button>
+                        <!-- <button pButton  pRipple label="Sign In" class="w-full p-3 text-xl Success" [routerLink]="['/']"></button> -->
+                    </div>
+                </div>
+
+                
+  
+               
+            </div>
+        </div>
+    </div>
+</div>

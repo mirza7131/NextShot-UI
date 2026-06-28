@@ -1,0 +1,82 @@
+<!-- Start Dialog View Patient Prescription -->
+
+<p-dialog [(visible)]="diagnoseDialog" header="Patient Diagnosis" [closable]="allAreTrue" [modal]="true"
+    [style]="{width:'1000px',height:'1000px'}">
+    <ng-template pTemplate="content">
+
+        <ng-container *ngIf="!allAreTrue">
+            <p-messages [value]="msgs"></p-messages>
+        </ng-container>
+        <div class="mt-3">
+            <div class="grid">
+                <div class="col-12 md:col-6 lg:col-4"
+                    *ngFor="let Item of diagnoseListData; index as i; first as isFirst">
+                    <div class="surface-card shadow-2 p-3 border-round">
+                        <div class="flex justify-content-between mb-3">
+                            <div>
+                                <span class="block text-500 font-medium mb-3"><span class="badgeNumber">{{i+1}}</span>
+                                    {{Item.DoctorHealthFacility}}</span>
+                                <div class="text-900 font-medium text-xl">
+                                    {{Item.DoctorDepartment +" / "+ Item.DoctorSection}}
+                                </div>
+                            </div>
+
+                            <div (click)="showDiagnoseDetail(Item)" title="View Prescription"
+                                class="flex align-items-center justify-content-center bg-blue-100 border-round"
+                                style="min-width:2.5rem;height:2.5rem; cursor:pointer;">
+                                <i class="pi pi-eye text-blue-500 text-xl"></i>
+                            </div>
+
+                            <div *ngIf="Item.FormType == formTypeConstant.PhysiotherapyFormOPD"
+                                (click)="physioTherapyDoctorPrint(Item)" title="View Prescription"
+                                class="ml-2 flex align-items-center justify-content-center bg-blue-100 border-round"
+                                style="min-width:2.5rem;height:2.5rem; cursor:pointer;">
+                                <i class="pi pi-print text-blue-500 text-xl"></i>
+                            </div>
+                            <!-- <i class="pi pi-print mr-2" (click)="physioTherapyDoctorPrint(todaylist)"></i> -->
+                        </div>
+                        <div>
+                            <span class="text-yellow-500 font-medium">Slip Print Status:
+
+                                <ng-container  *ngIf="Item.IsPrinted;">
+                                    <i class="pi pi-check text-green-500"
+                                        style="font-size: 1rem;"></i>
+                                        <span class="text-green-500 pl-1">Printed</span>
+
+                                </ng-container>
+                                <ng-container *ngIf="!Item.IsPrinted">
+                                    <i class="pi pi-times text-red-500" style="font-size: 1rem;"></i><span class="text-red-500 pl-1">Not Printed</span>
+                                </ng-container>
+                            </span>
+                        </div>
+                        <div>
+                            <span class="text-green-500 font-medium">Diagnosed By: </span>
+                            <br />
+                            <span class="text-500">{{Item.DiagnosedBy}}</span>
+                            <span class="text-500" *ngIf="Item.DoctorDesignation"> ({{Item.DoctorDesignation}})</span>
+                        </div>
+                        <div>
+                            <span class="font9">{{Item.DiagnosedOn | date : 'medium'}}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <app-genral-andphysiotherapist-doctor-print *ngIf="doctorReciptComponent" [formType]="formType"
+            [patientVisitId]="patientVisitId" [patientDaignosedId]="patientDaignosedId"
+            (emitPatientDiagnoseId)="updatePrintStatus($event)"></app-genral-andphysiotherapist-doctor-print>
+
+
+        <!-- <app-doctor-recipt-a5  *ngIf="doctorReciptComponent" 
+        [patientVisitId]="patientVisitId"
+        [patientDiagnoseId]="patientDaignosedId"
+        ></app-doctor-recipt-a5>
+         -->
+
+        <app-physio-therapy-doctor-recipt *ngIf="physioTherapydoctorReciptComponent" [patientVisitId]="patientVisitId"
+            [patientDaignosedId]="patientDaignosedId"></app-physio-therapy-doctor-recipt>
+
+    </ng-template>
+</p-dialog>
+<!-- End Dialog View Patient Prescription -->

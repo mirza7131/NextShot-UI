@@ -1,0 +1,25 @@
+<div class="grid">
+    <div class="col-12">
+        <p-radioButton *ngIf="isShowCnic" name="cnic" value="1"  [(ngModel)]="selectedOption" inputId="cnic" (onClick)="onSelectOption($event)"></p-radioButton>
+        <label *ngIf="isShowCnic" for="ingredient1" class="ml-2">CNIC</label>
+
+        <p-radioButton *ngIf="isShowMobileNo" name="mobileNo" value="2"  inputId="mobileNo" [(ngModel)]="selectedOption" (onClick)="onSelectOption($event)"></p-radioButton>
+        <label *ngIf="isShowMobileNo" for="ingredient1" class="ml-2">Mobile No.</label>
+
+        <p-radioButton *ngIf="isShowMrno && !anmonalOptions" name="mrNo" value="3"  inputId="mrNo" [(ngModel)]="selectedOption" (onClick)="onSelectOption($event)"></p-radioButton>
+        <label *ngIf="isShowMrno && !anmonalOptions" for="ingredient1" class="ml-2">MR No.</label>
+
+        <p-radioButton *ngIf="isShowBarcode && !anmonalOptions" name="barcodeNo" value="4"  inputId="barcodeNo" [(ngModel)]="selectedOption" (onClick)="onSelectOption($event)"></p-radioButton>
+        <label *ngIf="isShowBarcode && !anmonalOptions" for="barcodeNo" class="ml-2">Barcode No</label>
+
+        <p-radioButton *ngIf="isShowBatchNumber" name="BatchNumber" value="5" inputId="BatchNumber" [(ngModel)]="selectedOption" (onClick)="onSelectOption($event)"></p-radioButton>
+        <label *ngIf="isShowBatchNumber" for="BatchNumber" class="ml-2">Batch Number</label>
+        
+        <p-radioButton *ngIf="isShowTitle" name="Title" value="6" inputId="Title" [(ngModel)]="selectedOption" (onClick)="onSelectOption($event)"></p-radioButton>
+        <label *ngIf="isShowTitle" for="Title" class="ml-2">Title</label>
+
+        <p-radioButton *ngIf="isShowFromHealthFacility" name="FromHealthFacility" value="7" inputId="FromHealthFacility" [(ngModel)]="selectedOption" (onClick)="onSelectOption($event)"></p-radioButton>
+        <label *ngIf="isShowFromHealthFacility" for="FromHealthFacility" class="ml-2">From Health Facility</label>
+        
+    </div>
+</div>

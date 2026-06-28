@@ -1,0 +1,1083 @@
+<div class="">
+  <div class="grid">
+    <p-toast></p-toast>
+    <p-confirmPopup></p-confirmPopup>
+    <div class="col-12 md:col-8 p-0">
+      <p-tabView [(activeIndex)]="index">
+        <p-tabPanel *ngIf="this.loginUserDetail.UserRoleList[0].Name !== 'Mortaury' " header="Patient"
+          style="overflow-y: hidden;">
+          <div class="grid search-tab">
+            <div class="col-12 md:col-12">
+              <div class="animated fadeIn" id="slipp" style="width: 100%;font-family: 'system-ui' !important;">
+                <form [formGroup]="patientform">
+                  <!-- <div *ngIf="!isFromPMIS">
+                    <h4 class="m-0"><strong>Ticket Number</strong></h4>
+                    <div class="grid mt-2">
+                      <div class="flex align-items-center justify-content-center" style="height: 150px;border: 1px solid #e9ecef;text-align: center;width: 150px;border-radius: 6px;
+                              margin: 13px;font-size: 30px;">
+                        <p>{{patientform.controls['TokenNumberDisplay'].value}}</p>
+                      </div>
+                      <div class="col-12 md:col-3 ">
+                        <p-button [style]="{height: '80%'}" type="submit" label="Call Next" icon="pi pi-volume-up"
+                          (click)="callNext()" styleClass="p-button-sm w100 mt-3">
+                        </p-button>
+                      </div>
+                    </div>
+                  </div>
+                  <br>
+                  <hr> -->
+
+                  <h4 class="m-0"><strong>Search By</strong></h4>
+                  <br>
+                  <div class="grid">
+                    <div class="col-12 md:col-12">
+                      <p-radioButton name="searchBy" value="Pak CNIC" formControlName="searchBy"
+                        (click)="serarchByEvent()"></p-radioButton>
+                      &nbsp;
+                      <label for="city1">Pak CNIC</label>
+                      &nbsp;
+                      <p-radioButton name="searchBy" value="Afghan CNIC" formControlName="searchBy"
+                        (click)="serarchByEvent()"></p-radioButton>
+                      &nbsp;
+                      <label for="city4">Afghan CNIC</label>
+                      &nbsp;
+                      <p-radioButton name="searchBy" value="Passport No" formControlName="searchBy"
+                        (click)="serarchByEvent()"></p-radioButton>
+                      &nbsp;
+                      <label for="city5">Passport No.</label>
+                      &nbsp;
+                      <p-radioButton name="searchBy" value="Mobile No" formControlName="searchBy"
+                        (click)="serarchByEvent()"></p-radioButton>
+                      &nbsp;
+                      <label for="city2">Mobile No.</label>
+                      &nbsp;
+                      <p-radioButton name="searchBy" value="MR No" formControlName="searchBy"
+                        (click)="serarchByEvent()"></p-radioButton>
+                      &nbsp;
+                      <label for="city3">MR No.</label>
+                    </div>
+
+                    <div class="col-12 sm:col-6 md:col-6 ">
+                      <span><strong>{{ patientform.controls['searchBy'].value }}</strong></span>
+                      <p-inputMask mask="{{searchByMask}}" [style]="{width: '100%'}" (onComplete)="searchRecord()"
+                         formControlName="searchcriteria" class="p-inputtext-sm"
+                        placeholder="{{searchByMaskPlaceholder}}"></p-inputMask>
+                      <small style="color: red;" *ngIf="firstletter ===0"></small>
+                    </div>
+
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </p-tabPanel>
+
+        <p-tabPanel header="Registration">
+
+
+          <!-- <form [formGroup]="formTypes">
+            <div class="p-fluid p-formgrid grid">
+              <div class="field col-12 md:col-4">
+                <app-radio-button name="Form" value="generalForm" inputId="generalForm" label="General Form"
+                  [control]="$any(formTypes.get('generalForm'))" (controlValue)="checkBoxValue()"></app-radio-button>
+              </div>
+              <div class="field col-12 md:col-4">
+                <app-radio-button name="Form" value="Drug Addict" inputId="Drug Addict" label="Drug Addict Form"
+                  [control]="$any(formTypes.get('generalForm'))" (controlValue)="checkBoxValue()"></app-radio-button>
+              </div>
+              <div class="field col-12 md:col-4">
+                <app-radio-button name="Form" value="Mortaury" inputId="Mortaury" label="Unknown Form"
+                  [control]="$any(formTypes.get('generalForm'))" (controlValue)="checkBoxValue()"></app-radio-button>
+              </div>
+            </div>
+          </form> -->
+
+
+
+          <h4
+            *ngIf="this.loginUserDetail.UserRoleList[0].Name !== 'Mortaury' && this.loginUserDetail.UserRoleList[0].Name === 'Drug Addict'">
+            <strong>Patient Category</strong>
+          </h4>
+          <!-- || this.formTypes.controls.generalForm.value == 'Mortaury' -->
+          <form
+            *ngIf="this.loginUserDetail.UserRoleList[0].Name !== 'Mortaury' && this.loginUserDetail.UserRoleList[0].Name === 'Drug Addict'"
+            [formGroup]="patientCategory">
+            <div class="p-fluid p-formgrid grid">
+              <div class="field col-12 md:col-4">
+                <app-radio-button name="Form2" [isDisabled]="disbaled" value="Known" inputId="Known" label="Known"
+                  [control]="$any(patientCategory.get('category'))"
+                  (controlValue)="getValue($event)"></app-radio-button>
+              </div>
+              <div class="field col-12 md:col-4">
+                <app-radio-button name="Form2" [isDisabled]="disbaled" value="Unknown" inputId="Unknown" label="Unknown"
+                  [control]="$any(patientCategory.get('category'))"
+                  (controlValue)="getValue($event)"></app-radio-button>
+              </div>
+            </div>
+          </form>
+
+
+          <form [formGroup]="patientform" (ngSubmit)="validateUser()">
+            <h5 class="m-0"><strong>Personal Information</strong></h5>
+            <div class="grid">
+              <div class="col-12 md:col-3"
+                *ngIf="this.patientform.controls.searchBy.value != 'Afghan CNIC' && this.patientform.controls.searchBy.value != 'Passport No'">
+                <span class="f14"><strong>CNIC <i class="fa fa-refresh fa-spin"></i></strong>&nbsp;<span
+                    class="text-danger">*</span></span>
+                <p-inputMask mask=99999-9999999-9 [style]="{width: '100%'}" (onComplete)="EnterCnicNum()"
+                  (keyup.enter)="EnterCnicNum()" formControlName="Cnic" class="p-inputtext-sm"
+                  [placeholder]="this.searchByMaskPlaceholder" [readonly]="isReadOnlyCnic"></p-inputMask>
+              </div>
+              <div class="col-12 md:col-3" *ngIf="this.patientform.controls.searchBy.value === 'Afghan CNIC'">
+                <span class="f14"><strong>CNIC <i class="fa fa-refresh fa-spin"></i></strong>&nbsp;<span
+                    class="text-danger">*</span></span>
+                <p-inputMask [mask]=this.searchByMask [style]="{width: '100%'}" (onComplete)="EnterCnicNum()"
+                  (keyup.enter)="EnterCnicNum()" formControlName="Cnic" class="p-inputtext-sm"
+                  [placeholder]="this.searchByMaskPlaceholder" [readonly]="isReadOnlyCnic"></p-inputMask>
+              </div>
+              <div class="col-12 md:col-3" *ngIf="this.patientform.controls.searchBy.value == 'Passport No'">
+                <span class="f14"><strong>Passport No <i class="fa fa-refresh fa-spin"></i></strong>&nbsp;<span
+                    class="text-danger">*</span></span>
+                <p-inputMask [mask]=this.searchByMask [style]="{width: '100%'}" formControlName="PassportNo"
+                  class="p-inputtext-sm" [placeholder]="this.searchByMaskPlaceholder" [readonly]="true"></p-inputMask>
+              </div>
+              <div class="col-12 md:col-3">
+                <span class="f14" *ngIf="this.patientform.controls.searchBy.value == 'Passport No'">
+                  <strong>Relation with Passport Holder</strong></span>
+                <span class="f14" *ngIf="this.patientform.controls.searchBy.value != 'Passport No'"><strong>Relation with
+                    CNIC Holder</strong></span>
+                <p-dropdown [options]="relationData" optionLabel="Name" optionValue="ProfileId"
+                  [style]="{width: '100%'}" [readonly]="  isReadOnlyInputField" [filter]="true" filterBy="Name"
+                  [showClear]="isShowClear" formControlName="RelationProfileId" class="p-inputtext-sm w100"
+                  (onChange)="FindRelation($event)" placeholder="Select Relation"></p-dropdown>
+
+              </div>
+
+              <!-- <div class="md:col-1 mt-3">
+                <button title="Add New Relation" (click)="openRelationDialog()" pButton pRipple type="button"
+                  icon="pi pi-plus" class="p-button-rounded p-button-primary p-button-text"></button>
+              </div> -->
+              <!-- <p-dropdown [options]="relationData"  optionLabel="Name" optionValue="ProfileId"  [style]="{width: '100%'}" [disabled]="this.patientform.controls['IsSelf'].value === true" [filter]="true" filterBy="Name" [showClear]="true" formControlName="RelationProfileId" class="p-inputtext-sm w100" placeholder="Select Relation"></p-dropdown>
+                            <button pButton pRipple type="button" icon="pi pi-plus" class="p-button-rounded p-button-secondary p-button-text"></button> -->
+              <!--
+              <div class="p-inputgroup">
+                <p-dropdown [options]="relationData" optionLabel="Name" optionValue="ProfileId"
+                  [style]="{width: '100%'}" [disabled]="this.patientform.controls['IsSelf'].value === true"
+                  [filter]="true" filterBy="Name" [showClear]="true" formControlName="RelationProfileId"
+                  class="p-inputtext-sm w100" placeholder="Select Relation"></p-dropdown>
+              </div> -->
+
+              <div
+                *ngIf="this.patientform.controls['RelationProfileId'].value !=='a28c4864-723e-4cd2-a880-f086eab1da93' "
+                class="col-12 md:col-3">
+                <span class="f14" *ngIf="this.patientform.controls.searchBy.value == 'Passport No'">
+                  <strong>Name of Passport Holder</strong>&nbsp;<span class="text-danger">*</span></span>
+                <span class="f14" *ngIf="this.patientform.controls.searchBy.value != 'Passport No'"><strong>Name of CNIC Holder</strong></span>
+                <input type="text" class="p-inputtext-sm w100" formControlName="NameOfCnicHolder"
+                  placeholder="Enter Name" (keypress)="rjxscharacter($event)" pInputText />
+              </div>
+              <div
+                [ngClass]="patientform.controls['RelationProfileId'].value === 'a28c4864-723e-4cd2-a880-f086eab1da93' ? 'col-6' : 'col-3'">
+                <span class="f14"><strong>Patient Name</strong>&nbsp;<span class="text-danger">*</span></span>
+                <input type="text" class="p-inputtext-sm w100" formControlName="FirstName"
+                  (keypress)="rjxscharacter($event)" placeholder="Enter Name" pInputText />
+              </div>
+              <!-- <div class="col-12 md:col-6">
+                <span class="f14"><strong>S/D/W of</strong>&nbsp;<span class="text-danger">*</span></span>
+                <input type="text" class="p-inputtext-sm w100" formControlName="LastName"
+                  (keypress)="rjxscharacter($event)" placeholder="Enter Name" pInputText />
+              </div> -->
+              <div class="col-12 md:col-3 pt-0 pb-2">
+                <div class="">
+                  <span class="f14"><strong>Gender</strong> <span class="text-danger">*</span></span>
+                  <p-dropdown [options]="genderData" [style]="{width: '100%'}" optionValue="ProfileId"
+                    optionLabel="Name" formControlName="GenderProfileId" [filter]="true" filterBy="Name"
+                    [showClear]="true" (onChange)="getGenderNames($event.value)" class="p-inputtext-sm w100"
+                    placeholder="Select a Gender"></p-dropdown>
+                </div>
+              </div>
+              <div class="col-12 md:col-3 pt-0 pb-0">
+                <span class="f14"><strong>D.O.B</strong>&nbsp;<span class="text-danger">*</span> &nbsp;
+                  <span><strong>(dd/mm/yyyy)</strong></span> </span>
+                <input type="date" (focusout)="ageCalculator()" formControlName="Dob" name="date" class="w-12"
+                  pInputText class="p-inputtext-sm w100">
+              </div>
+              <div class="col-12 md:col-3 pt-0 pb-0">
+                <span class="f14"><strong>Age
+                    <span *ngIf="this.tempDate['year'] > 0"> (in Years)</span>
+                    <span *ngIf="this.tempDate['month'] > 0 && this.tempDate['year'] == 0"> (in Months)</span>
+                    <span
+                      *ngIf="this.tempDate['day'] >= 0 && this.tempDate['month'] == 0 && this.tempDate['year'] == 0">
+                      (in Days)</span>
+                  </strong>&nbsp;<span class="text-danger">*</span></span>
+                <input type="text" class="p-inputtext-sm w100" formControlName="Age" (change)="AgeToDOB();"
+                  (keypress)="rjxsnumber($event)" placeholder="Enter Age" pInputText />
+              </div>
+              <div class="col-12 md:col-3 pt-0 pb-0">
+                <span class="f14"><strong>MobileNo<i class="fa fa-refresh fa-spin"></i></strong>&nbsp;<span
+                    class="text-danger">(For SMS Alerts)*</span></span>
+                <p-inputMask mask="9999-9999999" [style]="{width: '100%'}" formControlName="MobileNo"
+                  (onComplete)="EnterMobileNum()" [readonly]="  isReadOnlyInputField" (keyup.enter)="EnterMobileNum()"
+                  class="p-inputtext-sm" placeholder="03xx-xxxxxxx"></p-inputMask>
+              </div>
+            </div>
+            <h5 class="m-0 borderImage"><strong>Patient's Address</strong></h5>
+            <div class="grid">
+              <div class="col-6 md:col-3">
+                <span class="f14"><strong>Province</strong>&nbsp;<span class="text-danger">*</span></span>
+
+                <p-dropdown [options]="provinceData" optionLabel="Name" optionValue="Id" [style]="{width: '100%'}"
+                  formControlName="ProvinceId" [filter]="true" filterBy="Name" [showClear]="true"
+                  (onChange)="getDivisions()" class="p-inputtext-sm w100" placeholder="Select a Province"></p-dropdown>
+              </div>
+              <div class="col-6 md:col-3">
+                <span class="f14"><strong>Division</strong>&nbsp;<span class="text-danger">*</span></span>
+
+                <p-dropdown [options]="divisionData" optionLabel="Name" optionValue="Id" filterBy="Name"
+                  [style]="{width: '100%'}" [filter]="true" formControlName="DivisionId" [showClear]="true"
+                  (onChange)="getDistricts()" class="p-inputtext-sm w100" placeholder="Select a Division"></p-dropdown>
+              </div>
+              <div class="col-6 md:col-3">
+                <span class="f14"><strong>District</strong>&nbsp;<span class="text-danger">*</span></span>
+
+                <p-dropdown [options]="districts" optionLabel="Name" optionValue="Id" filterBy="Name"
+                  [style]="{width: '100%'}" [filter]="true" [showClear]="true" formControlName="DistrictId"
+                  class="p-inputtext-sm w100" (onChange)="getTehsil()" placeholder="Select a District"></p-dropdown>
+              </div>
+              <div class="col-6 md:col-3">
+                <span class="f14"><strong>Tehsil</strong>&nbsp;<span class="text-danger">*</span></span>
+
+                <p-dropdown [options]="tehsilsData" optionLabel="Name" optionValue="Id" filterBy="Name"
+                  [style]="{width: '100%'}" [filter]="true" [showClear]="true" class="p-inputtext-sm w100"
+                  formControlName="TehsilId"  placeholder="Select a Tehsil"></p-dropdown>
+              </div>
+              <div class="col-12 md:col-12 pt-0 pb-2">
+                <span class="f14"><strong>Residential Address</strong>&nbsp;<span class="text-danger">*</span></span>
+                <input type="text" class="p-inputtext-sm w100" formControlName="ParmanentAddress"
+                  placeholder="Enter Address" pInputText />
+              </div>
+            </div>
+            <h4 class="m-0"
+              *ngIf="this.loginUserDetail.FormType===this.fromTypeConstant.EMCMLEFORM  || this.loginUserDetail.FormType===this.fromTypeConstant.PoliceKhidmatForm">
+              <strong>Patient Additional Information</strong>
+            </h4>
+            <div
+              *ngIf="this.loginUserDetail.FormType===this.fromTypeConstant.EMCMLEFORM || this.loginUserDetail.FormType===this.fromTypeConstant.PoliceKhidmatForm">
+
+              <form class="grid" [formGroup]="addtionalInformation">
+                <div class="field col-12 md:col-6 lg:col-6 sm:col-6">
+                  <label style="margin-bottom: -1px;"><b><span style="color: rgb(220,53,69)">*</span>Caste</b></label>
+                  <p-dropdown [options]="casteList" optionLabel="Name" appendTo="body" optionValue="ProfileId"
+                    [style]="{ width: '100%' }" [virtualScroll]="true" [virtualScrollItemSize]="50" [filter]="true"
+                    [required]="true" placeholder="Select" [required]="true"
+                    formControlName="CasteTypeProfileId"></p-dropdown>
+                </div>
+
+                <div class="field col-12 md:col-6 lg:col-6 sm:col-6">
+                  <label style="margin-bottom: -1px;"><b><span
+                        style="color: rgb(220,53,69)">*</span>Occupation</b></label>
+                  <p-dropdown [options]="occupationList" optionLabel="Name" appendTo="body" optionValue="ProfileId"
+                    [style]="{ width: '100%' }" [virtualScroll]="true" [virtualScrollItemSize]="50" [filter]="true"
+                    [required]="true" placeholder="Please Select one"
+                    formControlName="AccupationTypeProfileId"></p-dropdown>
+                </div>
+
+                <!-- <div class="field col-12 md:col-6 lg:col-6 sm:col-6">
+                                    <app-input
+                                        label="Date of Birth"
+                                        type="date"
+                                        [isMaskInput]="false"
+                                        [control]="$any(addtionalInformation.get('Dob'))"
+                                        [required]="true"
+                                    >
+                                    </app-input>
+                                </div> -->
+
+                <div class="field col-12 md:col-6 lg:col-6 sm:col-6">
+                  <app-input label="Guardian/Father Name (English Or Urdu)" placeholder="Enter Guardian Name"
+                    type="text" [isMaskInput]="false" [control]="$any(addtionalInformation.get('GuardianName'))"
+                    [required]="true">
+                  </app-input>
+                </div>
+
+                <!-- <div class="field col-12 md:col-6 lg:col-6 sm:col-6">
+                                    <app-input
+                                        label="Guardian Name(In Urdu)"
+                                        placeholder="Urdu Name"
+                                        type="text"
+                                        [isMaskInput]="false"
+                                        [control]="$any(addtionalInformation.get('GuardianName'))"
+                                        [required]="true"
+                                    >
+                                    </app-input>
+                                </div> -->
+
+
+                <div class="field col-12 md:col-6 lg:col-6 sm:col-6">
+                  <label style="margin-bottom: -1px;"><b><span style="color: rgb(220,53,69)">*</span>Guardian
+                      CNIC</b></label>
+                  <p-inputMask styleClass="w-full" mask="99999-9999999-9" formControlName="GuardianCNIC"
+                    placeholder="99999-9999999-9" [required]="true"></p-inputMask>
+
+                  <span style="color: red;"
+                    *ngIf="this.addtionalInformation.get('GuardianCNIC')?.hasError('pattern')">13-digit CNIC must begin
+                    with a non-zero digit</span>
+
+                </div>
+
+                <div class="field col-12 md:col-6 lg:col-6 sm:col-6">
+                  <label style="margin-bottom: -1px;"><b><span style="color: rgb(220,53,69)">*</span>Guardian
+                      MobileNo</b></label>
+                  <p-inputMask styleClass="w-full" mask="9999-9999999" formControlName="GuardianMobileNo"
+                    placeholder="03xx-xxxxxxx" [required]="true"></p-inputMask>
+
+                  <!-- <span style="color: red;" *ngIf="this.addtionalInformation.get('GuardianMobileNo')?.hasError('pattern')">Invalid Phone No Format</span> -->
+
+                  <!-- <span style="color: red;" *ngIf="this.MLEForm.get('PHNO')?.hasError('pattern')">Invalid Phone No Format</span> -->
+                </div>
+
+                <div class="field col-12 md:col-12 lg:col-12 sm:col-12">
+                  <label class="mb-2"><b><span style="color: rgb(220,53,69)">*</span>Guardian Address (English Or
+                      Urdu)</b></label>
+                  <app-input-text-area [_myClass]="'border'"
+                    [control]="$any(addtionalInformation.get('GuardianAddress'))">
+                  </app-input-text-area>
+                </div>
+
+                <!-- <div class="field col-12 md:col-12 lg:col-12 sm:col-12">
+                                    <label class="mb-2"><b>Guardian Address (In Urdu)</b></label>
+                                    <app-input-text-area
+                                        [_myClass]="'border'"
+                                        [control]="$any(addtionalInformation.get('GuardianAddress'))"
+                                    >
+                                    </app-input-text-area>
+                                </div> -->
+
+              </form>
+
+            </div>
+            <!--  -->
+
+            <ng-container
+              *ngIf="this.formTypes.controls.generalForm.value === 'Drug Addict' || this.formTypes.controls.generalForm.value === 'Mortaury'">
+              <div class="grid px-1">
+                <div class="row">
+                  <!-- this.formTypes.controls.generalForm.value == 'Drug Addict'|| -->
+                  <ng-container
+                    *ngIf="(this.formTypes.controls.generalForm.value === 'Drug Addict' && this.unknownStats.controls.status.value === 'Alive' )|| (this.formTypes.controls.generalForm.value === 'Mortaury' && this.unknownStats.controls.status.value === 'Alive')">
+
+                    <app-patient-fingerprint [fingerPrints]="fingerPrints"
+                      (eventEmitter)="onFingerPrint($event)"></app-patient-fingerprint>
+
+                  </ng-container>
+
+                  <ng-container *ngIf="this.userRole === 'Mortaury'">
+
+                    <app-patient-fingerprint [fingerPrints]="fingerPrints"
+                      (eventEmitter)="onFingerPrint($event)"></app-patient-fingerprint>
+
+                  </ng-container>
+
+                  <!-- this.formTypes.controls.generalForm.value == 'Drug Addict'|| -->
+                  <ng-container
+                    *ngIf="((this.formTypes.controls.generalForm.value === 'Mortaury' && this.unknownStats.controls.status.value === 'Dead') || this.unknownStats.controls.status.value === 'Alive')">
+
+
+                    <div class="field col-12 md:col-12">
+                      <app-file-upload [control]="$any(_file)" [multiselect]="true" (file)="uploadFile($event)"
+                        label="Upload Pictures" [auto]="true" [maxFileSize]=200000></app-file-upload>
+                    </div>
+
+
+
+
+                  </ng-container>
+
+                  <form [formGroup]="patientSourceInfo">
+                    <h4><strong>Patient Source</strong></h4>
+                    <div class="p-fluid p-formgrid grid">
+                      <div class="field col-12 md:col-6">
+                        <app-dropdown class="col-md-12" placeholder="Select source" label="Source"
+                          [options]="patientSrc" optionLabel="Name" [control]="$any(patientSourceInfo.get('source'))"
+                          (changeEvent)="dropdownValueChanged($event)">
+                        </app-dropdown>
+                      </div>
+                      <div *ngIf="patientSourceInfo.dirty" class="field col-12 md:col-6">
+                        <app-input label="Name" placeholder="Enter Name" type="text" [required]="true"
+                          [control]="$any(patientSourceInfo.get('Name'))">
+                        </app-input>
+                      </div>
+                      <div *ngIf="patientSourceInfo.dirty" class="field col-12 md:col-6">
+                        <app-input label="Contact No." (onComplete)="EnterMobileNum($event)"
+                          placeholder="Enter contact no." type="text" [required]="true" maskingFormate="9999-9999999"
+                          [isMaskInput]="true" [control]="$any(patientSourceInfo.get('ContactNo'))">
+                        </app-input>
+                      </div>
+                      <div *ngIf="isShowVehicle" class="field col-12 md:col-6">
+                        <app-input label="Vehicle No." placeholder="Enter vehicle no" type="text" [required]="true"
+                          [control]="$any(patientSourceInfo.get('vehicleNo'))">
+                        </app-input>
+                      </div>
+                      <div *ngIf="showDesignation" class="field col-12 md:col-12">
+                        <app-input label="Designation" placeholder="Enter designation" type="text" [required]="true"
+                          [control]="$any(patientSourceInfo.get('designation'))">
+                        </app-input>
+                      </div>
+                    </div>
+                  </form>
+
+                </div>
+
+              </div>
+            </ng-container>
+            <h5 *ngIf="this.loginUserDetail.UserRoleList[0].Name !== 'Mortaury'" class="m-0 borderImage">
+              <strong>Patient's Visit</strong>
+            </h5>
+            <div class="grid">
+
+              <div *ngIf="isFromPMIS" class="col-12 md:col-12 mb-4">
+                <span class="f14"><strong>Slip No</strong>&nbsp;<span class="text-danger"></span></span>
+                <input type="text" class="p-inputtext-sm w100" formControlName="SlipNo" placeholder="Enter Slip No"
+                  pInputText />
+              </div>
+
+              <div *ngIf="isPatientHistory" class="col-12 md:col-6 ">
+                <app-calendar label="Visit Date" [maxDate]="getCurrentDateTime"
+                  [control]="$any(patientform.get('VisitDate'))"></app-calendar>
+
+              </div>
+              <div *ngIf="isPatientHistory" class="col-12 md:col-6 ">
+                <span class="f14"><strong>HealthFacility</strong>&nbsp;<span class="text-danger">*</span></span>
+
+                <p-dropdown [options]="HealthfacilityData" optionLabel="Name" optionValue="Id" filterBy="Name"
+                  [style]="{width: '100%'}" [filter]="true" [showClear]="true" class="p-inputtext-sm w100"
+                  formControlName="PatinetPrivateHeathFacilityId" placeholder="Select a HealthFacility"></p-dropdown>
+              </div>
+
+
+              <div *ngIf="this.loginUserDetail.UserRoleList[0].Name !== 'Mortaury'" class="col-12 md:col-6">
+                <span class="f14"><strong>Departments</strong>&nbsp;<span class="text-danger">*</span></span>
+                <p-dropdown #department [disabled]="userDepartmentId" [options]="departmentData"
+                  [style]="{width: '100%'}" [filter]="true" formControlName="DepartmentLookupId" optionValue="LookupId"
+                  class="p-inputtext-sm w100" placeholder="Select Department" filterBy="Name" optionLabel="Name"
+                  (onChange)="getSectionsServices($event);" [showClear]="true"></p-dropdown>
+              </div>
+
+              <div *ngIf="this.loginUserDetail.UserRoleList[0].Name !== 'Mortaury'" class="col-12 md:col-6">
+                <span class="f14"><strong>Speciality</strong>&nbsp;<span class="text-danger">*</span></span>
+                <p-dropdown [disabled]="userSectionId" [options]="sections" [style]="{width: '100%'}"
+                  formControlName="SectionLookupId" class="p-inputtext-sm w100" placeholder="Select Speciality"
+                  [filter]="true" optionValue="LookupId" (onChange)="getServiceName($event);" filterBy="Name"
+                  optionLabel="Name" [showClear]="true"></p-dropdown>
+              </div>
+
+              <div *ngIf="isFromPMIS" class="col-12 md:col-12 mb-4">
+                <span class="f14"><strong>Doctor</strong>&nbsp;<span class="text-danger">*</span></span>
+                <p-dropdown [options]="doctorList" [style]="{width: '100%'}" formControlName="Doctor"
+                  class="p-inputtext-sm w100" placeholder="Select Doctor" [virtualScroll]="true"
+                  [virtualScrollItemSize]="50" [filter]="true" optionValue="Id" filterBy="Name" optionLabel="Name"
+                  [showClear]="true"></p-dropdown>
+              </div>
+
+
+              <!-- <div *ngIf="!isFromPMIS && showIfIPD" class="col-12 md:col-6 mb-4">
+                <span class="f14"><strong>Eligible for SSC</strong>&nbsp;<span class="text-danger">*</span></span>
+                <p-dropdown [options]="optionsEligibleForSsc" [style]="{width: '100%'}"
+                  formControlName="IsEligibleForSsc" class="p-inputtext-sm w100" placeholder="Please Select"
+                  optionValue="Id" filterBy="Name" optionLabel="Value" [showClear]="true"
+                  (onChange)="checkSscValidation()"></p-dropdown>
+
+
+              </div>
+
+              <div class="col-12 md:col-6 mb-4" *ngIf="!isFromPMIS && patientform.controls['IsEligibleForSsc'].value">
+                <span class="f14"><strong>SSC Number</strong>&nbsp;<span class="text-danger">*</span></span>
+                <input type="text" class="p-inputtext-sm w100" formControlName="SscNumber"
+                  placeholder="Enter SSC Number" pInputText />
+              </div>
+
+              <div class="col-12 md:col-6 mb-12"
+                *ngIf="!isFromPMIS && showIfIPD && !patientform.controls['IsEligibleForSsc'].value">
+                <span class="f14"><strong>Reason(If Not Eligible for SSC) </strong>&nbsp;<span
+                    class="text-danger">*</span></span>
+                <p-dropdown [options]="sscNotEligibleReasons" formControlName="ReasonIfNotEligibleForSsc"
+                  [style]="{width: '100%'}" class="p-inputtext-sm w100" placeholder="Select a Reason"
+                  [virtualScroll]="true" [virtualScrollItemSize]="50" [filter]="true" optionValue="ProfileId"
+                  filterBy="Name" optionLabel="Name" [showClear]="true"></p-dropdown>
+              </div> -->
+
+              <div class="col-12 md:col-6 mb-4" *ngIf="!isFromPMIS && showIfIPD">
+                <span class="f14"><strong>Bed No</strong>&nbsp;<span class="text-danger">*</span></span>
+                <p-dropdown [options]="bedList" [style]="{width: '100%'}" formControlName="BedNo"
+                  class="p-inputtext-sm w100" placeholder="Select Bed Number" [virtualScroll]="true"
+                  [disabled]="bedList.length < 1" [virtualScrollItemSize]="50" [filter]="true" optionValue="Id"
+                  filterBy="Name" optionLabel="Name" (onChange)="checkIfBedOccupied($event)"
+                  [showClear]="true"></p-dropdown>
+              </div>
+
+              <!-- <div class="col-12 mb-4" *ngIf="!isFromPMIS && showIfIPD">
+                <div formArrayName="PatientAdmissionDetails">
+                  <div *ngFor="let BooksItem of PatientAdmissionDetails.controls; let i = index;">
+                    <app-patient-admission-assesment [InputFormGroup]="BooksItem"
+                      [IsFromRegistration]="true"></app-patient-admission-assesment>
+                  </div>
+                </div>
+              </div> -->
+
+
+              <!-- <div *ngIf="!isFromPMIS && !loginUserDetail?.IsDoctor" class="col-12 md:col-12 mb-12">
+                <input type="checkbox" class="checkBox" formControlName="IsVitalSkip" />
+                <span class="f14 vAlignSup"><strong> Skip Vitals</strong>&nbsp;<span class="text-danger">*</span></span>
+              </div> -->
+              <!-- *ngIf="this.isShowtbPatientDetails"   -->
+
+              <div *ngIf="this.isShowtbPatientDetails" class="col-12">
+
+                <h4 *ngIf="this.isShowtbPatientDetails" class="m-0"><strong>Patient Details</strong></h4>
+                <form [formGroup]="tbPatientDetails">
+                  <div class="p-fluid p-formgrid grid my-1">
+                    <div class="field col-12 md:col-6">
+                      <app-dropdown class="col-md-12" placeholder="Select" label="Patient Type"
+                        [options]="tbPatientTypes" optionLabel="Name"
+                        [control]="$any(tbPatientDetails.get('PatientTypes'))"
+                        (changeEvent)="dropdownValueChanged($event)">
+                      </app-dropdown>
+
+                    </div>
+
+
+
+                    <div *ngIf="this.isShowTBDropdowns" class="field col-12 md:col-6">
+                      <app-dropdown class="col-md-12" placeholder="Select" label="Treatment Length"
+                        [options]="treatmentLengths" optionLabel="Name"
+                        [control]="$any(tbPatientDetails.get('TreatmentLength'))">
+                      </app-dropdown>
+
+                    </div>
+                    <div *ngIf="this.isShowTBDropdowns" class="field col-12 md:col-6">
+                      <app-dropdown class="col-md-12" placeholder="Select" label="Length of Interruption"
+                        [options]="interruptionLengths" optionLabel="Name"
+                        [control]="$any(tbPatientDetails.get('InterruptionLength'))">
+                      </app-dropdown>
+
+                    </div>
+
+
+
+
+                    <div *ngIf="this.isShowTBDropdowns" class="field col-12 md:col-6">
+                      <app-input label="How much doses taken" placeholder="Enter" type="number" [required]="true"
+                        [isMaskInput]="false" [validate]="false">
+                      </app-input>
+
+                    </div>
+
+
+                    <div *ngIf="!this.isPatientHistory" class="field col-12 md:col-6">
+                      <app-input label="No Of Months Medicine Issued" placeholder="Enter" type="number"
+                        [required]="true" [isMaskInput]="false" [validate]="false"
+                        [control]="$any(tbPatientDetails.get('NoOfMonthsMedicineIssued'))">
+                      </app-input>
+
+                    </div>
+                  </div>
+
+                  <h4 *ngIf="this.role === this.roleConstant.DRTBDoctor" class="mt-3 mb-0"><strong>DR-TB Patient
+                      Status</strong></h4>
+                  <!-- <br> -->
+                  <div *ngIf="this.role === this.roleConstant.DRTBDoctor" class="grid mt-1">
+                    <div class="field col-2 md:col-2">
+                      <app-radio-button label="WalkIn" placeholder="WalkIn" type="text" inputId="option1"
+                        name="DRTBPatientStatus" value="WalkIn" [control]="$any(tbPatientDetails.get('DRTBPatientStatus'))
+                          ">
+                      </app-radio-button>
+                    </div>
+                    <div class="field col-3 md:col-3">
+                      <app-radio-button label="Refered" placeholder="Refered" type="text" inputId="option2"
+                        name="DRTBPatientStatus" value="Refered"
+                        [control]="$any(tbPatientDetails.get('DRTBPatientStatus'))">
+                      </app-radio-button>
+                    </div>
+
+                  </div>
+                </form>
+              </div>
+
+              <h4 *ngIf="isShowEyeBlindnessFields" class="col-12"><strong>Victim Of Avastin Details</strong></h4>
+              <!-- *ngIf="isShowEyeBlindnessFields" -->
+              <ng-container *ngIf="isShowEyeBlindnessFields">
+                <div class="field col-12 md:col-6">
+                  <app-input label="Comorbidity" placeholder="Comorbidity" type="text"
+                    [control]="$any(patientform.get('ComorbidityBy'))">
+                  </app-input>
+                </div>
+                <div class="field col-12 md:col-6 ">
+                  <app-calendar label="Date Of Injection Avastin" [maxDate]="getCurrentDateTime"
+                    [control]="$any(patientform.get('DateOfInocvlation'))"></app-calendar>
+                </div>
+                <div class="field col-12 md:col-6">
+                  <app-input label="Consultant / Doctor Name" placeholder="Consultant / Doctor Name" type="text"
+                    [control]="$any(patientform.get('ConsultantName'))">
+                  </app-input>
+                </div>
+
+                <div class="col-12 md:col-6 ">
+                  <span class="f14"><strong>Hospital Injected Administration</strong>&nbsp;<span
+                      class="text-danger">*</span></span>
+
+                  <p-dropdown [options]="HealthfacilityData" optionLabel="Name" optionValue="Id" filterBy="Name"
+                    [style]="{width: '100%'}" [filter]="true" [showClear]="true" (onChange)="getHealthFacility($event)"
+                    class="p-inputtext-sm w100" formControlName="HospitalInjectedId"
+                    placeholder="Select a HealthFacility"></p-dropdown>
+                </div>
+
+                <div class="col-12 md:col-6 " *ngIf="isOtherHealthFacility">
+                  <app-input label="Other HealthFacility" placeholder="Other HealthFacility" type="text"
+                    [control]="$any(patientform.get('OtherHealthFacility'))">
+                  </app-input>
+                </div>
+
+                <div class="col-12 md:col-6 ">
+                  <span class="f14"><strong>Eye Involved</strong>&nbsp;<span class="text-danger">*</span></span>
+
+                  <p-dropdown [options]="EyeInvolved" optionLabel="Name" optionValue="Name" filterBy="Name"
+                    [style]="{width: '100%'}" [filter]="true" [showClear]="true" class="p-inputtext-sm w100"
+                    formControlName="EyeInvolved" placeholder="Select Type"></p-dropdown>
+                </div>
+
+
+                <div class="col-6 md:col-3">
+                  <span class="f14"><strong> <label for="IsCloseContactUnderTreatment" class="font-bold">Status Of
+                        Blinding</label></strong>&nbsp;<span class="text-danger">*</span></span>
+
+                  <div class="flex align-items-center">
+                    <app-radio-button label="Yes" placeholder="Yes" type="text" inputId="option1" name="StatusOfVision"
+                      value="Yes" [control]="$any(patientform.get('StatusOfVision'))
+                      ">
+                    </app-radio-button>
+                    <app-radio-button label="NO" placeholder="No" type="text" inputId="option2" name="StatusOfVision"
+                      value="NO" [control]="$any(patientform.get('StatusOfVision'))
+                      ">
+                    </app-radio-button>
+                  </div>
+                </div>
+                <div class="col-6 md:col-3">
+                  <span class="f14"><strong> <label for="IsCloseContactUnderTreatment"
+                        class="font-bold">Recovery</label></strong>&nbsp;</span>
+
+                  <div class="flex align-items-center">
+                    <!-- <p-radioButton name="IsCloseContactUnderTreatment" [value]='true'
+                        inputId="ingredient1"></p-radioButton>
+                      <label for="ingredient1" class="ml-2">Yes</label> -->
+
+
+                    <app-radio-button label="Yes" placeholder="Yes" type="text" inputId="option1" name="Recovery"
+                      value="Yes" [control]="$any(patientform.get('Recovery'))
+                        ">
+                    </app-radio-button>
+
+                    <app-radio-button label="No" placeholder="No" type="text" inputId="option2" name="Recovery"
+                      value="No" [control]="$any(patientform.get('Recovery'))
+                        ">
+                    </app-radio-button>
+
+                  </div>
+                </div>
+              </ng-container>
+
+
+
+
+
+              <!-- [disabled]="!this.patientform.valid" -->
+              <div class="col-12 pt-0 pb-0">
+                <div>
+                  <!-- <p-button type="submit" label="Submit" class="btn-right pl-4"
+                    icon="pi pi-check" styleClass="p-button-sm w100"></p-button>  -->
+                  <p-button type="submit" label="Submit" [disabled]="!this.patientform.valid" class="btn-right pl-4"
+                    icon="pi pi-check" styleClass="p-button-sm w100"
+                    *ngIf="this.loginUserDetail.FormType !== this.fromTypeConstant.PoliceKhidmatForm"></p-button>
+
+                  <p-button type="submit" label="Submit"
+                    [disabled]="!this.patientform.valid || !this.addtionalInformation.valid" class="btn-right pl-4"
+                    icon="pi pi-check" styleClass="p-button-sm w100"
+                    *ngIf="this.loginUserDetail.FormType === this.fromTypeConstant.PoliceKhidmatForm"></p-button>
+                </div>
+                <div>
+                  <p-button icon="pi pi-times" class="btn-right " (click)="ResetPage($event)" label="Reset"
+                    styleClass="p-button-danger p-button-sm w100 "></p-button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </p-tabPanel>
+      </p-tabView>
+    </div>
+    <div class="col-12 md:col-4 pt-0 pb-0">
+      <div class="page preview slip" style="height:14.7cm">
+        <div class="animated fadeIn" id="slipp" style="width: 100%;font-family: 'system-ui' !important;">
+          <table width="100%">
+            <tbody>
+              <tr>
+                <td>
+                  <table style="margin: 0px;width: 100%;">
+                    <tbody>
+                      <tr>
+                        <td>
+                          <p class="text-center">
+                            <img height="40px;" src="../../../../../assets/layout/images/PSHealth_logo.png" alt="Logo">
+                          </p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <p class="m-0 h5 text-center"><strong>{{loginUserDetail.HealthFacilityName}}</strong></p>
+                          <p class="m-0 h5 text-center">
+                            <strong>{{selectedDepartmentSlip?.Name}} Slip</strong>
+                          </p>
+                          <p class="m-0 text-center">{{getCurrentDateTime | date: 'medium'}}
+                          </p>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <hr>
+                  <table style="width: 100%; margin-left:20px;">
+                    <tbody>
+                      <tr>
+                        <td colspan="2" class="text-center" style="padding: 2px; border: none;">
+                        </td>
+                      </tr>
+                      <tr *ngFor="let tok of patientResponse.PatientOpenVisits">
+                        <td style="padding: 2px; border: none;">
+                          <p class="m-0 font-weight-bold">Token No.</p>
+                        </td>
+                        <td style="padding: 2px; border: none;">
+                          <p class="m-0">{{tok.TokenNo}}</p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 2px; border: none;">
+                          <p class="m-0 p-strong h5">{{patientform.controls['Mrno'].value}}</p>
+                        </td>
+                        <td class="align-text h5">
+                          <p class="m-0 p-strong h5"><b>میڈیکل ریکارڈ نمبر</b></p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 2px; border: none;">
+                          <p class="m-0 p-strong h5">{{selectedSectionSlip?.Name}}</p>
+                        </td>
+                        <td class="align-text h5">
+                          <p class="m-0 p-strong h5"><b>شعبہ</b></p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 2px; border: none;">
+                          <p class="m-0 p-strong h5">{{patientform.controls['FirstName'].value}}</p>
+                        </td>
+                        <td class="align-text h5">
+                          <p class="m-0"><b>مریض کا نام</b></p>
+                        </td>
+                      </tr>
+                      <!-- <tr>
+                        <td style="padding: 2px; border: none;">
+                          S/D/W of
+                        </td>
+                        <td style="padding: 2px; border: none;">
+                          <p class="m-0">{{patientform.controls['LastName'].value}}</p>
+                        </td>
+                      </tr> -->
+                      <tr>
+                        <td style="padding: 2px; border: none;">
+                          <p class="m-0 p-strong h5">{{selectedGenderSlip?.Name}}</p>
+                        </td>
+                        <td class="align-text h5">
+                          <p class="m-0 p-strong h5"><b>جنس</b></p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td *ngIf="this.patientform.controls.searchBy.value !== 'Passport No'"
+                          style="padding: 2px; border: none;">
+                          <p class="m-0 p-strong h5">{{patientform.controls['Cnic'].value}}</p>
+                        </td>
+                        <td class="align-text h5" *ngIf="this.patientform.controls.searchBy.value == 'Pak CNIC' ||
+                        this.patientform.controls.searchBy.value == 'Mobile No' ||
+                        this.patientform.controls.searchBy.value == 'MR No'">
+                          <p class="m-0"><b>شناختی کارڈ</b></p>
+                        </td>
+                        <td class="align-text h5" *ngIf="this.patientform.controls.searchBy.value == 'Afghan CNIC'">
+                          <p class="m-0"><b>افغان شناختی کارڈ</b></p>
+                        </td>
+                      </tr>
+                      <tr *ngIf="this.patientform.controls.searchBy.value == 'Passport No'">
+                        <td style="padding: 2px; border: none;">
+                          <p class="m-0 p-strong h5">{{patientform.controls['PassportNo'].value}}</p>
+                        </td>
+                        <td class="align-text h5">
+                          <p class="m-0"><b>پاسپورٹ نمبر</b></p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 2px; border: none;">
+                          <p class="m-0 p-strong h5" *ngIf="this.tempDate['year'] > 0">
+                            {{this.tempDate['year']}} سال
+                          </p>
+                          <p class="m-0 p-strong h5" *ngIf="this.tempDate['month'] > 0 && this.tempDate['year'] == 0">
+                            {{this.tempDate['month']}} مہینے
+                          </p>
+                          <p class="m-0 p-strong h5"
+                            *ngIf="this.tempDate['day'] >= 0 && this.tempDate['month'] == 0 && this.tempDate['year'] == 0">
+                            {{this.tempDate['day'] == 0 ? 1 : this.tempDate['day']}} دن
+                          </p>
+                        </td>
+                        <td class="align-text h5">
+                          <p class="m-0 p-strong h5"><b>عمر</b></p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 2px; border: none;">
+                          <p class="m-0 p-strong h5">
+                            {{patientform.controls['MobileNo'].value}}
+                          </p>
+                        </td>
+                        <td class="align-text h5">
+                          <p class="m-0 p-strong h5"><b>موبائل نمبر</b></p>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<app-registration-popup *ngIf="showRegistrationPopup" [searchBy]="searchBy" [registrationData]="patientregistrationRes"
+  [IsPatientFromVisitList]="IsPatientFromVisitList"></app-registration-popup>
+
+
+
+<p-dialog header="Record Available on this {{this.patientform.controls.searchBy.value}}" class="patientRecord"
+  [(visible)]="searchbyNo" [style]="{width: '70vw'}">
+
+  <div class="flex flex-row-reverse">
+    <div class="flex m-2">
+      <label for="TicketNumber" class="k-form-field">
+        <p-button *ngIf="searchval === 'Pak CNIC' || searchval === 'Afghan CNIC'" label="Add New" icon="pi pi-plus"
+          (click)="openRegistrationTab()" styleClass="p-button-sm"></p-button>
+      </label>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <div class="col-12 md:col-12">
+      <div class="card mb-0">
+        <p-table [value]="searchedPersons" styleClass="p-datatable-sm" [scrollable]="true" scrollHeight="auto"
+          [tableStyle]="{'min-width': '100%'}">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Sr-No</th>
+              <th>CNIC</th>
+              <th style="width: 15%;">Health Facility</th>
+              <th>Name</th>
+              <!-- <th>Last Name</th> -->
+              <th>DOB</th>
+              <th>MobileNo.</th>
+              <th>Self</th>
+              <th>Relation</th>
+              <th>DataBank</th>
+              <th>Source</th>
+              <th>Action</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-items let-rowIndex="rowIndex">
+            <tr>
+              <td>{{rowIndex + 1}}</td>
+              <td>{{items?.Cnic}}</td>
+              <td>{{items?.HealthFacilityName}}</td>
+              <td>{{items?.FirstName}}</td>
+              <!-- <td>{{items?.LastName}}</td> -->
+              <td>{{items?.Dob|date :'dd-MM-yyyy'}}</td>
+              <td>{{items?.MobileNo}}</td>
+              <td>
+                <p-badge [value]="items?.IsSelf ? 'Yes' : 'No '" severity="{{items?.IsSelf ? 'success' : 'danger'}}"
+                  styleClass="mr-2"></p-badge>
+              </td>
+              <td>{{items?.RelationProfileName ? items?.RelationProfileName : ''}}</td>
+              <td>
+                <p-badge [value]="items?.IsDataBankRecord ? 'Yes' : 'No '"
+                  severity="{{items?.IsDataBankRecord ? 'success' : 'danger'}}" styleClass="mr-2"></p-badge>
+              </td>
+              <td>
+                <span>{{items?.IsDataBankRecord ? items.DataBankSource : 'HMIS'}} </span>
+              </td>
+              <td>
+                <p-button label="Select" icon="pi pi-check" (click)="fillCNICData(items);openSelectedRegistrationTab()"
+                  styleClass="p-button-sm"></p-button>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+
+
+  </div>
+</p-dialog>
+
+<!-- New Relation Dialog -->
+<p-dialog [(visible)]="relationDialog" [style]="{width: '450px'}" header="Add New Relation" position="center"
+  [draggable]="false" [modal]="true" class="p-fluid">
+  <ng-template pTemplate="content">
+
+    <form [formGroup]="relationForm" class="pt-5">
+
+      <div class="field">
+        <label for="name">Name</label>
+        <span class="p-float-label p-input-icon-right">
+          <input type="text" autocomplete="off" formControlName="Name" id="Name" pInputText
+            [ngClass]="{'ng-invalid ng-dirty' : (submittedDialog && !relationFormControl.Name.valid) || (relationFormControl.Name.touched && !relationFormControl.Name.dirty)}">
+          <i class="pi pi-check text-green-700" *ngIf="relationFormControl.Name.valid"></i>
+          <i class="pi pi-times text-red-500"
+            *ngIf="(submittedDialog && !relationFormControl.Name.valid) || (relationFormControl.Name.touched && !relationFormControl.Name.dirty)"></i>
+        </span>
+      </div>
+
+      <div class="field">
+        <label for="name">Short Name</label>
+        <span class="p-float-label p-input-icon-right">
+          <input type="text" autocomplete="off" pInputText id="name" formControlName="ShortName"
+            [ngClass]="{'ng-invalid ng-dirty' : (submittedDialog && !relationFormControl.ShortName.valid) || (relationFormControl.ShortName.touched && !relationFormControl.ShortName.dirty)}" />
+          <i class="pi pi-check text-green-700" *ngIf="relationFormControl.ShortName.valid"></i>
+          <i class="pi pi-times text-red-500"
+            *ngIf="(submittedDialog && !relationFormControl.ShortName.valid) || (relationFormControl.ShortName.touched && !relationFormControl.ShortName.dirty)"></i>
+        </span>
+      </div>
+
+    </form>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <button pButton pRipple label="Cancel" type="button" class="p-button-danger"
+      (click)="hideRelationDialog()"></button>
+    <button pButton pRipple label="Save" type="button" (click)="saveRelation()"></button>
+  </ng-template>
+</p-dialog>
+<!-- New Relation Dialog -->
+
+<!-- New Lottie Dialog -->
+<p-dialog [(visible)]="lottieDialog" [style]="{width: '450px'}" (onHide)="onCloseModal()" header="Finger Print"
+  position="center" class="p-fluid">
+
+  <!-- <div class="col-12 md:col-12"> -->
+  <!-- <lottie-player  #lottiePlayer [src]="fingerAnimation" class="LogInimg1"
+      background="transparent" speed="0.7" loop autoplay>
+    </lottie-player> -->
+  <!-- <div class="justify-content-between"> -->
+
+  <img style="margin-left: 35%; margin-top: 4%;" height="110" width="110" [src]="fingerAnimation">
+  <!-- </div> -->
+  <h4 class="pl-4 mx-8">Please Scan Your Finger</h4>
+  <!-- </div> -->
+
+</p-dialog>
+<!-- New Lottie Dialog -->
+
+
+<!-- vitals Dialog -->
+
+<p-dialog [(visible)]="skipVitalsDialog" class="vitalRegistration" (onHide)="onCloseModal()" [modal]="true"
+  [style]="{width:'450px'}">
+  <div class="flex align-items-center justify-content-center mt-3 ">
+    <p class="m-0"
+      style="font-family: Jameel Noori Nastaleeq; text-align: right; font-size: 33px !important;color: black;">
+      <strong>{{urduGazette.vitals}}</strong>
+    </p>
+    <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+    <!-- <span>Do you want to take <b>vitals</b>?</span> -->
+    <span></span>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton pRipple icon="pi pi-times" type="button" label="جی نہیں" class="p-button-danger"
+      (click)="vitalStatus(true)" style="font-size: 16px;"></button>
+    <button pButton pRipple icon="pi pi-check" type="button" label="جی ہاں" (click)="vitalStatus(false)"
+      style="font-size: 16px;"></button>
+
+  </ng-template>
+</p-dialog>
+
+<!-- vitals Dialog -->
+
+
+<!-- Beds Not Available Dialog -->
+
+<p-dialog [(visible)]="noBedsAvailableDialog" header="Alert" (onHide)="onCloseModal()" [modal]="true"
+  [style]="{width:'450px'}">
+  <div class="flex align-items-center justify-content-left mt-3 ">
+    <p class="m-0">
+      <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+      <strong>{{AlertMessage}}</strong>
+    </p>
+    <!-- <span>Do you want to take <b>vitals</b>?</span> -->
+    <span></span>
+  </div>
+
+</p-dialog>
+
+<!-- Beds Not Available Dialog -->
+
+
+
+<!-- Bed Already Occupied Dialog -->
+
+<p-dialog [(visible)]="bedOccupiedDialog" header="Alert" (onHide)="onCloseModal()" [modal]="true"
+  [style]="{width:'450px'}">
+  <div class="flex align-items-center justify-content-left mt-3 " style="float:right">
+    <p class="m-0"
+      style="font-family: Jameel Noori Nastaleeq; text-align: right; font-size: 25px !important;color: black;">
+      <strong>{{urduGazette.bedOccupiedAlert}}</strong>
+    </p>
+    <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+    <!-- <span>Do you want to take <b>vitals</b>?</span> -->
+    <span></span>
+  </div>
+  <ng-template pTemplate="footer">
+
+    <button pButton pRipple icon="pi pi-times" type="button" label="نہیں" class="p-button-danger"
+      (click)="ConfirmBedNo(false)" style="font-size: 16px;"></button>
+    <button pButton pRipple icon="pi pi-check" type="button" label="جی ہاں" (click)="ConfirmBedNo(true)"
+      style="font-size: 16px;"></button>
+
+  </ng-template>
+</p-dialog>
+
+<!-- Bed Already Occupied Dialog -->
+
+
+
+<!-- New Lottie Dialog -->
+<p-dialog [(visible)]="restrictUserDialog" [closable]="false" header="نوٹ" class="userRestriction"
+  (onHide)="onCloseModal()" [modal]="true" [style]="{width:'450px'}">
+  <div class="flex align-items-center justify-content-center mt-3 ">
+
+    <p class="m-0"
+      style="font-family: Jameel Noori Nastaleeq; text-align: center; font-size: 25px !important;color: black;">
+
+      <strong> <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>{{restrictUserMessage}}</strong>
+    </p>
+
+    <!-- <span>Do you want to take <b>vitals</b>?</span> -->
+    <span></span>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton pRipple icon="pi pi-sync" type="button" label="refresh" (click)="checkRoomNoForSpeciality()"
+      style="font-size: 16px;"></button>
+  </ng-template>
+</p-dialog>

@@ -1,0 +1,141 @@
+<div class="grid">
+
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <!-- <div class="flex justify-content-end pb-3">
+                <button pButton pRipple type="button" icon="pi pi-plus" class="p-button-rounded"  title="Add New" (click)="openNew()" ></button>
+            </div> -->
+
+            <!-- Card Filter     -->
+            <!-- <div class="mb-4" *ngIf="showFilters">
+              <p-panel [collapsed]="true" header="Filter" [toggleable]="true" class="line-height-3 m-0">
+
+                <div class="grid p-fluid">
+
+                  <app-user-level-filter-widget class="col-12 md:col-12 lg:col-12 pb-0"
+                    [userLevelFiltersModel]="filterModel"
+                    [IsUserLevel]="false"
+                    [IsUserFilter]="false"
+                    [IsCnicFilter]="false"
+                    [IsMobileNoFilter]="false"
+                    [IsMrnoFilter]="false"
+                    [IsDateFilter]="true"
+                    [UserRoleConst]="roleConstant.Registration"
+                   ></app-user-level-filter-widget>
+
+                  <div class="col-12 md:col-4 lg:col-3">
+                    <label for="lastname2">&nbsp;</label>
+                    <div class="flex">
+                      <button pButton pRipple type="button" icon="pi pi-filter" label="Search" class="p-button-primary p-button-outlined mr-2"  title="Submit Filter" (click)="submitFilter()" ></button>
+                      <button pButton pRipple type="button" icon="pi pi-filter-slash" label="Clear" class="p-button-danger p-button-outlined"  title="Clear Filter" (click)="clearFilter()" ></button>
+                    </div>
+                  </div>
+                </div>
+              </p-panel>
+            </div> -->
+            <!-- End Card Filter
+
+            <!-- Table Component -->
+            <p-table #dt [value]="eyeBlindnessPatinetData">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Eye Blindness Patient</h5>
+                        <!-- <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                        </span> -->
+
+                        <div class="flex justify-content-end pb-3">
+                            <button pButton pRipple type="button" icon="pi pi-excel"  label="Export"  class="p-button-primary p-button-outlined" (click)="exportToExcel()"
+                                ></button>
+                        </div>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Sr# </th>
+                        <th pSortableColumn="FullName">Patient Name <p-sortIcon field="FullName"></p-sortIcon></th>
+                        <th pSortableColumn="Age">Age <p-sortIcon field="Age"></p-sortIcon></th>
+                        <th pSortableColumn="ComorbidityBy">Comorbidity By<p-sortIcon
+                                field="ComorbidityBy"></p-sortIcon></th>
+                        <th pSortableColumn="DateOfInocvlation">Date Of Injection Avastin <p-sortIcon
+                                field="DateOfInocvlation"></p-sortIcon></th>
+                        <th pSortableColumn="ConsultantName">Consultant Name <p-sortIcon
+                                field="ConsultantName"></p-sortIcon></th>
+                        <th pSortableColumn="StatusOfVision">Status Of Vision <p-sortIcon
+                                field="StatusOfVision"></p-sortIcon></th>
+                        <th pSortableColumn="Recovery">Recovery <p-sortIcon field="Recovery"></p-sortIcon></th>
+                        <!-- <th pSortableColumn="HealthFacility">HealthFacility <p-sortIcon
+                                field="HealthFacility"></p-sortIcon></th> -->
+                        <th pSortableColumn="InjectedHospital">Hospital Inject Administration <p-sortIcon
+                                field="InjectedHospital"></p-sortIcon></th>
+                        <th pSortableColumn="CreatedOn">CreatedOn<p-sortIcon field="CreatedOn"></p-sortIcon></th>
+
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-tbPatitent let-rowIndex="rowIndex">
+                    <tr>
+                        <td style="width:3rem;">
+                            <b>{{((filterModel.PageNumber-1)*filterModel.PageSize)+rowIndex+1}}</b>
+                        </td>
+                        <td style="min-width:2rem;">
+                            <span class="p-column-title">Patient Name</span>
+                            {{tbPatitent.FullName}}
+                        </td>
+                        <td style="min-width:8rem;">
+                            <span class="p-column-title">Age</span>
+                            {{tbPatitent.Age}}
+                        </td>
+                        <td style="min-width:8rem;">
+                            <span class="p-column-title">Comorbidity By</span>
+                            {{tbPatitent.ComorbidityBy}}
+                        </td>
+                        <td style="min-width:10rem;">
+                            <span class="p-column-title">Date Of Inocvlation</span>
+                            {{tbPatitent.DateOfInocvlation | date}}
+                        </td>
+                        <td style="min-width:10rem;">
+                            <span class="p-column-title">Consultant Name</span>
+                            {{tbPatitent.ConsultantName}}
+                        </td>
+                        <td style="min-width:10rem;">
+                            <span class="p-column-title">Status Of Vision</span>
+                            {{tbPatitent.StatusOfVision}}
+                        </td>
+                        <td style="min-width:10rem;">
+                            <span class="p-column-title">Recovery</span>
+                            {{tbPatitent.Recovery}}
+                        </td>
+                        <!-- <td style="min-width:10rem;">
+                            <span class="p-column-title">HealthFacility</span>
+                            {{tbPatitent.HealthFacility}}
+                        </td> -->
+                        <td style="min-width:10rem;">
+                            <span class="p-column-title">Hospital Injected Administration</span>
+                            {{tbPatitent.InjectedHospital == 'Other HealthFacility' ?
+                            tbPatitent.OtherHealthFacility:tbPatitent.InjectedHospital}}
+                        </td>
+                        <td style="min-width:10rem;">
+                            <span class="p-column-title">CreatedOn</span>
+                            {{tbPatitent.CreatedOn | date}}
+                        </td>
+
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="footer">
+                    <tr>
+                        <td colspan="7">
+                            <p-paginator [rows]="10" [showCurrentPageReport]="true"
+                                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                                [totalRecords]="filterModel.TotalRecords || 0" [rowsPerPageOptions]="[10,20,30,50,100]"
+                                (onPageChange)="paginate($event)"></p-paginator>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+            <!-- End Table Component -->
+
+        </div>
+    </div>
+</div>

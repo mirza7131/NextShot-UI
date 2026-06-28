@@ -1,0 +1,130 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <!-- <div class="flex justify-content-end pb-3">
+            </div> -->
+
+            <!-- Table Component -->
+            <p-table #dt [value]="profileTypes">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Manage Profile Types</h5>
+                    <span class="block mt-2 md:mt-0 ">
+                    <button pButton pRipple type="button" icon="pi pi-plus" class="p-button-rounded" (click)="openNew()" title="Add New"></button>
+                    </span>
+
+                    </div>
+                    <div class="block mt-3 md:mt-3">
+                        <input pInputText type="text" [(ngModel)]="filterModel.SearchString" placeholder="Search..." style="width: 90%;"/>
+                        <button  type="submit" pButton pRipple icon="pi pi-search" (click)="onSearch()"  [style]="{'margin-left':'10px'}" styleClass="p-button-sm"></button>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+
+                        <th >SR </th>
+                        <th pSortableColumn="Name">Name <p-sortIcon field="Name"></p-sortIcon></th>
+                        <th pSortableColumn="ShortName">Short Name <p-sortIcon field="ShortName"></p-sortIcon></th>
+                        <!-- <th pSortableColumn="CreatedByName">Created By <p-sortIcon field="CreatedByName"></p-sortIcon></th> -->
+                        <th pSortableColumn="IsActive">Active <p-sortIcon field="IsActive"></p-sortIcon></th>
+                        <th>Action</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-profiletype let-rowIndex="rowIndex">
+                    <tr>
+                        <td style="width:5rem;">
+                            <b>{{((filterModel.PageNumber-1)*filterModel.PageSize)+rowIndex+1}}</b>
+                        </td>
+                        <td style="width:30%; min-width:10rem;">
+                            <span class="p-column-title">Name</span>
+                            {{profiletype.Name}}
+                        </td>
+                        <td style="width:30%; min-width:8rem;">
+                            <span class="p-column-title">Short Name</span>
+                            {{profiletype.ShortName}}
+                        </td>
+                        <!-- <td style="min-width:8rem;">
+                            <span class="p-column-title">Created By</span>
+                            {{profiletype.CreatedByName}}
+                            <br />
+                            <small class="font9">{{profiletype.CreatedOn | date: 'medium'}}</small>
+                        </td> -->
+                        <td style="width:30%; min-width: 10rem;"><span class="p-column-title">Status</span>
+                            <p-badge [value]="profiletype.IsActive ? 'Active' : 'Not Active'" severity="{{profiletype.IsActive ? 'success' : 'danger'}}" styleClass="mr-2"></p-badge>
+                        </td>
+
+                        <td>
+                            <div class="flex">
+                                <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editProfileType(profiletype)"></button>
+                                <button *ngIf="showDeleteListItem" pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="deleteProfileType(profiletype)"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="footer">
+                    <tr>
+                        <td colspan="5">
+                            <p-paginator [rows]="10" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [totalRecords]="filterModel.TotalRecords || 0" [rowsPerPageOptions]="[10,20,30,50,100]" (onPageChange)="paginate($event)"></p-paginator>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+            <!-- End Table Component -->
+        </div>
+
+        <p-dialog [(visible)]="profileTypeDialog" [style]="{width: '450px'}" header="Profile Type Details" position="center" [draggable]="false" [modal]="true" class="p-fluid bgBlue">
+            <ng-template pTemplate="content" >
+
+                <form [formGroup]="profileTypeForm" class="pt-5">
+
+                    <div class="field">
+                        <label for="name">Name</label>
+                        <span class="p-float-label p-input-icon-right">
+                            <input type="text" autocomplete="off" formControlName="Name" id="Name" autocomplete="off" pInputText [ngClass]="{'ng-invalid ng-dirty': (submitted && !profileTypeFormControl.Name.valid) || (profileTypeFormControl.Name.touched && !profileTypeFormControl.Name.dirty)}">
+                            <i class="pi pi-check text-green-700" *ngIf="profileTypeFormControl.Name.valid"></i>
+                            <i class="pi pi-times text-red-500" *ngIf="(submitted && !profileTypeFormControl.Name.valid) || (profileTypeFormControl.Name.touched && !profileTypeFormControl.Name.dirty)"></i>
+                        </span>
+                    </div>
+
+                    <div class="field">
+                        <label for="name">Short Name</label>
+                        <span class="p-float-label p-input-icon-right">
+                            <input type="text"  autocomplete="off" pInputText id="name" formControlName="ShortName" [ngClass]="{'ng-invalid ng-dirty' : (submitted && !profileTypeFormControl.ShortName.valid) || (profileTypeFormControl.ShortName.touched && !profileTypeFormControl.ShortName.dirty)}"/>
+                            <i class="pi pi-check text-green-700" *ngIf="profileTypeFormControl.ShortName.valid"></i>
+                            <i class="pi pi-times text-red-500"  *ngIf="(submitted && !profileTypeFormControl.ShortName.valid) || (profileTypeFormControl.ShortName.touched && !profileTypeFormControl.ShortName.dirty)"></i>
+                        </span>
+                    </div>
+
+                    <div class="field">
+                        <label for="status">Active</label><br>
+                        <p-inputSwitch  formControlName="IsActive"></p-inputSwitch>
+                    </div>
+
+                </form>
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+
+                <button pButton pRipple label="Cancel" type="button" class="p-button-danger" (click)="hideDialog()"></button>
+                <button pButton pRipple label="Save" [disabled]="!this.profileTypeForm.valid" type="button" (click)="saveProfileType()"></button>
+
+            </ng-template>
+        </p-dialog>
+
+         <!-- Start Dialog Delete Profile Type -->
+        <p-dialog [(visible)]="deleteProfileTypeDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center mt-3">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="profileType">Are you sure you want to delete <b>{{profileType.Name}}</b>?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" type="button" label="No" class="p-button-danger"  (click)="deleteProfileTypeDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" type="button"  label="Yes"  (click)="confirmDelete()"></button>
+
+            </ng-template>
+        </p-dialog>
+
+        <!-- End Dialog Delete Profile Type -->
+    </div>
+</div>

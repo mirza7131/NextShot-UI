@@ -1,0 +1,13 @@
+
+<ng-container *ngIf="control">
+    <input type="checkbox" id="{{id}}" class="checkBox" (click)="emitCheckboxDetail()" [formControl]="control" />
+</ng-container>
+
+
+<ng-container *ngIf="!control && styles">
+    <input type="checkbox" id="{{id}}" class="checkBox setSize" (click)="emitCheckboxDetail()" />
+</ng-container>
+
+
+<br />
+<p class="m-0"><strong>{{label}}</strong></p>

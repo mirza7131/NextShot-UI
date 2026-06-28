@@ -1,0 +1,21 @@
+<h4 class="m-0" *ngIf="!isPatientBioMatric"><strong>Patient Biomatric</strong></h4>
+<br>
+<div class="grid px-1 ">
+
+    <div class="row">
+        <div *ngFor="let fingerPrint of fingerPrints; let i = index" class="{{isPatientBioMatric === true ? 'col-md-5' : 'col-md-2'}}">
+            <label><strong>{{fingerPrint.Name}}</strong>{{' '}}
+            </label>
+
+            <div>
+                <input type="hidden" placeholder="Base64String" id="ThumbFinger{{i}}Hidden" rows="20" cols="50" alt=""
+                    name="ThumbFinger" ng-model="GenrealInfo.ThumbFinger" autocomplete="off"
+                    class="ng-pristine ng-untouched ng-valid ng-not-empty" aria-invalid="false">
+
+                <!-- ngIf: GenrealInfo.MiddleFinger=='' -->
+                <img id="ThumbFinger{{i}}" class="patientFingerPrint" width="80" height="100" alt="" alt="image"
+                    [src]="patientFingerPrint" (click)="onFingerPrint($event,i)">
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,626 @@
+p-table.ptable ::ng-deep .p-datatable thead th {
+    background-color: #ffbf30;
+    border-color: #ffbf30;
+    color: white;
+}
+
+p-table.ptable ::ng-deep .p-datatable .p-datatable-tbody>tr>td {
+    border-bottom-color: #ffbf30;
+
+}
+
+p-table.ptable ::ng-deep .p-datatable {
+    border: 1px solid #ffbf30;
+}
+.calender{
+    margin-left: 10px;
+    width: 240px;
+}
+
+:host ::ng-deep  .p-datatable.p-datatable-striped .p-datatable-tbody > tr:nth-child(even) {
+    background: #dcdcdc;
+}
+
+.right-align-button {
+    float: right;
+}
+
+.FilterDate{
+    background-color: #016692;
+    padding: 10px;
+    color: #fff;
+    float: right;
+}
+
+.wrap-text {
+    word-wrap: break-word; /* For wrapping long words */
+    white-space: normal;   /* Ensures that text wraps */
+    max-width: 100px;      /* Adjust this width as needed */
+  }
+  p-badge .custom-badge{
+    font-size: 9px;
+  }
+
+
+  .p-dropdown {
+    display: inline-flex;
+    cursor: pointer;
+    position: relative;
+    -webkit-user-select: unset;
+    user-select: none;
+    width: 100% !important;
+}
+
+
+
+
+
+.custom-steps .p-steps-items {
+    width: 100% !important; /* Adjust the width as needed */
+}
+
+/* Add this to your global styles or component styles */
+.custom-steps .p-steps-items {
+    display: flex;
+    justify-content: space-between;
+}
+
+.custom-steps .p-steps-item {
+    flex: 1;
+    text-align: center; /* Optional: Align text in the center of each step */
+}
+
+.custom-steps .p-steps-item:not(:last-child) {
+    margin-right: 50px !important; /* Adjust the margin as needed */
+}
+
+
+.required-field {
+    color: red;
+    margin-left: 4px; /* Adjust the margin as needed for spacing */
+}
+
+
+.ui-fileupload-cancel {
+    display: none !important;
+}
+
+::ng-deep .ui-fileupload-cancel {
+    display: none !important;
+}
+.separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    font-size: large;
+    color:#cac5c5;
+  }
+  
+  .separator::before,
+  .separator::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #cac5c5;
+  }
+  
+  .separator:not(:empty)::before {
+    margin-right: .25em;
+  }
+  
+  .separator:not(:empty)::after {
+    margin-left: .25em;
+  }
+  .label-line {
+    border-top: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    width: 30px;
+    display: block; /* Ensure it stretches */
+  }
+
+
+
+
+
+  .header {
+    color: green;
+  }
+  
+  .block-flat {
+    width: 100%;
+    background-color: #e9e9e9;
+    align-content: center;
+    font-size: 12px;
+  }
+  
+  .block {
+    background-color: #75a0cc;
+    color: black;
+    border-radius: 9px;
+    font-size: .875rem;
+    font-weight: 400;
+  }
+  
+  .wid {
+    width: 100%;
+  }
+  
+  .page.preview {
+    width: 100%;
+    padding: 30px 7px 0;
+    height: 100%;
+  }
+  
+  .page {
+    background: #fff;
+    display: block;
+    margin: 0 auto 0.5cm;
+    box-shadow: 0 0 0.5cm rgb(0 0 0 / 50%);
+  }
+  
+  .application-page {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif !important;
+  }
+  
+  .watermark-hisdu {
+    text-align: center;
+    position: absolute;
+    left: 0;
+    width: 100%;
+    opacity: .25;
+  }
+  
+  .header-pshealth {
+    border-color: transparent !important;
+    width: 100%;
+  }
+  
+  .gop-logo-a4-header {
+    text-align: center;
+  }
+  
+  table.header-pshealth td.gop-logo-a4-header {
+    text-align: center;
+  }
+  
+  img {
+    vertical-align: middle;
+    border-style: none;
+  }
+  
+  table.header-pshealth td.gop-logo-a4-header img {
+    display: inline-block;
+    width: 80px;
+  
+  }
+  
+  pshealth td.pshealth-right-a4-td-header {
+    text-align: right;
+  }
+  
+  table.header-pshealth td.pshealth-right-a4-td-header .pshealth-right-a4-text-header {
+    display: inline-block;
+    text-align: center;
+  }
+  
+  .watermark-hisdu img {
+    display: inline-block;
+  }
+  
+  img {
+    vertical-align: middle;
+    border-style: none;
+  }
+  
+  .watermark-hisdu {
+    text-align: center;
+    position: absolute;
+    left: 0;
+    width: 100%;
+    opacity: 1.25;
+  }
+  
+  .fadeIn {
+    -webkit-animation-name: fadeIn;
+    animation-name: fadeIn;
+  }
+  
+  .animated {
+    -webkit-animation-duration: 1s;
+    animation-duration: 1s;
+  }
+  
+  .container {
+    position: relative;
+  }
+  
+  .k-form-field {
+    width: 100% !important;
+    line-height: 2;
+  }
+  
+  .box {
+    border: 1px solid;
+    height: 150px;
+    margin: 0;
+  
+  }
+  
+  
+  .persons-table {
+    width: 100% !important;
+  }
+  
+  .persons-table td {
+    width: 0% !important;
+    padding: 5px !important;
+    border: 1px solid black;
+  }
+  .header {
+    color: green;
+  }
+  
+  .block-flat {
+    width: 100%;
+    background-color: #e9e9e9;
+    align-content: center;
+    font-size: 12px;
+  }
+  
+  .block {
+    background-color: #75a0cc;
+    color: black;
+    border-radius: 9px;
+    font-size: .875rem;
+    font-weight: 400;
+  }
+  
+  .wid {
+    width: 100%;
+  }
+  
+  .page.preview {
+    width: 100%;
+    padding: 30px 7px 0;
+    height: 100%;
+  }
+  
+  .page {
+    background: #fff;
+    display: block;
+    margin: 0 auto 0.5cm;
+    box-shadow: 0 0 0.5cm rgb(0 0 0 / 50%);
+  }
+  
+  .application-page {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif !important;
+  }
+  
+  .watermark-hisdu {
+    text-align: center;
+    position: absolute;
+    left: 0;
+    width: 100%;
+    opacity: .25;
+  }
+  
+  .header-pshealth {
+    border-color: transparent !important;
+    width: 100%;
+  }
+  
+  .gop-logo-a4-header {
+    text-align: center;
+  }
+  
+  table.header-pshealth td.gop-logo-a4-header {
+    text-align: center;
+  }
+  
+  img {
+    vertical-align: middle;
+    border-style: none;
+  }
+  
+  table.header-pshealth td.gop-logo-a4-header img {
+    display: inline-block;
+    width: 80px;
+  
+  }
+  
+  pshealth td.pshealth-right-a4-td-header {
+    text-align: right;
+  }
+  
+  table.header-pshealth td.pshealth-right-a4-td-header .pshealth-right-a4-text-header {
+    display: inline-block;
+    text-align: center;
+  }
+  
+  .watermark-hisdu img {
+    display: inline-block;
+  }
+  
+  img {
+    vertical-align: middle;
+    border-style: none;
+  }
+  
+  .watermark-hisdu {
+    text-align: center;
+    position: absolute;
+    left: 0;
+    width: 100%;
+    opacity: 1.25;
+  }
+  
+  .fadeIn {
+    -webkit-animation-name: fadeIn;
+    animation-name: fadeIn;
+  }
+  
+  .animated {
+    -webkit-animation-duration: 1s;
+    animation-duration: 1s;
+  }
+  
+  .container {
+    position: relative;
+  }
+  
+  .k-form-field {
+    width: 100% !important;
+    line-height: 2;
+  }
+  
+  .box {
+    border: 1px solid;
+    height: 150px;
+    margin: 0;
+  
+  }
+  label{
+    color: black;
+  }
+
+  .p-toast {
+    margin-top: 20px;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f9f9f9;
+  }
+  .invoice-container {
+    background: #fff;
+    padding: 20px;
+    // max-width: 800px;
+    margin: auto;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .logo img {
+    max-width: 100px;
+  }
+  .invoice-title {
+    text-align: right;
+  }
+  .invoice-title h1 {
+    margin: 0;
+    font-size: 24px;
+  }
+  .details {
+    margin-top: 20px;
+  }
+  .details .bill-to, .details .date {
+    margin-bottom: 10px;
+  }
+  .bill-to {
+    font-weight: bold;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  // table th, table td {
+  //   text-align: left;
+  //   padding: 8px;
+  //   border: 1px solid #ddd;
+  // }
+  table th {
+    background-color: #000;
+  }
+  // .total {
+  //   text-align: right;
+  //   font-size: 16px;
+  //   font-weight: bold;
+  //   margin-top: 20px;
+  // }
+  .notes {
+    margin-top: 20px;
+    font-size: 12px;
+  }
+
+
+  .error {
+    color: red;
+    font-size: 12px;
+  }
+  
+
+
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+  }
+  .invoice-container {
+    // max-width: 800px;
+    margin: 20px auto;
+    padding: 30px;
+    background: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .header h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  .header h2 {
+    margin: 5px 0 0;
+    font-size: 20px;
+    color: #555;
+  }
+  .company-info {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  .company-info p {
+    margin: 5px 0;
+  }
+  .details-table {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  .details-table th,
+  .details-table td {
+    text-align: left;
+    padding: 8px;
+  }
+  .details-table th {
+    width: 20%;
+    background-color: #f8f8f8;
+  }
+  .items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  .items-table th,
+  .items-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+  }
+  .items-table th {
+    background-color: #f8f8f8;
+  }
+  .total {
+    text-align: right;
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: bold;
+  }
+  .notes {
+    margin-top: 20px;
+  }
+  .notes strong {
+    display: block;
+    margin-bottom: 10px;
+  }
+  .notes ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  .notes ul li {
+    margin: 5px 0;
+  }
+
+
+
+
+
+
+
+
+
+
+
+  .row {
+    margin: 0; /* Remove extra margins if needed */
+  }
+  
+  .img-fluid {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  .text-center {
+    text-align: center;
+  }
+  
+  .align-items-center {
+    display: flex;
+    align-items: center;
+  }
+  .error-message {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
+  }
+
+
+  .sub-container, .header, .main, .footer, .main-heading, .sub-headings, .table-head, .table-1, .table-2, .table-3, .table-footer {
+    font-family:sans-serif;
+    color: black;
+    // font-size: 16px;
+}
+
+.sub-container {
+    display:block;
+    margin-left: auto; 
+    margin-right: auto; 
+    width: 265mm; 
+    height: 375mm; 
+    padding: 15mm; 
+    padding-left: 20mm;
+    box-sizing: border-box;
+    background: #fff;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+@media print {
+  body {
+      font-family: Arial, sans-serif;
+  }
+  #printableDiv {
+      margin: 0;
+      padding: 20px;
+  }
+  /* Hide other elements */
+  button {
+      display: none;
+  }
+}
+.brand-block { display: flex; align-items: center; gap: 1rem; }

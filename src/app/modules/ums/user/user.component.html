@@ -1,0 +1,366 @@
+<!-- Filter Grid -->
+
+
+<div class="grid">
+    <div class="md:col-12 lg:col-12">
+        <div class="card mb-0">
+            <p-panel header="Filter" [collapsed]="true" [toggleable]="true" class="line-height-3 m-0">
+                <app-user-level-filter-widget class="col-12 md:col-12 lg:col-12"
+                [userLevelFiltersModel]="filterModel"
+                [IsDateFilter]="true"
+                ></app-user-level-filter-widget>
+                <div class="grid p-fluid">
+                    <div class="col-12 md:col-4 lg:col-3">
+                        <div class="flex">
+                            <button pButton pRipple type="button" icon="pi pi-filter" label="Search" class="p-button-primary p-button-outlined mr-2"  title="Submit Filter" (click)="submitFilter()" ></button>
+                            <button pButton pRipple type="button" icon="pi pi-filter-slash" label="Clear" class="p-button-danger p-button-outlined"  title="Clear Filter" (click)="clearFilter()"></button>
+                        </div>
+                    </div>
+                </div>
+            </p-panel>
+        </div>
+    </div>
+
+
+</div>
+
+
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <!-- <div class="flex justify-content-end pb-3">
+            </div> -->
+            <!-- Table Component -->
+            <p-table #dt [value]="users">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Manage Users</h5>
+                        <span>
+                            <button *ngIf="ShowSync" style="margin-right: 2rem" pButton pRipple type="button" icon="pi pi-refresh" class="p-button-rounded"  title="Sync Data" (click)="syncData()" ></button>
+                            <button *ngIf="!ShowSync" pButton pRipple type="button" icon="pi pi-plus" class="p-button-rounded"  title="Add New" (click)="openNew()" ></button>
+                        </span>
+                    </div>
+                    <!-- <div>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search" style="margin-top: 0px"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."style="width: 100%; margin-top: 10px;"/>
+                        </span>
+                    </div> -->
+                    <div class="block mt-3 md:mt-3">
+                        <input pInputText type="text" [(ngModel)]="filterModel.SearchString" placeholder="Search..." style="width: 90%;"/>
+                        <button  type="submit" pButton pRipple icon="pi pi-search" (click)="submitFilter()"  [style]="{'margin-left':'10px'}" styleClass="p-button-sm"></button>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th >SR</th>
+                        <th pSortableColumn="HealthFacilityName">Health Facility <p-sortIcon field="HealthFacilityName"></p-sortIcon></th>
+                        <th pSortableColumn="FullName">Name <p-sortIcon field="FullName"></p-sortIcon></th>
+                        <th pSortableColumn="Cnic">CNIC <p-sortIcon field="Cnic"></p-sortIcon></th>
+                        <th pSortableColumn="Email">Email <p-sortIcon field="Email"></p-sortIcon></th>
+                        <th pSortableColumn="Role">Role <p-sortIcon field="Role"></p-sortIcon></th>
+                        <th pSortableColumn="CreatedByName">Created By <p-sortIcon field="CreatedByName"></p-sortIcon></th>
+                        <th pSortableColumn="IsActive">Active <p-sortIcon field="IsActive"></p-sortIcon></th>
+                        <th>Action</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-user let-rowIndex="rowIndex">
+                    <tr>
+                        <td style="width:5rem;">
+                            <b>{{((filterModel.PageNumber-1)*filterModel.PageSize)+rowIndex+1}}</b>
+                        </td>
+                        <td style="min-width:10rem;">
+                            <span class="p-column-title">Health Facility</span>
+                            {{user.HealthFacilityName}}
+                        </td>
+                        <td style="min-width:10rem;">
+                            <span class="p-column-title">Name</span>
+                            {{user.FullName}}
+                        </td>
+                        <td style="min-width:10rem;">
+                            <span class="p-column-title">Cnic</span>
+                            {{user.Cnic}}
+                        </td>
+                        <td style="min-width:8rem;">
+                            <span class="p-column-title">Email</span>
+                            {{user.Email}}
+                        </td>
+                        <td style="min-width:8rem;">
+                            <span class="p-column-title">Role</span>
+                            {{user.Role}}
+                        </td>
+                        <td style="min-width:8rem;">
+                            <span class="p-column-title">Created By</span>
+                            {{user.CreatedByName}}
+                            <br />
+                            <small class="font9">{{user.CreatedOn | date: 'medium'}}</small>
+                        </td>
+                        <td style="min-width: 10rem;"><span class="p-column-title">Status</span>
+                            <p-badge [value]="user.IsActive ? 'Active' : 'Not Active'" severity="{{user.IsActive ? 'success' : 'danger'}}" styleClass="mr-2"></p-badge>
+                        </td>
+                        <td>
+                            <div class="flex">
+                                <button *ngIf="showDeleteListItem && !ShowSync" pButton pRipple icon="pi pi-user" class="p-button-rounded p-button-warning mr-2" (click)="assigsUserRole(user)"></button>
+                                <button *ngIf="!ShowSync" pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editUser(user)"></button>
+                                <button *ngIf="showDeleteListItem && !ShowSync" pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="deleteUser(user)"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="footer">
+                    <tr>
+                        <td colspan="9">
+                            <p-paginator [rows]="10" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [totalRecords]="filterModel.TotalRecords || 0" [rowsPerPageOptions]="[10,20,30,50,100]" (onPageChange)="paginate($event)"></p-paginator>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+            <!-- End Table Component -->
+        </div>
+
+        <!-- //User Dialog -->
+        <p-dialog [(visible)]="userDialog" [style]="{width: '1000px',height:'700px'}" header="User Details" position="center" [draggable]="false" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content" >
+                <p-tabView>
+                    <p-tabPanel header="User Information">
+
+                        <form [formGroup]="userForm" class="pt-5">
+
+                            <div class="grid">
+                                <div class="col-12 md:col-4 lg:col-4">
+                                    <label for="name">CNIC</label><br>
+                                    <span class="p-float-label p-input-icon-right">
+                                        <p-inputMask [readonly]="!editCnic" id="" mask="99999-9999999-9" formControlName="Cnic" placeholder="xxxxx-xxxxxxx-x" (onComplete)="checkIfUserExistByCnic()" [ngClass]="{'ng-invalid ng-dirty' : userExist || (userFormControl.Cnic.invalid && userFormControl.Cnic.touched)}"></p-inputMask>
+                                        <i class="pi pi-check text-green-700" *ngIf="!userExist && userFormControl.Cnic.valid"></i>
+                                        <i class="pi pi-times text-red-500" *ngIf="userExist || (userFormControl.Cnic.invalid && userFormControl.Cnic.touched)"></i>
+                                    </span>
+                                </div>
+                                <div class="col-12 md:col-4 lg:col-4">
+                                    <label for="name">Name</label>
+                                    <span class="p-float-label p-input-icon-right">
+                                        <input type="text" [readonly]="readonlyForm" autocomplete="off" pInputText id="name" formControlName="FullName" (keypress)="rjxscharacter($event)"  [ngClass]="{'ng-invalid ng-dirty' : userFormControl.FullName.invalid && userFormControl.FullName.touched}"/>
+                                        <i class="pi pi-check text-green-700" *ngIf="userFormControl.FullName.valid"></i>
+                                        <i class="pi pi-times text-red-500" *ngIf="userFormControl.FullName.invalid && userFormControl.FullName.touched"></i>
+                                    </span>
+                                </div>
+                                <div class="col-12 md:col-4 lg:col-4">
+                                    <label for="name">Father's Name</label>
+                                    <span class="p-float-label p-input-icon-right">
+                                        <input type="text" [readonly]="readonlyForm" autocomplete="off" pInputText id="fathername" formControlName="FatherName" (keypress)="rjxscharacter($event)"  [ngClass]="{'ng-invalid ng-dirty' : userFormControl.FatherName.invalid && userFormControl.FatherName.touched}"/>
+                                        <i class="pi pi-check text-green-700" *ngIf="userFormControl.FatherName.valid"></i>
+                                        <i class="pi pi-times text-red-500" *ngIf="userFormControl.FatherName.invalid && userFormControl.FatherName.touched"></i>
+                                    </span>
+                                </div>
+                                <div class="col-12 md:col-4 lg:col-4">
+                                    <label for="name">DOB</label><br>
+                                    <span class="p-float-label p-input-icon-right">
+                                        <!-- <p-inputMask mask="99-99-9999" formControlName="Dob" placeholder="dd-mm-yyyy"></p-inputMask> -->
+                                        <!-- <p-calendar formControlName="Dob" dateFormat="dd-mm-yy" inputId="dateformat"></p-calendar> -->
+                                        <input type="date" [readonly]="readonlyForm" formControlName="Dob" class="w-12" [max]="maxDate" [min]="minDate" pInputText [ngClass]="{'ng-invalid ng-dirty' : userFormControl.Dob.invalid && userFormControl.Dob.touched}">
+                                    </span>
+                                </div>
+                                <div class="col-12 md:col-4 lg:col-4">
+                                    <label for="name">Gender</label>
+                                    <span class="p-float-label p-input-icon-right">
+                                        <p-dropdown [options]="listGender" [readonly]="readonlyForm" formControlName="GenderProfileId" [filter]="true" [showClear]="true" optionLabel="Name" optionValue="ProfileId" placeholder="Select Gender" ></p-dropdown>
+                                    </span>
+                                </div>
+                                <div class="col-12 md:col-4 lg:col-4">
+                                    <label for="name">Designation</label>
+                                    <span class="p-float-label p-input-icon-right">
+                                        <p-dropdown [options]="listDesignation" [virtualScroll]="true" [virtualScrollItemSize]="50" [readonly]="readonlyForm" formControlName="DesignationProfileId" [filter]="true" [showClear]="true" optionLabel="Name" optionValue="ProfileId" placeholder="Select Designation" ></p-dropdown>
+                                    </span>
+                                </div>
+                                <div class="col-12 md:col-4 lg:col-4">
+                                    <label for="email">Email</label>
+                                    <span class="p-float-label p-input-icon-right">
+                                        <input type="text" autocomplete="off" pInputText id="email" formControlName="Email" [ngClass]="{'ng-invalid ng-dirty' : userFormControl.Email.invalid && userFormControl.Email.touched}"/>
+                                        <i class="pi pi-check text-green-700" *ngIf="userFormControl.Email.valid"></i>
+                                        <i class="pi pi-times text-red-500" *ngIf=" userFormControl.Email.invalid && userFormControl.Email.touched"></i>
+                                    </span>
+                                </div>
+                                <div class="col-12 md:col-4 lg:col-4">
+                                    <label for="contactNo">Contact No</label>
+                                    <span class="p-float-label p-input-icon-right">
+                                        <p-inputMask mask="9999-9999999" formControlName="ContactNo" (onComplete)="EnterMobileNum()" (keyup.enter)="EnterMobileNum()"  [ngClass]="{'ng-invalid ng-dirty' : userFormControl.ContactNo.invalid && userFormControl.ContactNo.touched}"></p-inputMask>
+                                        <i class="pi pi-check text-green-700" *ngIf="userFormControl.ContactNo.valid"></i>
+                                        <i class="pi pi-times text-red-500" *ngIf="userFormControl.ContactNo.invalid && userFormControl.ContactNo.touched"></i>
+                                    </span>
+                                </div>
+                                <div class="col-12 md:col-4 lg:col-4" >
+                                    <!-- <div class="col-12 md:col-4 lg:col-4" *ngIf="!authViaHR"> -->
+                                    <label for="password">Password</label>
+                                    <span class="p-float-label p-input-icon-right">
+                                        <input type="password" pInputText id="password" formControlName="Password" [ngClass]="{'ng-invalid ng-dirty' : userFormControl.Password.invalid && userFormControl.Password.touched }"/>
+                                        <i class="pi pi-check text-green-700" *ngIf="userFormControl.Password.valid"></i>
+                                        <i class="pi pi-times text-red-500" *ngIf="userFormControl.Password.invalid && userFormControl.Password.touched"></i>
+                                    </span>
+                                </div>
+                                <div class="col-12 md:col-4 lg:col-4">
+                                    <!-- <div class="col-12 md:col-4 lg:col-4" *ngIf="!authViaHR"> -->
+                                    <label for="name">Confirm Password</label>
+                                        <span class="p-float-label p-input-icon-right">
+                                        <input type="password" pInputText id="confirmpassword" formControlName="ConfirmPassword" [ngClass]="{'ng-invalid ng-dirty' : userFormControl.Password.invalid && userFormControl.ConfirmPassword.touched}"/>
+                                        <i class="pi pi-check text-green-700" *ngIf="userFormControl.ConfirmPassword.touched && userFormControl.ConfirmPassword.value === userFormControl.Password.value && userFormControl.ConfirmPassword.valid "></i>
+                                        <i class="pi pi-times text-red-500" *ngIf="userFormControl.ConfirmPassword.touched && userFormControl.ConfirmPassword.value !== userFormControl.Password.value && userFormControl.Password.invalid"></i>
+                                    </span>
+                                    <small class="text-red-500" *ngIf="userFormControl.ConfirmPassword.touched && userFormControl.ConfirmPassword.value !== userFormControl.Password.value">Confirm Password did not match with Password</small>
+                                </div>
+                                <div class="col-12 md:col-12 lg:col-12">
+                                    <div class="grid">
+                                        <div *ngIf="!isProvinceLevel" class="col-12 md:col-4 lg:col-4">
+                                            <label for="province"> Province</label>
+                                            <p-dropdown [options]="provinceData" optionLabel="Name" optionValue="Id"  [style]="{width: '100%'}"
+                                            (onChange)="getDivisions(userLevelFiltersModel.ProvinceId)" appendTo="body" [virtualScroll]="true" [virtualScrollItemSize]="50" formControlName="ProvinceId"  [filter]="true" [readonly]="isProvinceLevel" [showClear]="!isProvinceLevel" placeholder="Select a Province"></p-dropdown>
+                                        </div>
+                                    
+                                        <div *ngIf="!isDivisionLevel" class="col-12 md:col-4 lg:col-4">
+                                            <label for="division"> Division</label>
+                                            <p-dropdown [options]="divisionData" optionLabel="Name" appendTo="body" optionValue="Id" [style]="{width: '100%'}"
+                                            (onChange)="getDistricts(userLevelFiltersModel.DivisionId)" [virtualScroll]="true" [virtualScrollItemSize]="50" formControlName="DivisionId" [filter]="true" [readonly]="isDivisionLevel" [showClear]="!isDivisionLevel" placeholder="Select a Division"></p-dropdown>
+                                        </div>
+                                    
+                                        <div *ngIf="!isDistrictLevel" class="col-12 md:col-4 lg:col-4">
+                                            <label for="district"> District</label>
+                                            <p-dropdown [options]="districtData" optionLabel="Name" appendTo="body" optionValue="Id" [style]="{width: '100%'}"
+                                            (onChange)="getTehsil(userLevelFiltersModel.DistrictId)" [virtualScroll]="true" [virtualScrollItemSize]="50" formControlName="DistrictId"  [filter]="true" [readonly]="isDistrictLevel" [showClear]="!isDistrictLevel" placeholder="Select a District"></p-dropdown>
+                                        </div>
+                                    
+                                        <div *ngIf="!isTehsilLevel" class="col-12 md:col-4 lg:col-4">
+                                            <label for="tehsil"> Tehsil</label>
+                                            <p-dropdown [options]="tehsilData" optionLabel="Name" appendTo="body" optionValue="Id" [style]="{width: '100%'}"
+                                            (onChange)="getHealthFacility(userLevelFiltersModel.TehsilId)"  [virtualScroll]="true" [virtualScrollItemSize]="50" formControlName="TehsilId" [filter]="true" [readonly]="isTehsilLevel" [showClear]="!isTehsilLevel" placeholder="Select a Tehsil"></p-dropdown>
+                                        </div>
+                                        <!-- <div *ngIf="!isHealthFacilityLevel" class="col-12 md:col-8 lg:col-8">
+                                            <label for="healthFacility"> Health Facility</label>
+                                            <p-dropdown [options]="healthFacilityData" optionLabel="Name" appendTo="body" optionValue="Id" [style]="{width: '100%'}"
+                                            (onChange)="getHealthFacilityDepartments($event)" [virtualScroll]="true" [virtualScrollItemSize]="50" formControlName="HealthFacilityId" [filter]="true" [readonly]="isHealthFacilityLevel" [showClear]="!isHealthFacilityLevel" placeholder="Select a Health Facility"></p-dropdown>
+                                        </div> -->
+                                        <div *ngIf="!isHealthFacilityLevel" class="col-12 md:col-8 lg:col-8">
+                                            <label for="healthFacility"> Health Facility</label>
+                                            <p-dropdown [options]="healthFacilityData" optionLabel="Name" appendTo="body" optionValue="Id" [style]="{width: '100%'}"
+                                            (onChange)="getDepartmentAndSectionByHealthFacility($event)" [virtualScroll]="true" [virtualScrollItemSize]="50" formControlName="HealthFacilityId" [filter]="true" [readonly]="isHealthFacilityLevel" [showClear]="!isHealthFacilityLevel" placeholder="Select a Health Facility"></p-dropdown>
+                                        </div>
+                                    
+                                        <div class="col-12 md:col-4 lg:col-4">
+                                            <label for="name">Department</label>
+                                            <p-dropdown [options]="departmentData"
+                                            (onChange)="getHealthFacilitySections($event)" appendTo="body" [virtualScroll]="true" [virtualScrollItemSize]="50" formControlName="DepartmentId" [filter]="true" [showClear]="true" optionLabel="Name" optionValue="LookupId" placeholder="Select Department" ></p-dropdown>
+                                        </div>
+                                    
+                                        <div class="col-12 md:col-4 lg:col-4">
+                                            <label for="name">Section</label>
+                                            <p-dropdown [options]="sectionData"
+                                            [virtualScroll]="true" [virtualScrollItemSize]="50" appendTo="body" formControlName="SectionId" [filter]="true" [showClear]="true" optionLabel="Name" optionValue="LookupId" placeholder="Select Section" ></p-dropdown>
+                                        </div>    
+                                    </div>
+                                </div>
+                                
+
+                                
+
+                                <!-- <app-user-level-filter-widget
+                                    *ngIf="showUserFilterWidget"  class="col-12 md:col-12 lg:col-12"
+                                    [IsDepartment]="true"
+                                    [IsSection]="true"
+                                    [IsDateFilter]="false"
+                                    [userLevelFormGroup]="userForm"
+                                ></app-user-level-filter-widget> -->
+
+                                <!-- <div class="col-12 md:col-4 lg:col-4">
+                                    <label for="name">Department</label>
+                                    <p-dropdown [options]="departmentData"
+                                    (onChange)="getSectionsServices($event)" formControlName="DepartmentId" [filter]="true" [showClear]="true" optionLabel="Name" optionValue="DepartmentLookupId" placeholder="Select Department" ></p-dropdown>
+                                </div>
+
+                                <div class="col-12 md:col-4 lg:col-4">
+                                    <label for="name">Section</label>
+                                    <p-dropdown [options]="sectionData" formControlName="SectionId" [filter]="true" [showClear]="true" optionLabel="SectionName" optionValue="SectionLookupId" placeholder="Select Section" ></p-dropdown>
+                                </div> -->
+                                <div class="col-12 md:col-12 lg:col-12">
+                                    <label for="status">Active</label><br>
+                                <p-inputSwitch  formControlName="IsActive"></p-inputSwitch>
+                                </div>
+
+                            </div>
+
+                        </form>
+                    </p-tabPanel>
+                    <p-tabPanel header="Roles">
+
+
+                            <!-- <div class="flex">
+                                <ng-container *ngFor="let item1 of fakeArray();let i=index;">
+
+                                    <div class="flex-1 h-4rem  font-bold text-center p-4 border-round" >
+
+                                        <p-table [value]="roles.slice((i == 0? i : i+10-1), i+10)">
+                                            <ng-template pTemplate="body" let-role>
+                                                <tr>
+                                                    <td>{{role.Name}}</td>
+                                                    <td><p-inputSwitch [(ngModel)]="role.IsActive" (onChange)="selectRole($event,role)"></p-inputSwitch></td>
+
+                                                </tr>
+                                            </ng-template>
+                                        </p-table>
+
+                                    </div>
+
+                                </ng-container>
+
+                            </div> -->
+
+                            <div class="grid">
+                                <ng-container *ngFor="let role of roles;let i=index;">
+
+                                    <div class="col-6">
+                                        <div class="grid">
+                                            <div class="col-6">{{role.Name}}</div>
+                                            <div class="col-6"><p-inputSwitch [(ngModel)]="role.IsActive" (onChange)="selectRole($event,role)"></p-inputSwitch></div>
+                                        </div>
+
+                                    </div>
+
+                                </ng-container>
+
+                            </div>
+
+                    </p-tabPanel>
+                </p-tabView>
+
+
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Cancel" type="button" class="p-button-danger" (click)="hideDialog()"></button>
+                <button pButton [disabled]="userForm.invalid" pRipple label="Save" type="button" (click)="saveUser()"></button>
+
+            </ng-template>
+        </p-dialog>
+        <!-- End Dialog -->
+
+
+        <!-- Assignable User Dialog -->
+            <app-assignable-user-roles [roles]="this.roles" [assigsUserRoleDialog]="this.assigsUserRoleDialog" [userId]="this.user.UserId" (assigsUserRoleDialogEmitter)="closeDiaglog()" (assignableRolesEmitter)="saveAssignableRolesEmitter($event)"></app-assignable-user-roles>
+        <!-- End Dialog -->
+
+
+        <!-- Dialog Delete User -->
+
+        <p-dialog [(visible)]="deleteUserDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center mt-3">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="user">Are you sure you want to delete <b>{{user.FullName}}</b>?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" type="button" label="No" class="p-button-danger"  (click)="deleteUserDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" type="button"  label="Yes"  (click)="confirmDelete()"></button>
+
+            </ng-template>
+        </p-dialog>
+
+        <!-- End Dialog Delete User -->
+
+    </div>
+</div>

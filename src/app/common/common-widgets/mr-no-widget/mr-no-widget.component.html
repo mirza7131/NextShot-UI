@@ -1,0 +1,13 @@
+<div *ngIf="mrNoFormGroup" [formGroup]="mrNoFormGroup" class="grid">
+    <div class="col-12 md:col-12 lg:col-12">
+        <label for="mrNo"> MR No.</label>
+        <p-inputMask formControlName="mrNo" [showClear]="true" mask="MRN-99999-999-999999999" placeholder="MRN-xxxxx-xxx-xxxxxxxxx" ></p-inputMask>
+    </div>
+</div>
+
+<div *ngIf="!mrNoFormGroup" class="grid">
+    <div class="col-12 md:col-12 lg:col-12">
+        <label for="mrNo"> MR No.</label>
+        <p-inputMask [(ngModel)]="mrNoModel.MrNo" [showClear]="true" mask="MRN-99999-999-999999999" placeholder="MRN-xxxxx-xxx-xxxxxxxxx" ></p-inputMask>
+    </div>
+</div>

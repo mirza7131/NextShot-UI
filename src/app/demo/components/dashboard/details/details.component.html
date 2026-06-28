@@ -1,0 +1,825 @@
+<div class="card">
+    <div class="grid p-fluid mt-5">
+        <div class="field col-12 md:col-2">
+            <h5>Application Details</h5>
+        </div>
+        <div class="field col-12 md:col-4">
+            <p-badge *ngIf="application.StatusId == 1" value="Application is not Submitted By the Applicant" severity="info" ></p-badge>
+            <p-badge *ngIf="application.StatusId == 2" value="Scrutiny is Pending" severity="warning" ></p-badge>
+            <p-badge *ngIf="application.StatusId == 3" value="Application is Approved on {{application.ScrutinyDateTime | date: 'yyyy-MM-dd HH:mm:ss'}}" severity="success" ></p-badge>
+            <p-badge *ngIf="application.StatusId == 4" value="Application is Rejected on {{application.ScrutinyDateTime | date: 'yyyy-MM-dd HH:mm:ss'}}" severity="danger" ></p-badge>
+        </div>
+    </div>        
+    
+    <p-tabView orientation="left" >
+
+        <p-tabPanel header="General Info" class="line-height-3 m-0">
+            <div class="grid p-fluid mt-5">
+                <div class="field col-12 md:col-4">
+                    <label for="Name" class="block text-900 text-xl font-medium">Principal of Institute</label>
+                    <input id="Name" type="text" disabled [(ngModel)]="application.PrincipalName" placeholder="Name" pInputText class="w-full" style="padding:1rem">
+                </div>
+                <div class="field col-12 md:col-4">
+                    <label for="CNIC" class="block text-900 text-xl font-medium mb-1">CNIC</label>
+                    <p-inputMask inputId="inputmask" disabled mask="99999-9999999-9" [(ngModel)]="application.Cnic" class="w-full md:w-30rem mb-2" styleClass="mb-2 w-full"></p-inputMask>
+                </div>
+                <div class="field col-12 md:col-4">
+                    <h5>Date of Birth</h5>
+                    <p-calendar  appendTo="body" disabled [showIcon]="true"  [(ngModel)]="application.Dob" inputId="icon"></p-calendar>
+                </div>
+                <div class="field col-12 md:col-4">
+                    <h5>Principal/Head Appointment Date</h5>
+                    <p-calendar  appendTo="body" disabled [showIcon]="true"  [(ngModel)]="application.PrincipalAppointmentDate" inputId="icon"></p-calendar>
+                </div>
+                <div class="field col-12 md:col-4">
+                    <label for="email1" class="block text-900 text-xl font-medium mb-2">Email</label>
+                    <input id="email1" type="text" disabled placeholder="Email address" [(ngModel)]="application.Email" pInputText class="w-full" style="padding:1rem">
+                </div>
+                
+                <div class="field col-12 md:col-4">
+                    <label for="Mobile" class="block text-900 text-xl font-medium mb-2">Mobile No</label>
+                    <p-inputMask inputId="inputmask" disabled mask="9999-9999999" [(ngModel)]="application.Mobile" class="w-full md:w-30 rem" styleClass="w-full"></p-inputMask>
+                </div>
+                <div class="field col-12 md:col-4">
+                    <label for="Name" class="block text-900 text-xl font-medium">Name of Institute</label>
+                    <input id="Name" type="text" disabled [(ngModel)]="application.InstituteName" placeholder="Name" pInputText class="w-full" style="padding:1rem">
+                </div>
+                <div class="field col-12 md:col-4" *ngIf="!application.InstituteOwnedByHead">
+                    <label for="Name" class="block text-900 text-xl font-medium">Owner Name</label>
+                    <input id="Name" type="text" disabled  [(ngModel)]="application.OwnerName" placeholder="Name" pInputText class="w-full" style="padding:1rem">
+                </div>
+                <div class="field col-12 md:col-4">
+                    <h5>Institute Owned By Principal/Head</h5>
+                    <p-inputSwitch  disabled [(ngModel)]="application.InstituteOwnedByHead"></p-inputSwitch>
+                </div>
+                <div class="field col-12 md:col-4">
+                    <h5>Proof of Ownership</h5>
+                    <p-image *ngIf="application.OwnershipProof && !application.OwnershipProof?.toLowerCase().endsWith('pdf')"  [src]="'/' + application.OwnershipProof" alt="Image" width="50" [preview]="true"></p-image>
+                    <p-image style="cursor: pointer;"  (click)="openPDFInNewTab('/' + application.OwnershipProof)" *ngIf="application.OwnershipProof && application.OwnershipProof?.toLowerCase().endsWith('pdf')" src="assets/demo/images/pdf.png" alt="Image" width="100" [preview]="false"></p-image>
+                </div>
+            </div>
+
+            <div class="grid p-fluid mt-5">
+                <div class="field col-12 md:col-8">
+                    <h5>Principal Qualifications</h5>
+                </div>
+                <div class="col-12 xl:col-12">
+                    <p-table [value]="PrincipalQualifications" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Attachment</th>
+                                <th pSortableColumn="name">Qualification/Degree<p-sortIcon field="name"></p-sortIcon></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-qualification>
+                            <tr>
+                                <td style="width: 15%; min-width: 5rem;">
+                                    <!-- <img [src]="'/'+ qualification.UploadPath" class="shadow-4" alt="{{qualification.QualificationName}}" width="50"> -->
+                                    <p-image *ngIf="qualification.UploadPath && !qualification.UploadPath?.toLowerCase().endsWith('pdf')"  [src]="'/' + qualification.UploadPath" alt="{{qualification.QualificationName}}" width="50" [preview]="true"></p-image>
+                                    <p-image style="cursor: pointer"  (click)="openPDFInNewTab('/' + qualification.UploadPath)" *ngIf="qualification.UploadPath && qualification.UploadPath?.toLowerCase().endsWith('pdf')" src="assets/demo/images/pdf.png" alt="Image" width="50" [preview]="false"></p-image>
+                                </td>
+                                <td style="width: 35%; min-width: 7rem;">{{qualification.QualificationName}}</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </div>
+
+            <div class="grid p-fluid mt-5">
+                <div class="field col-12 md:col-8">
+                    <h5>Experience</h5>
+                </div>
+                <div class="col-12 xl:col-12">
+                    <p-table [value]="PrincipalExperiences" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th>Attachment</th>
+                                    <th pSortableColumn="name">JobTitle <p-sortIcon field="name"></p-sortIcon></th>
+                                    <th pSortableColumn="price">Organization <p-sortIcon field="price"></p-sortIcon></th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-experience>
+                                <tr>
+                                    <td style="width: 15%; min-width: 5rem;">
+                                        <!-- <img [src]="'/' + experience.UploadPath" class="shadow-4" alt="{{experience.JobTitle}}" width="50"> -->
+                                        <p-image *ngIf="experience.UploadPath && !experience.UploadPath?.toLowerCase().endsWith('pdf')"  [src]="'/' + experience.UploadPath" alt="Image" width="50" [preview]="true"></p-image>
+                                        <p-image style="cursor: pointer"  (click)="openPDFInNewTab('/' + experience.UploadPath)" *ngIf="experience.UploadPath && experience.UploadPath?.toLowerCase().endsWith('pdf')" src="assets/demo/images/pdf.png" alt="Image" width="50" [preview]="false"></p-image>
+                                    </td>
+                                    <td style="width: 35%; min-width: 7rem;">{{experience.JobTitle}}</td>
+                                    <td style="width: 35%; min-width: 8rem;">{{experience.Organization}}</td>
+                                </tr>
+                            </ng-template>
+                    </p-table>
+                </div>
+            </div>
+
+        </p-tabPanel>
+
+        <p-tabPanel header="Institute" class="line-height-3 m-0">
+            <div class="grid p-fluid mt-5">
+                <div class="field col-12 md:col-4">
+                    <label for="Divison" class="block text-900 text-xl font-medium">Type of Institute </label>
+                    <p-dropdown [disabled]="true"  [options]="InstituteTypes" [(ngModel)]="selectedInstituteType" placeholder="Institute Type" [showClear]="true" styleClass="w-full" inputStyleClass="w-full"></p-dropdown>
+                </div>
+                <div class="field col-12 md:col-4">
+                    <label for="Divison" class="block text-900 text-xl font-medium">Affiliation Type  </label>
+                    <p-dropdown [disabled]="true" [options]="AffliationType" [(ngModel)]="selectedAffliationType" placeholder="Affiliation Type" [showClear]="true" styleClass="w-full" inputStyleClass="w-full"></p-dropdown>
+                </div>
+                <div class="field col-12 md:col-4" *ngIf="selectedAffliationType?.id == 2">
+                    <label for="UniversityName" class="block text-900 text-xl font-medium">University Name </label>
+                    <input [disabled]="true" id="UniversityName" type="text"  [(ngModel)]="Institute.UniversityName" placeholder="University Name" pInputText class="w-full" style="padding:1rem">
+                </div>
+                <div class="field col-12 md:col-4">
+                    <h5>Year of Establishment </h5>
+                    <p-calendar [disabled]="true"  appendTo="body" [showIcon]="true" [(ngModel)]="Institute.EstablishmentYear" inputId="icon"></p-calendar>
+                </div>
+
+               
+
+                <div class="field col-12 md:col-4">
+                    <label for="Divison" class="block text-900 text-xl font-medium">Legal Status </label>
+                    <p-dropdown [disabled]="true"  [options]="LegalStatuses" [(ngModel)]="selectedLegalStatus" placeholder="Legal Status" [showClear]="true" styleClass="w-full" inputStyleClass="w-full"></p-dropdown>
+                </div>
+
+                
+
+                <div class="col-12">
+                    <div class="card">
+                        <h5>Current Affiliation</h5>
+                        <div class="grid p-fluid mt-5">
+                            <div class="field col-12 md:col-4" >
+                                <label for="UniversityName" class="block text-900 text-xl font-medium">Affiliated University </label>
+                                <input [disabled]="true"  id="UniversityName" type="text"  [(ngModel)]="Institute.CurrentAffliationUniversity" placeholder="University Name" pInputText class="w-full" style="padding:1rem">
+                            </div>
+                            <div class="field col-12 md:col-4" >
+                                <label for="UniversityName" class="block text-900 text-xl font-medium">Affiliated Number  </label>
+                                <input [disabled]="true"  id="UniversityName" type="text"  [(ngModel)]="Institute.AffliatedNumber" placeholder="Affiliated Affiliated" pInputText class="w-full" style="padding:1rem">
+                            </div>
+                            <div class="field col-12 md:col-4">
+                                <h5>Affiliation Date </h5>
+                                <p-calendar [disabled]="true"   appendTo="body" [showIcon]="true" [(ngModel)]="Institute.AffliationDate" inputId="icon"></p-calendar>
+                            </div>
+                            <div class="field col-12 md:col-4">
+                                <h5>Affiliation Expiry </h5>
+                                <p-calendar  [disabled]="true"  appendTo="body" [showIcon]="true" [(ngModel)]="Institute.AffliationExpiry" inputId="icon"></p-calendar>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field col-12 md:col-8">
+                    <h5>Past Affiliations</h5>
+                </div>
+                
+
+                <div class="col-12 xl:col-12">
+                    <p-table [value]="PastAffliations" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th>Attachment</th>
+                                    <th pSortableColumn="name">Affiliation Start Date <p-sortIcon field="name"></p-sortIcon></th>
+                                    <th pSortableColumn="price">Affiliation End Date <p-sortIcon field="price"></p-sortIcon></th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-affliation>
+                                <tr>
+                                    <td style="width: 15%; min-width: 5rem;">
+                                        <p-image *ngIf="affliation.Certificate && !affliation.Certificate?.toLowerCase().endsWith('pdf')"  [src]="'/' + affliation.Certificate" alt="Image" width="50" [preview]="true"></p-image>
+                                        <p-image style="cursor: pointer"  (click)="openPDFInNewTab('/' + affliation.Certificate)" *ngIf="affliation.Certificate && affliation.Certificate?.toLowerCase().endsWith('pdf')" src="assets/demo/images/pdf.png" alt="Image" width="50" [preview]="false"></p-image>
+                                        <!-- <img [src]="'/' + affliation.Certificate" class="shadow-4" alt="{{affliation.Certificate}}" width="50"> -->
+                                    </td>
+                                    <td style="width: 35%; min-width: 7rem;">{{affliation.AffliationStartDate | date}}</td>
+                                    <td style="width: 35%; min-width: 8rem;">{{affliation.AffliationEndDate | date}}</td>
+                                </tr>
+                            </ng-template>
+                    </p-table>
+                </div>
+
+                <div class="field col-12 md:col-6">
+                    <h5>Affiliation Certificate</h5>
+                    <!-- <p-image *ngIf="Institute.AffliationCertificate"  [src]="'/' + Institute.AffliationCertificate" alt="Image" width="50" [preview]="true"></p-image> -->
+                    <p-image *ngIf="Institute.AffliationCertificate && !Institute.AffliationCertificate?.toLowerCase().endsWith('pdf')"  [src]="'/' + Institute.AffliationCertificate" alt="Image" width="50" [preview]="true"></p-image>
+                    <p-image style="cursor: pointer"  (click)="openPDFInNewTab('/' + Institute.AffliationCertificate)" *ngIf="Institute.AffliationCertificate && Institute.AffliationCertificate?.toLowerCase().endsWith('pdf')" src="assets/demo/images/pdf.png" alt="Image" width="50" [preview]="false"></p-image>
+                </div>
+
+                <div class="field col-12 md:col-4">
+                    <h5>Certificate of Legal Registration</h5>
+                    <!-- <p-image *ngIf="Institute.LegalRegistrationCertificate"  [src]="'/' + Institute.LegalRegistrationCertificate" alt="Image" width="50" [preview]="true"></p-image> -->
+                    <p-image *ngIf="Institute.LegalRegistrationCertificate && !Institute.LegalRegistrationCertificate?.toLowerCase().endsWith('pdf')"  [src]="'/' + Institute.LegalRegistrationCertificate" alt="Image" width="50" [preview]="true"></p-image>
+                    <p-image style="cursor: pointer"  (click)="openPDFInNewTab('/' + Institute.LegalRegistrationCertificate)" *ngIf="Institute.LegalRegistrationCertificate && Institute.LegalRegistrationCertificate?.toLowerCase().endsWith('pdf')" src="assets/demo/images/pdf.png" alt="Image" width="50" [preview]="false"></p-image>
+                </div>
+
+                <div class="col-12">
+                    <div class="card">
+                        <h5>Hospital Affiliation (If Any)</h5>
+                        <div class="grid p-fluid mt-5">
+                            <div class="field col-12 md:col-4" >
+                                <label for="UniversityName" class="block text-900 text-xl font-medium">Name of Hospital</label>
+                                <input [disabled]="true"  id="UniversityName" type="text"  [(ngModel)]="Institute.Hospital" placeholder="Hospital Name" pInputText class="w-full" style="padding:1rem">
+                            </div>
+                            <div class="field col-12 md:col-4">
+                                <h5>Date of Affiliation </h5>
+                                <p-calendar [disabled]="true"  appendTo="body" [showIcon]="true" [(ngModel)]="Institute.HospitalAffliationDate" inputId="icon"></p-calendar>
+                            </div>
+                            <div class="field col-12 md:col-4">
+                                <h5>Date of Expiry </h5>
+                                <p-calendar [disabled]="true"   appendTo="body" [showIcon]="true" [(ngModel)]="Institute.HospitalAffliationExpiry" inputId="icon"></p-calendar>
+                            </div>
+                            <div class="field col-12 md:col-4">
+                                <h5>Signed Copy of MOU </h5>
+                                <p-image *ngIf="Institute.HospitalMou && !Institute.HospitalMou?.toLowerCase().endsWith('pdf')"  [src]="'/' + Institute.HospitalMou" alt="Image" width="50" [preview]="true"></p-image>
+                                <p-image style="cursor: pointer;"  (click)="openPDFInNewTab('/' + Institute.HospitalMou)" *ngIf="Institute.HospitalMou && Institute.HospitalMou?.toLowerCase().endsWith('pdf')" src="assets/demo/images/pdf.png" alt="Image" width="100" [preview]="false"></p-image>
+                            </div>
+
+                        </div>
+                        
+                        <h5>Hospital Type/Nature</h5>
+                        <div class="grid formgrid">
+                            <div class="col-12 md:col-4">
+                                <div class="field-radiobutton">
+                                    <p-radioButton [disabled]="true"  name="city" [value]=1 [(ngModel)]="Institute.HospitalSectorId" id="city1"></p-radioButton>
+                                    <label for="city1">Private</label>
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-4">
+                                <div class="field-radiobutton">
+                                    <p-radioButton [disabled]="true"  name="city" [value]=2 [(ngModel)]="Institute.HospitalSectorId"
+                                                   id="city2"></p-radioButton>
+                                    <label for="city2">Public</label>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+                
+            </div>
+        </p-tabPanel>
+
+        <p-tabPanel header="Finance" class="line-height-3 m-0">
+            <div class="grid p-fluid mt-5">
+                <div class="field col-12 md:col-6">
+                    <label for="ApprovalMechanism" class="block text-900 text-xl font-medium">Financial Approval Mechanism </label>
+                    <!-- <input [disabled]="true" id="ApprovalMechanism" type="text"  [(ngModel)]="Finance.ApprovalMechanism" placeholder="Financial Approval Mechanism" pInputText class="w-full" style="padding:1rem"> -->
+                </div>
+                <div class="field col-12 md:col-6">
+                    <label for="AnnualExpenditures" class="block text-900 text-xl font-medium mb-2">Total Annual Expenditures </label>
+                    <!-- <input [disabled]="true" id="AnnualExpenditures" type="number" [(ngModel)]="Finance.AnnualExpenditures" placeholder="Annual Expenditures" pInputText class="w-full mb-5" style="padding:1rem"> -->
+                </div>
+            </div>
+
+            <div class="grid formgrid">
+                <div class="col-12 md:col-6">
+                    <h5>CA Audit Reports (Last 3-Years) </h5>
+                    <!-- <p-image *ngIf="Finance.AuditReport && !Finance.AuditReport?.toLowerCase().endsWith('pdf')"   [src]="'/' + Finance.AuditReport" alt="Image" width="50" [preview]="true"></p-image> -->
+                    <!-- <p-image style="cursor: pointer;"  (click)="openPDFInNewTab('/' + Finance.AuditReport)" *ngIf="Finance.AuditReport && Finance.AuditReport?.toLowerCase().endsWith('pdf')" src="assets/demo/images/pdf.png" alt="Image" width="100" [preview]="false"></p-image> -->
+                </div>
+                <div class="col-12 md:col-6">
+                    <h5>Financial Statement (3-Years) </h5>
+                    <!-- <p-image *ngIf="Finance.FinancialStatement && !Finance.FinancialStatement?.toLowerCase().endsWith('pdf')"  [src]="'/' + Finance.FinancialStatement" alt="Image" width="50" [preview]="true"></p-image> -->
+                    <!-- <p-image style="cursor: pointer;"  (click)="openPDFInNewTab('/' + Finance.FinancialStatement)" *ngIf="Finance.FinancialStatement && Finance.FinancialStatement?.toLowerCase().endsWith('pdf')" src="assets/demo/images/pdf.png" alt="Image" width="100" [preview]="false"></p-image> -->
+                </div>
+                
+            </div>
+            
+            
+
+            <div class="grid p-fluid mt-5">
+                <div class="field col-12 md:col-8">
+                    <h5>Total Income </h5>
+                </div>
+                
+            </div>
+            <div class="col-12 xl:col-12">
+                <p-table [value]="Incomes" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Attachment</th>
+                                <th pSortableColumn="name">Source of Income<p-sortIcon field="name"></p-sortIcon></th>
+                                <th pSortableColumn="price">Total Amount <p-sortIcon field="price"></p-sortIcon></th>
+                                
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-income>
+                            <tr>
+                                <td style="width: 15%; min-width: 5rem;">
+                                    <p-image *ngIf="income.IncomeStatement && !income.IncomeStatement?.toLowerCase().endsWith('pdf')"  [src]="'/' + income.IncomeStatement" alt="Image" width="50" [preview]="true"></p-image>
+                                    <p-image style="cursor: pointer"  (click)="openPDFInNewTab('/' + income.IncomeStatement)" *ngIf="income.IncomeStatement && income.IncomeStatement?.toLowerCase().endsWith('pdf')" src="assets/demo/images/pdf.png" alt="Image" width="50" [preview]="false"></p-image>
+                                    <!-- <img [src]="'/' + income.IncomeStatement" class="shadow-4" alt="Image" width="50"> -->
+                                </td>
+                                <td style="width: 35%; min-width: 7rem;">{{income.IncomeSource}}</td>
+                                <td style="width: 35%; min-width: 8rem;">{{income.IncomeTotal}}</td>
+                                
+                            </tr>
+                        </ng-template>
+                </p-table>
+            </div>
+
+            <div class="grid p-fluid mt-5">
+                <div class="field col-12 md:col-8">
+                    <h5>Fee Structure </h5>
+                </div>
+              
+            </div>
+            <div class="col-12 xl:col-12">
+                <p-table [value]="Fees" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th pSortableColumn="name">Fee Type <p-sortIcon field="name"></p-sortIcon></th>
+                                <th pSortableColumn="price">Amount <p-sortIcon field="price"></p-sortIcon></th>
+                               
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-fee>
+                            <tr>
+                                <td style="width: 35%; min-width: 7rem;">{{fee.FeeType}}</td>
+                                <td style="width: 35%; min-width: 8rem;">{{fee.Amount}}</td>
+                               
+                            </tr>
+                        </ng-template>
+                </p-table>
+            </div>
+        </p-tabPanel>
+
+        <p-tabPanel header="Infrastructure" class="line-height-3 m-0">
+            <div class="grid p-fluid mt-5">
+                <div class="field col-12 md:col-6">
+                    <label for="Building" class="block text-900 text-xl font-medium mb-2">Building Status</label>
+                    <p-dropdown [disabled]="true"  [options]="BuildingStatus"  [(ngModel)]="selectedBuildingStatus" placeholder="Building Status" [showClear]="true" styleClass="mb-5 w-full" inputStyleClass="w-full p-3"></p-dropdown>
+                </div>
+                <div class="field col-12 md:col-6">
+                    <label for="Area" class="block text-900 text-xl font-medium mb-2">Building Total Area (SF)</label>
+                    <!-- <input id="Area" [disabled]="true" type="number" [(ngModel)]="BuildingDimension.TotalArea" placeholder="Building Total Area (SF)" pInputText class="w-full mb-5" style="padding:1rem"> -->
+                </div>
+                <div class="field col-12 md:col-6">
+                    <label for="CoveredArea" class="block text-900 text-xl font-medium mb-2">Building Covered Area (SF)</label>
+                    <!-- <input [disabled]="true" id="CoveredArea" type="number" [(ngModel)]="BuildingDimension.TotalCoveredArea" placeholder="Building Covered Area (SF)" pInputText class="w-full mb-5" style="padding:1rem"> -->
+                </div>
+                <div class="field col-12 md:col-6">
+                    <label for="Area" class="block text-900 text-xl font-medium mb-2">No of Floors</label>
+                    <!-- <input [disabled]="true" id="Area" type="number"  [(ngModel)]="BuildingDimension.Floors" placeholder="Building Total Area (SF)" pInputText class="w-full mb-5" style="padding:1rem"> -->
+                </div>
+                <div class="col-12 md:col-6">
+                    <h5>Map of Facility (AutoCAD, or any other map)</h5>
+                    <!-- <p-image *ngIf="BuildingDimension.Map && !BuildingDimension.Map?.toLowerCase().endsWith('pdf')"  [src]="'/' + BuildingDimension.Map" alt="Image" width="50" [preview]="true"></p-image> -->
+                    <!-- <p-image style="cursor: pointer;"  (click)="openPDFInNewTab('/' + BuildingDimension.Map)" *ngIf="BuildingDimension.Map && BuildingDimension.Map?.toLowerCase().endsWith('pdf')" src="assets/demo/images/pdf.png" alt="Image" width="100" [preview]="false"></p-image> -->
+                </div>
+            </div>
+            
+            
+            <div class="grid p-fluid mt-3">
+                <div class="field col-12 md:col-8">
+                    <h5>Class Rooms</h5>
+                </div>
+            </div>
+            <p-table [value]="classrooms" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Image</th>
+                        <th pSortableColumn="name">Name <p-sortIcon field="Name"></p-sortIcon></th>
+                        <th pSortableColumn="length">Length <p-sortIcon field="Length"></p-sortIcon></th>
+                        <th pSortableColumn="Width">Width <p-sortIcon field="Width"></p-sortIcon></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-classroom>
+                    <tr>
+                        <td style="width: 15%; min-width: 5rem;">
+                            <!-- <img [src]="'/' + classroom.ImagePath" class="shadow-4" alt="{{classroom.Name}}" width="50"> -->
+                            <p-image *ngIf="classroom.ImagePath && !classroom.ImagePath?.toLowerCase().endsWith('pdf')"  [src]="'/' + classroom.ImagePath" alt="Image" width="50" [preview]="true"></p-image>
+                            <p-image style="cursor: pointer"  (click)="openPDFInNewTab('/' + classroom.ImagePath)" *ngIf="classroom.ImagePath && classroom.ImagePath?.toLowerCase().endsWith('pdf')" src="assets/demo/images/pdf.png" alt="Image" width="50" [preview]="false"></p-image>
+                        </td>
+                        <td style="width: 35%; min-width: 7rem;">{{classroom.Name}}</td>
+                        <td style="width: 35%; min-width: 8rem;">{{classroom.Length}}</td>
+                        <td style="width: 35%; min-width: 8rem;">{{classroom.Width}}</td>
+                    </tr>
+                </ng-template>
+                
+            </p-table>
+
+            <div class="grid p-fluid mt-3">
+                <div class="field col-12 md:col-8">
+                    <h5>Labotries</h5>
+                </div>
+            </div>
+            <p-table [value]="labotries" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Image</th>
+                        <th pSortableColumn="name">Name <p-sortIcon field="Name"></p-sortIcon></th>
+                        <th pSortableColumn="length">Length <p-sortIcon field="Length"></p-sortIcon></th>
+                        <th pSortableColumn="Width">Width <p-sortIcon field="Width"></p-sortIcon></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-lab>
+                    <tr>
+                        <td style="width: 15%; min-width: 5rem;">
+                            <!-- <img [src]="'/' + lab.ImagePath" class="shadow-4" alt="{{lab.Name}}" width="50"> -->
+                            <p-image *ngIf="lab.ImagePath && !lab.ImagePath?.toLowerCase().endsWith('pdf')"  [src]="'/' + lab.ImagePath" alt="Image" width="50" [preview]="true"></p-image>
+                            <p-image style="cursor: pointer"  (click)="openPDFInNewTab('/' + lab.ImagePath)" *ngIf="lab.ImagePath && lab.ImagePath?.toLowerCase().endsWith('pdf')" src="assets/demo/images/pdf.png" alt="Image" width="50" [preview]="false"></p-image>
+                        </td>
+                        <td style="width: 35%; min-width: 7rem;">{{lab.Name}}</td>
+                        <td style="width: 35%; min-width: 8rem;">{{lab.Length}}</td>
+                        <td style="width: 35%; min-width: 8rem;">{{lab.Width}}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+
+            <div class="grid p-fluid mt-3">
+                <div class="field col-12 md:col-8">
+                    <h5>Auditorium</h5>
+                </div>
+            </div>
+            <p-table [value]="demonstration" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Image</th>
+                        <th pSortableColumn="name">Name <p-sortIcon field="Name"></p-sortIcon></th>
+                        <th pSortableColumn="length">Length <p-sortIcon field="Length"></p-sortIcon></th>
+                        <th pSortableColumn="Width">Width <p-sortIcon field="Width"></p-sortIcon></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-demo>
+                    <tr>
+                        <td style="width: 15%; min-width: 5rem;">
+                            <p-image *ngIf="demo.ImagePath && !demo.ImagePath?.toLowerCase().endsWith('pdf')"  [src]="'/' + demo.ImagePath" alt="Image" width="50" [preview]="true"></p-image>
+                            <p-image style="cursor: pointer"  (click)="openPDFInNewTab('/' + demo.ImagePath)" *ngIf="demo.ImagePath && demo.ImagePath?.toLowerCase().endsWith('pdf')" src="assets/demo/images/pdf.png" alt="Image" width="50" [preview]="false"></p-image>
+                            <!-- <img [src]="'/' + demo.ImagePath" class="shadow-4" alt="{{demo.Name}}" width="50"> -->
+                        </td>
+                        <td style="width: 35%; min-width: 7rem;">{{demo.Name}}</td>
+                        <td style="width: 35%; min-width: 8rem;">{{demo.Length}}</td>
+                        <td style="width: 35%; min-width: 8rem;">{{demo.Width}}</td>
+                    </tr>
+                </ng-template>
+                
+            </p-table>
+
+            <div class="grid p-fluid mt-3">
+                <div class="field col-12 md:col-8">
+                    <h5>Library/Reading Rooms</h5>
+                </div>
+            </div>
+            <p-table [value]="libraries" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Image</th>
+                        <th pSortableColumn="name">Name <p-sortIcon field="Name"></p-sortIcon></th>
+                        <th pSortableColumn="length">Length <p-sortIcon field="Length"></p-sortIcon></th>
+                        <th pSortableColumn="Width">Width <p-sortIcon field="Width"></p-sortIcon></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-library>
+                    <tr>
+                        <td style="width: 15%; min-width: 5rem;">
+                            <p-image *ngIf="library.ImagePath && !library.ImagePath?.toLowerCase().endsWith('pdf')"  [src]="'/' + library.ImagePath" alt="Image" width="50" [preview]="true"></p-image>
+                            <p-image style="cursor: pointer"  (click)="openPDFInNewTab('/' + library.ImagePath)" *ngIf="library.ImagePath && library.ImagePath?.toLowerCase().endsWith('pdf')" src="assets/demo/images/pdf.png" alt="Image" width="50" [preview]="false"></p-image>
+                            <!-- <img [src]="'/' + library.ImagePath" class="shadow-4" alt="{{library.Name}}" width="50"> -->
+                        </td>
+                        <td style="width: 35%; min-width: 7rem;">{{library.Name}}</td>
+                        <td style="width: 35%; min-width: 8rem;">{{library.Length}}</td>
+                        <td style="width: 35%; min-width: 8rem;">{{library.Width}}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+
+            <div class="grid p-fluid mt-3">
+                <div class="field col-12 md:col-8">
+                    <h5>Hostels</h5>
+                </div>
+            </div>
+            <p-table [value]="hostels" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Attachment</th>
+                        <th pSortableColumn="name">No of Rooms <p-sortIcon field="Name"></p-sortIcon></th>
+                        <th pSortableColumn="length">Furniture Available <p-sortIcon field="Length"></p-sortIcon></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-hostel>
+                    <tr>
+                        <td style="width: 15%; min-width: 5rem;">
+                            <p-image *ngIf="hostel.ImagePath && !hostel.ImagePath?.toLowerCase().endsWith('pdf')"  [src]="'/' + hostel.ImagePath" alt="Image" width="50" [preview]="true"></p-image>
+                            <p-image style="cursor: pointer"  (click)="openPDFInNewTab('/' + hostel.ImagePath)" *ngIf="hostel.ImagePath && hostel.ImagePath?.toLowerCase().endsWith('pdf')" src="assets/demo/images/pdf.png" alt="Image" width="50" [preview]="false"></p-image>
+                            <!-- <img [src]="'/' + hostel.ImagePath" class="shadow-4" alt="Image" width="50"> -->
+                        </td>
+                        <td style="width: 35%; min-width: 7rem;">{{hostel.Rooms}}</td>
+                        <td style="width: 35%; min-width: 8rem;">{{hostel.FurniturePerRoom}}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+
+        </p-tabPanel>
+
+        <p-tabPanel header="Courses/Students" class="line-height-3 m-0">
+            <div class="grid p-fluid mt-5">
+                <div class="field col-12 md:col-8">
+                    <h5>Courses Offered (Current Year)</h5>
+                </div>
+            </div>
+            <p-table [value]="CoursesCurrentYear" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Course Name</th>
+                        <th pSortableColumn="name">Degree Offered <p-sortIcon field="Name"></p-sortIcon></th>
+                        <th pSortableColumn="length">Required Qualification <p-sortIcon field="Length"></p-sortIcon></th>
+                        <th pSortableColumn="Width">No of Students <p-sortIcon field="Width"></p-sortIcon></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-course>
+                    <tr>
+                        <td style="width: 35%; min-width: 7rem;">{{course.CourseName}}</td>
+                        <td style="width: 35%; min-width: 7rem;">{{course.DegreeOffered}}</td>
+                        <td style="width: 35%; min-width: 8rem;">{{course.RequiredQualification}}</td>
+                        <td style="width: 35%; min-width: 8rem;">{{course.AnnuallyInductedStudents}}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+
+
+            <div class="grid p-fluid mt-5">
+                <div class="field col-12 md:col-8">
+                    <h5>Courses Offered (From 2000)</h5>
+                </div>
+            </div>
+            <p-table [value]="CoursesOldYear" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Course Name</th>
+                        <th pSortableColumn="name">Degree Offered <p-sortIcon field="Name"></p-sortIcon></th>
+                        <th pSortableColumn="length">Required Qualification <p-sortIcon field="Length"></p-sortIcon></th>
+                        <th pSortableColumn="Width">No of Students <p-sortIcon field="Width"></p-sortIcon></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-course>
+                    <tr>
+                        <td style="width: 35%; min-width: 7rem;">{{course.CourseName}}</td>
+                        <td style="width: 35%; min-width: 7rem;">{{course.DegreeOffered}}</td>
+                        <td style="width: 35%; min-width: 8rem;">{{course.RequiredQualification}}</td>
+                        <td style="width: 35%; min-width: 8rem;">{{course.AnnuallyInductedStudents}}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+
+        </p-tabPanel>
+        
+
+        <p-tabPanel header="Faculty" class="line-height-3 m-0">
+            <div class="grid p-fluid mt-5">
+                <div class="field col-12 md:col-8">
+                    <h5>Employees</h5>
+                </div>
+            </div>
+            <p-table [value]="emlpoyees" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th pSortableColumn="name">Name <p-sortIcon field="Name"></p-sortIcon></th>
+                        <th pSortableColumn="length">Designation <p-sortIcon field="Length"></p-sortIcon></th>
+                        <th pSortableColumn="Width">Category <p-sortIcon field="Width"></p-sortIcon></th>
+                        <th pSortableColumn="Width">Qualification <p-sortIcon field="Width"></p-sortIcon></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-emlpoyee>
+                    <tr>
+                        <td style="width: 35%; min-width: 7rem;">{{emlpoyee.EmployeeName}}</td>
+                        <td style="width: 35%; min-width: 8rem;">{{emlpoyee.Designation}}</td>
+                        <td style="width: 35%; min-width: 8rem;">{{emlpoyee.Category}}</td>
+                        <td style="width: 35%; min-width: 8rem;">{{emlpoyee.Qualification}}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </p-tabPanel>
+
+        <p-tabPanel header="Scholarship" class="line-height-3 m-0">
+            <div class="grid p-fluid mt-5">
+                <div class="field col-12 md:col-4">
+                    <label for="scholarships" class="block text-900 text-xl font-medium">Scholarships / Loans / Grants </label>
+                    <p-dropdown [disabled]="true" [options]="ScholarshipTypes"  [(ngModel)]="selectedSchloarshipType" placeholder="scholarships/loans/grants Type" [showClear]="true" styleClass="w-full" inputStyleClass="w-full p-3"></p-dropdown>
+                </div>
+                <div class="field col-12 md:col-4">
+                    <label for="Name" class="block text-900 text-xl font-medium">Scholarships/Loans/Grants Name</label>
+                    <input id="Name" [disabled]="true" type="text"  [(ngModel)]="shcolarship.GrantName" placeholder="Scholarship Name" pInputText class="w-full" style="padding:1rem">
+                </div>
+                <div class="field col-12 md:col-4">
+                    <label for="Name" class="block text-900 text-xl font-medium">Amount</label>
+                    <input id="Name" [disabled]="true" type="number"  [(ngModel)]="shcolarship.Amount" placeholder="Amount" pInputText class="w-full" style="padding:1rem">
+                </div>
+                <div class="field col-12 md:col-4">
+                    <label for="Name" class="block text-900 text-xl font-medium">Mechanism of Scholarship</label>
+                    <input id="Name" [disabled]="true" type="text"  [(ngModel)]="shcolarship.Mechanism" placeholder="Mechanism of Scholarship" pInputText class="w-full" style="padding:1rem">
+                </div>
+                <div class="field col-12 md:col-4 mt-0">
+                    <label for="Name" class="block text-900 text-xl font-medium">No of Students</label>
+                    <input id="Name" [disabled]="true" type="number"   [(ngModel)]="shcolarship.NoOfStudents" placeholder="No of Students" pInputText class="w-full" style="padding:1rem">
+                </div>
+            </div>
+        </p-tabPanel>
+
+        <p-tabPanel header="Governance" class="line-height-3 m-0">
+            <div class="grid p-fluid mt-5">
+
+                <div class="field col-12 md:col-4">
+                    <h5>Board / Directors available?</h5>
+                    <p-inputSwitch [disabled]="true" [(ngModel)]="Governance.BoardAvailable"></p-inputSwitch>
+                </div>
+                <div class="field col-12 md:col-4">
+                    <label for="Name" class="block text-900 text-xl font-medium">Method of posting Principal/Head</label>
+                    <textarea rows="5" [disabled]="true" cols="30" [(ngModel)]="Governance.PostingMethod" placeholder="Your Message" pInputTextarea></textarea>
+                </div>
+                <div class="field col-12 md:col-4">
+                    <label for="Name" class="block text-900 text-xl font-medium">Method of recruiting students </label>
+                    <textarea rows="5" [disabled]="true" cols="30" [(ngModel)]="Governance.RecruitingMethod" placeholder="Your Message" pInputTextarea></textarea>
+                </div>
+                <div class="field col-12 md:col-4">
+                    <h5>Has your institute ever conducted any third-party evaluation?</h5>
+                    <p-inputSwitch [disabled]="true" [(ngModel)]="Governance.Evaluation"></p-inputSwitch>
+                </div>
+                <div class="field col-12 md:col-4" *ngIf="Governance.Evaluation">
+                    <h5 class="ml-5">Evaluation Report </h5>
+                    <p-image *ngIf="Governance.EvaluationReport && !Governance.EvaluationReport?.toLowerCase().endsWith('pdf')"  [src]="'/' + Governance.EvaluationReport" alt="Image" width="50" [preview]="true"></p-image>
+                    <p-image style="cursor: pointer;"  (click)="openPDFInNewTab('/' + Governance.EvaluationReport)" *ngIf="Governance.EvaluationReport && Governance.EvaluationReport?.toLowerCase().endsWith('pdf')" src="assets/demo/images/pdf.png" alt="Image" width="100" [preview]="false"></p-image>
+                </div>
+            </div>
+        </p-tabPanel>
+
+        <p-tabPanel header="Proposal" class="line-height-3 m-0">
+            <div class="grid p-fluid mt-5">
+                <div class="field col-12 md:col-6">
+                    <label for="Name" class="block text-900 text-xl font-medium">Impact Statement</label>
+                    <textarea rows="5" cols="30" [disabled]="true" [(ngModel)]="Propsal.ImpactStatement" placeholder="Impact Statement" pInputTextarea></textarea>
+                </div>
+                <div class="field col-12 md:col-6">
+                    <label for="Name" class="block text-900 text-xl font-medium">Means of Verfication of Impact</label>
+                    <textarea rows="5" cols="30" [disabled]="true" [(ngModel)]="Propsal.MeansOfVerification" placeholder="Impact Statement Means Of Verification" pInputTextarea></textarea>
+                </div>
+            </div>
+
+            <div class="col-12 md:col-12 mt-5">
+                <h5>How do you aim to spend this grant?</h5>
+                <div class="grid formgrid">
+                    <div class="col-12 md:col-3">
+                        <div class="field-checkbox">
+                            <p-checkbox name="group1" [disabled]="true"  value=1 [(ngModel)]="valCheck" id="ny"></p-checkbox>
+                            <label for="ny">Faculty Development</label>
+                        </div>
+                    </div>
+                    <div class="col-12 md:col-3">
+                        <div class="field-checkbox">
+                            <p-checkbox name="group1" [disabled]="true"  value=2 [(ngModel)]="valCheck" id="sf"></p-checkbox>
+                            <label for="sf">Examination Development</label>
+                        </div>
+                    </div>
+                    <div class="col-12 md:col-3">
+                        <div class="field-checkbox">
+                            <p-checkbox name="group1" [disabled]="true"   value=3 [(ngModel)]="valCheck" id="la"></p-checkbox>
+                            <label for="la">Curriculum Development</label>
+                        </div>
+                    </div>
+                    <div class="col-12 md:col-3">
+                        <div class="field-checkbox">
+                            <p-checkbox name="group1" [disabled]="true"  value=4 [(ngModel)]="valCheck" id="la"></p-checkbox>
+                            <label for="la">Campus Shifting</label>
+                        </div>
+                    </div>
+                    <div class="col-12 md:col-3">
+                        <div class="field-checkbox">
+                            <p-checkbox name="group1" [disabled]="true"  value=5 [(ngModel)]="valCheck" id="la"></p-checkbox>
+                            <label for="la">Provision of Study Materials (lab equipment, books)</label>
+                        </div>
+                    </div>
+                    <div class="col-12 md:col-3">
+                        <div class="field-checkbox">
+                            <p-checkbox name="group1" [disabled]="true"  value=6 [(ngModel)]="valCheck" id="la"></p-checkbox>
+                            <label for="la">Provision of IT Equipment (laptops, desktops etc.)</label>
+                        </div>
+                    </div>
+                    <div class="col-12 md:col-3">
+                        <div class="field-checkbox">
+                            <p-checkbox name="group1" [disabled]="true"  value=7 [(ngModel)]="valCheck" id="la"></p-checkbox>
+                            <label for="la">Improving college Environment (provision of transport, furniture etc. for students)</label>
+                        </div>
+                    </div>
+                    <div class="col-12 md:col-3">
+                        <div class="field-checkbox">
+                            <p-checkbox name="group1" [disabled]="true"  value=8 [(ngModel)]="valCheck" id="la"></p-checkbox>
+                            <label for="la">Stakeholder Engagement</label>
+                        </div>
+                    </div>
+                    <div class="col-12 md:col-3">
+                        <div class="field-checkbox">
+                            <p-checkbox name="group1" [disabled]="true"  value=9 [(ngModel)]="valCheck" id="la"></p-checkbox>
+                            <label for="la">Any other area</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12" *ngFor="let proposalArea of PropsalAreas; let i=index">
+                <div class="card">
+                    <h3>{{proposalArea.label}}</h3>
+                    <div class="grid mt-2">
+                        <div class="col-12 md:col-4">
+                            <label for="Name" class="block text-900 text-xl font-medium">Intervention</label>
+                            <input id="Name" type="text" [disabled]="true" [(ngModel)]="proposalArea.Data.Intervention" placeholder="Intervention" pInputText class="w-full" style="padding:1rem">
+                        </div>
+                        <div class="col-12 md:col-4">
+                            <label for="Name" class="block text-900 text-xl font-medium">Cost of intervention</label>
+                            <input id="Name" type="number" [disabled]="true"  [(ngModel)]="proposalArea.Data.Cost" placeholder="Cost of intervention" pInputText class="w-full" style="padding:1rem">
+                        </div>
+                        <div class="col-12 md:col-4">
+                            <label for="Name" class="block text-900 text-xl font-medium">Time (Days)</label>
+                            <input id="Name" type="number" [disabled]="true" [(ngModel)]="proposalArea.Data.Time" placeholder="Cost of intervention" pInputText class="w-full" style="padding:1rem">
+                        </div>
+                        <div class="field col-12 md:col-8">
+                            <label for="Name" class="block text-900 text-xl font-medium">Expected outcome of intervention</label>
+                            <textarea rows="5" cols="30" [disabled]="true" [(ngModel)]="proposalArea.Data.OutCome" placeholder="Expected outcome of intervention" pInputTextarea></textarea>
+                        </div>
+                    </div>
+                    <div class="grid formgrid">
+                        <h5 class="ml-5">Detailed Financial Proposal</h5>
+                        <div class="col-12 md:col-12">
+                            <p-image *ngIf="proposalArea.ProposalReport && !proposalArea.ProposalReport?.toLowerCase().endsWith('pdf')"  [src]="'/' + proposalArea.ProposalReport" alt="Image" width="50" [preview]="true"></p-image>
+                            <p-image style="cursor: pointer;"  (click)="openPDFInNewTab('/' + proposalArea.ProposalReport)" *ngIf="proposalArea.ProposalReport && proposalArea.ProposalReport?.toLowerCase().endsWith('pdf')" src="assets/demo/images/pdf.png" alt="Image" width="100" [preview]="false"></p-image>
+                        </div>
+                    </div>
+                    <div class="grid formgrid mt-5">
+                        <h5 class="ml-5">Risk Statement</h5>
+                        <div class="col-12 md:col-12">
+                            <p-image *ngIf="proposalArea.RiskStatement && !proposalArea.RiskStatement?.toLowerCase().endsWith('pdf')"  [src]="'/' + proposalArea.RiskStatement" alt="Image" width="50" [preview]="true"></p-image>
+                            <p-image style="cursor: pointer;"  (click)="openPDFInNewTab('/' + proposalArea.RiskStatement)" *ngIf="proposalArea.RiskStatement && proposalArea.RiskStatement?.toLowerCase().endsWith('pdf')" src="assets/demo/images/pdf.png" alt="Image" width="100" [preview]="false"></p-image>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </p-tabPanel>
+
+        <p-tabPanel header="Additional Info" class="line-height-3 m-0">
+            <div class="mt-5">
+                <h5>How did you hear about this grant?</h5>
+                <div class="grid formgrid mt-5">
+                    <div class="col-12 md:col-4">
+                        <div class="field-radiobutton">
+                            <p-radioButton name="city" value=1 [disabled]="true" [(ngModel)]="Additionalinfo.hear" id="city1"></p-radioButton>
+                            <label for="city1">Advertisement</label>
+                        </div>
+                    </div>
+                    <div class="col-12 md:col-4">
+                        <div class="field-radiobutton">
+                            <p-radioButton name="city" value=2 [disabled]="true" [(ngModel)]="Additionalinfo.hear"
+                                           id="city2"></p-radioButton>
+                            <label for="city2">Word of mouth</label>
+                        </div>
+                    </div>
+                    <div class="col-12 md:col-4">
+                        <div class="field-radiobutton">
+                            <p-radioButton name="city" value=3 [disabled]="true" [(ngModel)]="Additionalinfo.hear" id="city3"></p-radioButton>
+                            <label for="city3">online/Social Media</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>What will you do if you don’t get the grant?</h3>
+                <div class="grid p-fluid mt-5">
+                 
+                    <div class="col-12 md:col-6">
+                        <label for="Name" class="block text-900 text-xl font-medium">Additional Source of Revenue</label>
+                        <textarea rows="5" cols="30" [disabled]="true" [(ngModel)]="Additionalinfo.AdditionalRevenueSource" placeholder="Additional Source of Revenue" pInputTextarea></textarea>
+                    </div>
+                    <div class="field col-12 md:col-6">
+                        <label for="Name" class="block text-900 text-xl font-medium">Other Grants</label>
+                        <textarea rows="5" cols="30" [disabled]="true" [(ngModel)]="Additionalinfo.OtherGrants" placeholder="Other Grants" pInputTextarea></textarea>
+                    </div>
+                    <div class="field col-12 md:col-6">
+                        <label for="Name" class="block text-900 text-xl font-medium">Any Other Financial Stream</label>
+                        <textarea rows="5" cols="30" [disabled]="true" [(ngModel)]="Additionalinfo.FinancialStream" placeholder="Financial Stream" pInputTextarea></textarea>
+                    </div>
+                    <div class="field col-12 md:col-6">
+                        <label for="Name" class="block text-900 text-xl font-medium">Any other information that you would like for us to know</label>
+                        <textarea rows="5" cols="30" [disabled]="true" [(ngModel)]="Additionalinfo.Otherinfo" placeholder="Your Message" pInputTextarea></textarea>
+                    </div>
+                    
+                </div>
+            </div>
+
+        </p-tabPanel>
+
+        <div class="grid p-fluid mt-5">
+            <div class="field col-12 md:col-4" *ngIf="application.StatusId == 2 || application.StatusId == 3 || application.StatusId == 4">
+                <label for="Name" class="block text-900 text-xl font-medium">Scrutiny Remarks<span class="required-field">*</span></label>
+                <textarea SpaceOnlyPreventDuplicate rows="5" cols="30" [disabled]="application.StatusId == 3 || application.StatusId == 4" [(ngModel)]="grantapp.Remarks" placeholder="Please Enter Your Remarks" pInputTextarea></textarea>
+            </div>
+            <div class="field col-12 md:col-4 mt-5" *ngIf="application.StatusId == 2">
+                <p-button [disabled]="!grantapp.Remarks" (click)="confirm1($event)" icon="pi pi-check" styleClass="p-button-success" label="Accept"></p-button>
+            </div>
+            <div class="field col-12 md:col-4 mt-5" *ngIf="application.StatusId == 2">
+                <p-button [disabled]="!grantapp.Remarks" (click)="confirm2($event)" icon="pi pi-times" label="Reject" styleClass="p-button-danger"></p-button>
+            </div>
+        </div>
+
+        <p-toast></p-toast>
+        <p-confirmDialog></p-confirmDialog>
+
+    </p-tabView>
+</div>

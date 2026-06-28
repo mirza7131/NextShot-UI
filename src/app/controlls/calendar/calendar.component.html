@@ -1,0 +1,159 @@
+<!-- <div *ngIf="view == '' && selectionMode == ''"> -->
+
+<label><span *ngIf="validate" class="text-danger">*</span><strong>{{label}}</strong> </label>
+
+<div *ngIf="view == '' && selectionMode == ''">
+
+    <p-calendar class="w100 p-inputtext-sm" [disabled]="disabled" appendTo="body" [formControl]="control" [minDate]="minDate" [maxDate]="maxDate" [dateFormat]="dateFormat"
+        [showButtonBar]="showButtonBar" [showIcon]="true" [showTime]="showTime" [showSeconds]="showSeconds"
+        [touchUI]="touchUI" [inline]="inline" hourFormat='12' [readonlyInput]="true" (onSelect)="emitSelectedValue($event)">
+    </p-calendar>
+    <app-error-messages *ngIf="validate" [control]="control" [label]="label"></app-error-messages>
+</div>
+
+<!-- </div> -->
+
+
+
+<div *ngIf="selectionMode != ''">
+    <label><span *ngIf="validate" class="text-danger">*</span><strong>{{label}}</strong> </label>
+    <div>
+        <p-calendar class="w100 p-inputtext-sm" [disabled]="disabled" appendTo="body" [formControl]="control" [minDate]="minDate" [maxDate]="maxDate" [dateFormat]="dateFormat"
+            [selectionMode]="selectionMode" [showButtonBar]="showButtonBar" [showIcon]="true" [showTime]="showTime"
+            [showSeconds]="showSeconds" [touchUI]="touchUI" [inline]="inline" [readonlyInput]="true"> </p-calendar>
+        <app-error-messages *ngIf="validate" [control]="control" [label]="label"></app-error-messages>
+    </div>
+
+</div>
+
+
+
+
+<div *ngIf="view == 'month'">
+
+    <label><span *ngIf="validate" class="text-danger">*</span>{{label}}</label>
+
+    <div>
+
+        <p-calendar class="w100 p-inputtext-sm" [formControl]="control" appendTo="body" [maxDate]="maxDate" [dateFormat]="dateFormat"
+            [showButtonBar]="showButtonBar" [showIcon]="true" [showTime]="showTime" [showSeconds]="showSeconds"
+            [touchUI]="touchUI" [inline]="inline" view='month'>
+
+        </p-calendar>
+
+        <app-error-messages *ngIf="validate" [control]="control" [label]="label"></app-error-messages>
+
+    </div>
+
+</div>
+
+
+
+
+
+<div *ngIf="view == 'year'">
+
+    <label><span *ngIf="validate" class="text-danger">*</span>{{label}}</label>
+
+    <div>
+
+        <p-calendar class="w100 p-inputtext-sm" [formControl]="control" appendTo="body" [maxDate]="maxDate" [dateFormat]="dateFormat"
+            [showButtonBar]="showButtonBar" [showIcon]="true" [showTime]="showTime" [showSeconds]="showSeconds"
+            [touchUI]="touchUI" [inline]="inline" view='year'>
+
+        </p-calendar>
+
+        <app-error-messages *ngIf="validate" [control]="control" [label]="label"></app-error-messages>
+
+    </div>
+
+</div>
+
+<!-- <div *ngIf="minDate && maxDate">
+
+        <label>{{label}}</label>
+
+        <div>
+
+            <p-calendar [formControl]="control" [minDate]="minDate"
+
+            [maxDate]="maxDate" [dateFormat]="dateFormat" [showButtonBar]="showButtonBar"  [showIcon]="true" [showTime]="showTime" [showSeconds]="showSeconds"
+
+                [touchUI]="touchUI" [inline]="inline">
+
+            </p-calendar>
+
+        </div>
+
+    </div>
+
+    <div *ngIf="minDate && !maxDate">
+
+        <label>{{label}}</label>
+
+        <div>
+
+            <p-calendar [formControl]="control" [minDate]="minDate" [dateFormat]="dateFormat" [showButtonBar]="showButtonBar"  [showIcon]="true" [showTime]="showTime" [showSeconds]="showSeconds"
+
+                [touchUI]="touchUI" [inline]="inline">
+
+            </p-calendar>
+
+        </div>
+
+    </div>
+
+
+
+    <div *ngIf="view == 'month'">
+
+        <label>{{label}}</label>
+
+        <div>
+
+            <p-calendar [formControl]="control" [maxDate]="maxDate" [dateFormat]="dateFormat" [showButtonBar]="showButtonBar"  [showIcon]="true" [showTime]="showTime" [showSeconds]="showSeconds"
+
+                [touchUI]="touchUI" [inline]="inline" view='month'>
+
+            </p-calendar>
+
+        </div>
+
+    </div>
+
+
+
+
+    <div *ngIf="selectionMode">
+
+        <label>{{label}}</label>
+
+        <div>
+
+            <p-calendar [formControl]="control" [maxDate]="maxDate" [dateFormat]="dateFormat" [showButtonBar]="showButtonBar"  [showIcon]="true" [showTime]="showTime" [showSeconds]="showSeconds"
+
+                [touchUI]="touchUI" [inline]="inline">
+
+            </p-calendar>
+
+        </div>
+
+    </div> -->
+
+
+
+
+
+<!--
+
+    [minDate]="minDate"
+
+    [maxDate]="maxDate"
+
+    [selectionMode]="selectionMode"
+
+    [view]="view"
+
+
+
+    -->

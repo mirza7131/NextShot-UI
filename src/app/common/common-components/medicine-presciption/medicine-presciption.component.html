@@ -1,0 +1,271 @@
+<form [formGroup]="medicineform">
+    <div class="grid">
+
+        <!-- <div class="col-12 md:col-12">
+            <input type="checkbox" class="checkBox" (change)="checkValidation()" formControlName="IsMedicineIsNotAvailable" />
+            <br>
+            <p class="m-0"><strong>Is Medicine Not Available In List</strong></p>
+        </div> -->
+
+        <!-- <div class="col-12 md:col-3">
+        </div> -->
+
+        <div class="col-12 md:col-12 pb-0" *ngIf="!this.medicineform.controls['IsMedicineIsNotAvailable'].value">
+            <span>
+                <strong>Medicines/Vaccines/SurgicalTools/Injections</strong>&nbsp;<span class="text-danger">*</span>
+            </span>
+            <span class="pull-right">
+                <span class="p-3"><span class="box SMLAvailable"></span>&nbsp;SML & Available</span>
+                <span class="p-3"><span class="box SMLNotAvailable"></span>&nbsp;SML but Not-Available</span>
+                <span class="p-3"><span class="box NotSMLAvailable"></span>&nbsp;Not-SML & Available</span>
+                <span class="p-3"><span class="box NotSMLNotAvailable"></span>&nbsp;Neither-SML Nor-Available</span>
+            </span>
+            <p-dropdown styleClass="w100P p-inputtext-sm" [filter]="true" filterBy="MedicineName" [showClear]="true"
+            [options]="medicineList" placeholder="Select a Medicines/Vaccines/SurgicalTools/Injections"
+            [virtualScroll]="true" [virtualScrollItemSize]="50" optionLabel="MedicineName"
+            formControlName="MedicineId" (onChange)="medicineDropdownChange($event)">
+            <ng-template let-medicine pTemplate="item">
+                <div [ngStyle]="applyBgColorOnMedicineListDD(medicine)">
+                    {{medicine.MedicineName}} <b style="color: rgb(27 120 237);;">({{medicine.AvailableQuantity | number:'1.0-0'}})</b>
+                </div>
+            </ng-template>
+            </p-dropdown>
+        </div>
+        <div class="col-6 md:col-3 pb-0"   *ngIf="this.medicineform.controls['IsMedicineIsNotAvailable'].value">
+            <span class="">
+            <!-- <label> <strong>Enter Medicine If It's Not Available in List</strong> </label> -->
+            <span class="f14"><strong>Enter Medicine If It's Not Available in List</strong>&nbsp;<span class="text-danger">*</span></span>
+            <textarea id="" rows="2" cols="35" class="w-12" pInputTextarea formControlName="MedicineIsNotAvailName"></textarea>
+            </span>
+        </div>
+        <div class="col-6 md:col-3 pb-0"   *ngIf="this.medicineform.controls['IsMedicineIsNotAvailable'].value">
+            <!-- <label> <strong>Select Medicine Type</strong> </label> -->
+            <span class="f14"><strong>Select Medicine Type</strong>&nbsp;<span class="text-danger">*</span></span>
+            <p-dropdown [options]="medicineTypeList" [style]="{width: '100%'}" formControlName="MedicineType"
+            class="w100 p-inputtext-sm" placeholder="Select Medicine Type" filterBy="Name" optionLabel="Name" [filter]="true" (onChange)="medicineDropdownChange($event)"
+            [showClear]="true"></p-dropdown>
+        </div>
+
+        <div class="col-12 md:col-2 pb-0">
+            <span class="f14"><strong>Dose</strong>&nbsp;<span class="text-danger">*</span></span>
+            <p-dropdown [options]="doseList" [style]="{width: '100%'}" formControlName="DoseProfileId"
+            class="w100 p-inputtext-sm" placeholder="Select Dose" filterBy="name" optionLabel="name" [filter]="true"
+            [showClear]="true"></p-dropdown>
+        </div>
+
+        <div class="col-12 md:col-2 pb-0">
+            <span class="f14"><strong>Route</strong>&nbsp;<span class="text-danger">*</span></span>
+            <p-dropdown [options]="route" [style]="{width: '100%'}"
+            class="w100 p-inputtext-sm" placeholder="Select Route" filterBy="name" optionLabel="name" [filter]="true" formControlName="RouteProfileId"
+            [showClear]="true"></p-dropdown>
+        </div>
+
+        <div class="col-12 md:col-2 pb-0">
+            <span class="f14"><strong>Frequency</strong>&nbsp;<span class="text-danger">*</span></span>
+            <p-dropdown [options]="frequency" [style]="{width: '100%'}"
+            class="w100 p-inputtext-sm" placeholder="Select Frequency" filterBy="name" optionLabel="name" [filter]="true" formControlName="FrequencyProfileId"
+            [showClear]="true"></p-dropdown>
+        </div>
+
+        <div class="col-12 md:col-2 pb-0">
+            <span class="f14"><strong>Days</strong>&nbsp;<span class="text-danger">*</span></span>
+            <p-dropdown [options]="duration" [style]="{width: '100%'}"
+            class="w100 p-inputtext-sm" placeholder="Select Duration" filterBy="name" optionLabel="name" [filter]="true" formControlName="DurationProfileId"
+            [showClear]="true"></p-dropdown>
+        </div>
+
+        <div class="col-12 md:col-3 pb-0">
+            <span class="f14"><strong>Instructions</strong>&nbsp;<span class="text-danger">*</span></span>
+            <p-dropdown [options]="instructions" [style]="{width: '100%'}"
+            class="w100 p-inputtext-sm" placeholder="Select Instruction" filterBy="name" optionLabel="name" [filter]="true" formControlName="DoseTimeProfileId"
+            [showClear]="true"></p-dropdown>
+        </div>
+
+        <div class="col-12 md:col-1 pb-0">
+            <span class="f14">&nbsp;</span>
+            <p-button label="Add"
+            (onClick)="addmedicine()"
+            [disabled]="!this.medicineform.valid"
+            type="submit" styleClass="p-button-sm inputWid " class="btnRight w100"></p-button>
+        </div>
+    </div>
+    <div class="grid mt-2">
+        <div class="col-12 pt-0 pb-0">
+            <hr class="seprator" />
+        </div>
+        <div class="col-12 pb-0">
+            <span class="pull-right">
+                <span class="p-3"><span class="box SMLAvailable"></span>&nbsp;SML & Available</span>
+                <span class="p-3"><span class="box SMLNotAvailable"></span>&nbsp;SML but Not-Available</span>
+                <span class="p-3"><span class="box NotSMLAvailable"></span>&nbsp;Not-SML & Available</span>
+                <span class="p-3"><span class="box NotSMLNotAvailable"></span>&nbsp;Neither-SML Nor-Available</span>
+            </span>
+        </div>
+        <div class="col-12 pt-0">
+            
+            <table class="mt-1 patient-slip-table animated fadeIn">
+                <tbody>
+                <tr>
+                    <td>
+                        <p class="m-0 text-center"><strong>Type</strong></p>
+                    </td>
+                    <td>
+                        <p class="m-0 text-center"><strong>Medicine</strong></p>
+                    </td>
+                    <td>
+                        <p class="m-0 text-center"><strong>Dose</strong></p>
+                    </td>
+                    <td>
+                        <p class="m-0 text-center"><strong>Route</strong></p>
+                    </td>
+                    <td>
+                        <p class="m-0 text-center"><strong>Frequency</strong></p>
+                    </td>
+                    <td>
+                        <p class="m-0 text-center"><strong>Instructions</strong></p>
+                    </td>
+                    <td>
+                        <p class="m-0 text-center"><strong>Days</strong></p>
+                    </td>
+                    <td>
+                        <p class="m-0 text-center"><strong>Quantity</strong></p>
+                    </td>
+                    <td>
+                        <p class="m-0 text-center"><strong>Action</strong></p>
+                    </td>
+                </tr>
+                <tr *ngFor="let medd of addedMedicineList; let i=index;">
+                    <td style="width: 40px;">
+                        <div [class]="getBadgeClass(medd)" > </div>
+                    </td>
+                    <td>
+                        <p class="m-0"> {{medd.MedicineName}}</p>
+                    </td>
+                    <td>
+                        <p [innerHTML]="medd.MedicineDose" class="m-0 text-center"> </p>
+                    </td>
+                    <td>
+                    <p class="m-0 text-center"> {{medd.MedicineRoute}}</p>
+                    </td>
+        
+                    <td>
+                    <p class="m-0 text-center"> {{medd.MedicineFrequency}}</p>
+                    </td>
+                    <td>
+                    <p class="m-0 text-center"> {{medd.MedicineInstruction}}</p>
+                    </td>
+                    <td>
+                    <p class="m-0 text-center"> {{medd.MedicineDuration}}</p>
+                    </td>
+                    <td>
+                        <p class="m-0 text-center"> {{medd.Quantity}}</p>
+                    </td>
+                    <td *ngIf="(this.loginUserDetail.SectionName == this.dentalSurgeonOPDStringConstant || this.loginUserDetail.SectionName == this.dentalOPDStringConstant) && (medd.PatientPrescriptionId == null || medd.IsDispensed)">
+                        <p class="m-0 text-center"><i class="pi pi-trash" style='color: red'
+                            (click)="ReomoveMedicine(i)"></i></p>
+                    </td>
+        
+                    <td *ngIf="!medd.IsDispensed">
+                        <p class="m-0 text-center">Dispensed</p>
+                    </td>
+        
+                    <td *ngIf="medd.IsDispensed && !(this.loginUserDetail.SectionName == this.dentalSurgeonOPDStringConstant || this.loginUserDetail.SectionName == this.dentalOPDStringConstant)">
+                        <p class="m-0 text-center"><i class="pi pi-trash" style='color: red'
+                            (click)="ReomoveMedicine(i)"></i></p>
+                    </td>
+        
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    
+
+</form>
+
+
+<!-- Start Dialog Delete Medicine Presription -->
+
+<p-dialog [(visible)]="deleteMedicinetPrescriptionDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+<div class="flex align-items-center justify-content-center mt-3">
+    <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+    <span *ngIf="medicinetPrescription">Are you sure you want to delete <b [innerHTML]="medicinetPrescription.MedicineName"></b>?</span>
+</div>
+<ng-template pTemplate="footer">
+    <button pButton pRipple icon="pi pi-times" type="button" label="No" class="p-button-danger"  (click)="deleteMedicinetPrescriptionDialog = false"></button>
+    <button pButton pRipple icon="pi pi-check" type="button"  label="Yes"  (click)="confirmMedicinetPrescriptionDelete()"></button>
+
+</ng-template>
+</p-dialog>
+
+<!-- End Dialog Delete Medicine Presription -->
+
+<!-- Start Dialog Alert if Medicine already Presicribed by other Doctor -->
+
+<p-dialog [(visible)]="alreadyPrescribedMedicineDialog" icons="pi pi-exclamation-triangle" [draggable]="false" header="Alert"
+    position="center" [modal]="true" [closable]="false" [style]="{width:'90%',height:'400px'}">
+    <ng-template pTemplate="content">
+
+        <div class="grid">
+            <div class="col-12 md:col-12 mt-3">
+                <p class="m-2">
+                    <b>{{message.alreadyPrescribedAlertHeader}}</b>
+                    <!-- <strong>{{this.selectedPatient.PatientName}}</strong>
+                    <strong>{{this.selectedPatient.TokenNo}}</strong> -->
+                </p>
+                <p-table [value]="filterAllMedicineAgainstVisit" styleClass="p-datatable-sm"
+                    [scrollable]="true" scrollHeight="100%"
+                    [tableStyle]="{'min-width': '100%'}">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th> Medicine</th>
+                            <th> Dose</th>
+                            <th> Frequency</th>
+                            <th> Days</th>
+                            <th> Quantity</th>
+                            <th> Prescribed By</th>
+                            <th> Date & Time</th>
+                            <th> Dispensed</th>
+                            <th> Prescription</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-items let-index>
+                        <tr >
+                            <td>{{items.MedicineName}}</td>
+                            <td>{{items.MedicineDose}}</td>
+                            <td>{{items.MedicineFrequency}}</td>
+                            <td>{{items.Days}}</td>
+                            <td>{{items.Quantity}}</td>
+                            <td>
+                                <b>{{items.PrescribedByName}}</b>
+                                <small>{{ (items.PrescribedByDesignation) ? ' ('+items.PrescribedByDesignation+')':'' }}</small>
+                            </td>
+                            <td>{{items.PrescribedOn | date:'medium'}}</td>
+                            <td>
+                                <p-badge *ngIf="items?.IsDispatch" value="Yes" severity="success"></p-badge>
+                                <p-badge *ngIf="!items?.IsDispatch" value="No" severity="danger"></p-badge>
+                            </td>
+                            <td>
+                                <i class="pi pi-eye mr-2" title="View Prescription" (click)="viewPrescription(items)"></i>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+                
+            </div>
+        </div>
+    </ng-template>
+    <ng-template pTemplate="footer">
+        <p class="m-0 text-left">
+            <b>{{message.alreadyPrescribedAlertFooter}}</b>
+        </p>
+        <button pButton pRipple icon="pi pi-times" type="button" label="No" class="p-button-danger"
+        (click)="closeAlreadyPrescribedMedicineDialog()" style="font-size: 16px;"></button>
+        <button pButton pRipple icon="pi pi-check" type="button" label="Yes" (click)="addAlreadyPrescribedMedicine()"
+          style="font-size: 16px;"></button>
+    
+    </ng-template>
+</p-dialog>
+
+<!-- End Dialog Alert if Medicine already Presicribed by other doctor -->

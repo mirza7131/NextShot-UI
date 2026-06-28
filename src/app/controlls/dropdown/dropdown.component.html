@@ -1,0 +1,35 @@
+<div *ngIf="!multiselect">
+    <label *ngIf="label != ''"><span *ngIf="validate" class="text-danger">*</span><b>{{label}}</b></label>
+    <div>
+        <p-dropdown 
+            class="p-inputtext-sm w100"
+            [placeholder]="placeholder"
+            [disabled]="disabled" 
+            [formControl]="control" 
+            [appendTo]="appendTo" 
+            [filter]="true" 
+            [options]="options"
+            [optionLabel]="optionLabel"
+            [optionValue]="optionValue"
+            [showClear]="true"
+            (onChange)="emitDropDownValue()"></p-dropdown>
+            <app-error-messages *ngIf="validate"  [control]="control" [label]="label"></app-error-messages>
+    </div>
+</div>
+
+
+<div *ngIf="multiselect">
+    <label><span *ngIf="validate" class="text-danger">*</span><b>{{label}}</b></label>
+    <div>
+        <p-multiSelect 
+        class="p-inputtext-sm w100"
+        [placeholder]="placeholder" 
+        [disabled]="disabled"
+        appendTo="body" 
+        [options]="options" 
+        [formControl]="control" 
+        (onChange)="emitDropDownValue()" 
+        [optionLabel]="optionLabel"></p-multiSelect>
+        <app-error-messages *ngIf="validate"  [control]="control"></app-error-messages>
+    </div>
+</div>

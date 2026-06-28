@@ -1,0 +1,39 @@
+<div class="p-fluid p-formgrid grid">
+    <div class="field col-12 md:col-4">
+        <app-input label="Name" placeholder="Enter Name" type="text" [required]="true" [isMaskInput]="false"
+            [control]="$any(control.controls.contactName)">
+        </app-input>
+    </div>
+
+    <div class="field col-12 md:col-4">
+        <app-input label="Contact" type="text" maskingFormate="9999-9999999" [required]="true" [isMaskInput]="true"
+            [control]="$any(control.controls.contact)">
+        </app-input>
+    </div>
+
+    <div class="field col-12 md:col-4">
+        <app-dropdown label="Select Relation" placeholder="Select relationship" [options]="options" optionLabel="Name"
+            [control]="$any(control.controls.relation)">
+        </app-dropdown>
+    </div>
+
+    <div class="field col-12 md:col-4">
+
+        <app-input label="Age" placeholder="Enter Age" type="number" [required]="true" [isMaskInput]="false"
+            [control]="$any(control.controls.age)">
+        </app-input>
+    </div>
+    <div class="field col-12 md:col-2 my-4">
+        <button class="p-button-danger" (click)="emitContactDetails()" icon="pi pi-trash" pButton pRipple type="button">
+        </button>
+    </div>
+</div>
+
+<!--
+
+<div class="grid">
+
+
+
+
+</div> -->

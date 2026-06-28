@@ -1,0 +1,819 @@
+<style>
+    /* WebKit (Chrome, Safari) */
+    ::-webkit-scrollbar {
+        width: 6px; /* Adjust the width as needed */
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color: #ddd; /* Adjust the color as needed */
+    }
+
+    .required-field {
+     color: red;
+     margin-left: 4px; /* Adjust the margin as needed for spacing */
+   }
+
+   .table-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.p-datatable {
+  flex: 1;
+  overflow-y: auto;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  background-color: #f2f2f2;
+  z-index: 2;
+}
+/* Assuming these are added in your component CSS file or a global stylesheet */
+.row-rejected {
+    background-color: #fadede; /* Light red */
+    color: #a91818;
+}
+
+.row-approved {
+    background-color: #dcfcdc; /* Light green */
+    color: #075907;
+}
+
+.row-pending {
+    background-color: #dae8f8; /* Light blue */
+    color: #062e59
+}
+
+.row-reissued {
+    background-color: #ffffcc; /* Light yellow */
+    color: #4e4e03;
+}
+.p-dialog {
+    background-color: #c9d0d8; /* Light background */
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+  }
+
+  /* Custom Header */
+  .custom-dialog-header {
+    background-color: #d5e2f1; /* Deep blue */
+    padding: 1rem;
+    border-radius: 8px 8px 8px 8px; /* Rounded top corners */
+    color: #fff;
+    text-align: center;
+  }
+
+  .dialog-title {
+    font-size: 20px;
+    margin: 0;
+    font-weight: bold;
+  }
+
+  .message-text {
+    font-size: 14px;
+    margin-top: 0.5rem;
+    color: #03095f;
+    line-height: 1.5;
+  }
+
+  /* Button Group Layout */
+  .button-group {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  /* Primary Button Styling */
+  .p-button-primary {
+    /* background-color: #007bff; Blue */
+    /* border: none; */
+    /* border-radius: 5px;
+    padding: 0.75rem 1.5rem;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+    transition: background-color 0.3s, box-shadow 0.3s; */
+  }
+
+  /* .p-button-primary:hover {
+    background-color: #0056b3; 
+    box-shadow: 0 6px 12px rgba(0, 86, 179, 0.3);
+  } */
+
+  /* Secondary Button Styling */
+  .p-button-secondary {
+    background-color: #6c757d; /* Gray */
+    border: none;
+    border-radius: 5px;
+    padding: 0.75rem 1.5rem;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(108, 117, 125, 0.2);
+    transition: background-color 0.3s, box-shadow 0.3s;
+  }
+
+  .p-button-secondary:hover {
+    background-color: #5a6268; /* Darker gray */
+    box-shadow: 0 6px 12px rgba(86, 89, 94, 0.3);
+  }
+   
+
+  .layout-topbarr {
+    /* position: fixed; */
+    height: 6rem;
+    z-index: 997;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0 2rem;
+    /* background-color: var(--surface-card); */
+    /* transition: left 0.2s; */
+    display: flex;
+    align-items: center;
+    box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.02), 0px 0px 2px rgba(0, 0, 0, 0.05), 0px 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+</style>
+
+<p-dialog 
+  [(visible)]="displayRegisterDialog" 
+  [modal]="true" 
+  showEffect="fade" 
+  [style]="{ borderRadius: '35px', padding: '20px',backgroundColor: 'white'}" 
+  [breakpoints]="{'960px': '75vw'}"
+  [closable]="false"
+  [showHeader]="false"
+>
+  <!-- Custom Header with Styling -->
+  <div class="custom-dialog-header">
+    <h4 class="dialog-title">Welcome To GAMA TYPING SERVICES!</h4>
+  </div>
+
+  <!-- Centered Logo and Text -->
+  <div class="layout-topbarrr" style="display: flex; align-items: center; justify-content: center;justify-content: center; height: 11rem;">
+    <img 
+      src="../../assets/demo/images/gama.jpeg" 
+      alt="logo" 
+      style="width: 110px;  margin-right: 10px;"
+    >
+    <div class="logo" style="font-size: large; font-weight: bold; margin-block: auto;">
+      <div style="color: #ff271c;">GAMA</div>
+      <div style="color: #3755da;">TYPING</div>
+      <div style="color: #7d8580;">SERVICES</div>
+    </div>
+  </div>
+
+  <!-- Button Group -->
+  <div class="button-group" style="text-align: center;margin: 0;">
+    <button 
+      pButton 
+      icon="pi pi-clock" 
+      label="OK" 
+      class="p-button-secondary" 
+      style="padding: 10px 50px; border-radius: 8px;"
+      (click)="displayRegisterDialog = false"
+    ></button>
+  </div>
+</p-dialog>
+
+
+
+
+
+<div class="grid">
+    <div class="col-12 lg:col-3 ">
+            <div class="card mb-0"  style="cursor: pointer;background-color: #ebeef2;  border: 1px solid lightgray;">
+                <div class="flex justify-content-between mb-3">
+                    <div>
+                        <span class="block text-500 font-medium mb-3"><b>Total Invoice</b></span>
+                        <div class="text-900 font-medium text-xl text-black-500">{{dashboardCount?.TotalCount}}</div>
+                    </div>
+                    <div class="flex align-items-center justify-content-center bg-blue-100 border-round" [ngStyle]="{width: '2.5rem', height: '2.5rem'}">
+                        <i class="pi pi-file text-black-500 text-xl"></i>
+                    </div>
+                </div>
+               
+            </div>
+    </div>
+   
+    <div class="col-12 lg:col-3 ">
+            <div class="card mb-0"  style="cursor: pointer;background-color: #fdf0f0; border: 1px solid lightpink;">
+                <div class="flex justify-content-between mb-3">
+                    <div>
+                        <span class="block text-500 font-medium mb-3 text-red-500"><b>Total Net Amount</b></span>
+                        <div class="text-900 font-medium text-xl text-red-500">{{dashboardCount?.TotalNetAmount}} AED</div>
+                    </div>
+                    <div class="flex align-items-center justify-content-center bg-red-100 border-round" [ngStyle]="{width: '2.5rem', height: '2.5rem'}">
+                        <i class="pi pi-money-bill text-red-500 text-xl"></i>
+                    </div>
+                </div>
+                <!-- <span class="text-gray-500 font-medium">NEB -</span> <small class="text-red">{{dashboard.NEBIncomplete}}</small><br>
+                <span class="text-gray-500 font-medium">University - </span><small class="text-red">{{dashboard.UniversityIncomplete}}</small><br>
+                <span class="text-gray-500 font-medium">PMF - </span><small class="text-red">{{dashboard.PMFIncomplete}}</small><br>
+                <span class="text-gray-500 font-medium">Punjab Pharmacy Council - </span><small class="text-red">{{dashboard.PunjabPharmacyCouncilIncomplete}}</small> -->
+            </div>
+    </div>
+    <div class="col-12 lg:col-3 ">
+            <div class="card mb-0" style="cursor: pointer; background-color: #e8fff0; border: 1px solid lightgreen;">
+                <div class="flex justify-content-between mb-3">
+                    <div>
+                        <span class="block text-500 font-medium mb-3 text-green-500"><b>Total Due Amount</b></span>
+                        <div class="text-900 font-medium text-xl text-green-500">{{dashboardCount?.TotalDueAmount}} AED</div>
+                    </div>
+                    <div class="flex align-items-center justify-content-center bg-green-100 border-round" [ngStyle]="{width: '2.5rem', height: '2.5rem'}">
+                        <i class="pi pi-money-bill text-green-500 text-xl"></i>
+                    </div>
+                </div>
+                <!-- <span class="text-green-500 font-medium">520  </span>
+                <span class="text-500">newly registered</span> -->
+            </div>
+    </div>
+    <div class="col-12 lg:col-3 ">
+        <div class="card mb-0" style="cursor: pointer;background-color: #e9f2ff; border: 1px solid lightblue;">
+            <div class="flex justify-content-between mb-3">
+                <div>
+                    <span class="block text-500 font-medium mb-3 text-blue-500"><b>Total Received Amount</b></span>
+                    <div class="text-900 font-medium text-xl text-blue-500">{{dashboardCount?.TotalReceivedAmount}}  AED</div>
+                </div>
+                <div class="flex align-items-center justify-content-center bg-blue-100 border-round" [ngStyle]="{width: '2.5rem', height: '2.5rem'}">
+                    <i class="pi pi-wallet text-blue-500 text-xl"></i>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+     <!-- <div class="col-12 lg:col-6 " style="width: 265px">
+        <div class="card mb-0"  style="cursor: pointer;background-color: #fff7de;  border: 1px solid burlywood;">
+            <div class="flex justify-content-between mb-3">
+                <div>
+                    <span class="block text-500 font-medium mb-3 text-yellow-500"><b>Reissued</b></span>
+                    <div class="text-900 font-medium text-xl text-yellow-500">{{allInvoices?.ReissuedCount}}</div>
+                </div>
+                <div class="flex align-items-center justify-content-center bg-yellow-100 border-round" [ngStyle]="{width: '2.5rem', height: '2.5rem'}">
+                    <i class="pi pi-file text-yellow-500 text-xl"></i>
+                </div>
+            </div>
+            
+        </div>
+    </div> -->
+    <div class="col-12" *ngIf="false">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <h5><b>Submitted Invoices</b></h5>
+                 
+                        <!-- <button pButton pRipple label="New" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+                        <button pButton pRipple label="Delete" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedProducts()" [disabled]="!selectedProducts || !selectedProducts.length"></button> -->
+                    </div>
+                </ng-template>
+
+                <ng-template pTemplate="right">
+                    <!-- <p-dropdown [options]="AffliationType" [(ngModel)]="selectedDrop" 
+                        placeholder="Select Service Type" [showClear]="true" 
+                        class="w-full" (onChange)="onDropdownChange($event)">
+                    </p-dropdown> -->
+                    <!-- <p-fileUpload mode="basic" accept="image/*" [maxFileSize]="1000000" label="Import" chooseLabel="Import" class="mr-2 inline-block"></p-fileUpload> -->
+                    <button pButton pRipple label="Export" icon="pi pi-upload" class="p-button-success w-full ml-3" (click)="exportToExcel()"></button>
+                    <!-- Add this button after your table -->
+                    <!-- <button pButton type="button" icon="pi pi-file-excel" label="Export to Excel" class="p-button-success" (click)="exportToExcel()"></button> -->
+                </ng-template>
+            </p-toolbar>
+
+            <!-- <div class="grid">
+                <div class="col-12 lg:col-6 xl:col-4">
+                    <h5>Grant Applications</h5>
+                </div>
+                <div class="col-12 lg:col-6 xl:col-6">
+                    <p-dropdown [options]="AffliationType" [(ngModel)]="selectedDrop" 
+                        placeholder="Select Affiliation Type" [showClear]="true" 
+                        class="w-full" (onChange)="onDropdownChange($event)">
+                    </p-dropdown>
+                </div>
+            </div> -->
+            
+            <p-table #table [exportFilename]="filename" [value]="allInvoiceswithStatus" [columns]="cols" [paginator]="true" [rows]="15" [showCurrentPageReport]="true"  currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" responsiveLayout="scroll" class="mt-5" >
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Sr. No</th>
+                        <th field="InvoiceNumber">Invoice #</th>
+                        <th pSortableColumn="Division">Division <p-sortIcon field="Division"></p-sortIcon></th>
+                        <th pSortableColumn="District">District<p-sortIcon field="District"></p-sortIcon></th>
+                        <th pSortableColumn="HealthFacilityName">Health Facility Name <p-sortIcon field="HealthFacilityName"></p-sortIcon></th>
+                        <!-- <th pSortableColumn="price">CNIC <p-sortIcon field="price"></p-sortIcon></th> -->
+                        <th pSortableColumn="HealthFacilityTypeCode">Facility Type <p-sortIcon field="HealthFacilityTypeCode"></p-sortIcon></th>
+                        <th pSortableColumn="Service">Service Type <p-sortIcon field="Service"></p-sortIcon></th>
+                        <th pSortableColumn="OwnerName">Hospital MS Name<p-sortIcon field="OwnerName"></p-sortIcon></th>
+                        <th pSortableColumn="OwnerCNIC">Hospital MS CNIC<p-sortIcon field="OwnerCNIC"></p-sortIcon></th>
+                        <th pSortableColumn="Mobile">Hospital MS Mobile No.<p-sortIcon field="Mobile"></p-sortIcon></th>
+                        <th pSortableColumn="Month">Month<p-sortIcon field="Month"></p-sortIcon></th>
+                        <th pSortableColumn="IssuedOn">Issued Date<p-sortIcon field="IssuedOn"></p-sortIcon></th>
+                        <th pSortableColumn="DueDate">Due Date<p-sortIcon field="DueDate"></p-sortIcon></th>
+                        <!-- <th pSortableColumn="price">Institution Address <p-sortIcon field="price"></p-sortIcon></th> -->
+                        <th field="InvoiceStatus">Invoice Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-app let-rowIndex="rowIndex">
+                    <tr 
+                    [ngClass]="{
+                        'row-rejected': app.InvoiceStatus === 'Rejected',
+                        'row-approved': app.InvoiceStatus === 'Approved',
+                        'row-pending': app.InvoiceStatus === 'Pending',
+                        'row-reissued': app.InvoiceStatus === 'Reissued'
+                    }">
+                        <td style="width: 5%; min-width: 2rem;">{{rowIndex + 1}}</td>
+                        <td style="width: 30%; min-width: 7rem;">{{app.InvoiceNumber}}</td>
+                        <td style="width: 30%; min-width: 7rem;">{{app.Division}}</td>
+                        <td style="width: 30%; min-width: 7rem;">{{app.District}}</td>
+                        <td style="width: 45%; min-width: 9rem;"> {{ app.HealthFacilityName}}</td>
+                        <!-- <td style="width: 35%; min-width: 7rem;">{{app.Cnic}}</td> -->
+                        <td style="width: 20%; min-width: 7rem;">{{ app.HealthFacilityTypeCode === '011' ? 'DHQ' : app.HealthFacilityTypeCode === '012' ? 'THQ' : 'Unknown' }}</td>
+                        <td style="width: 10%; min-width: 7rem;">{{ app.Service}}</td>
+                        <td style="width: 10%; min-width: 7rem;"></td>
+                        <td style="width: 10%; min-width: 7rem;"></td>
+                        <td style="width: 10%; min-width: 7rem;"></td>
+                        <td style="width: 10%; min-width: 7rem;">{{ app.Month}}</td>
+                        <td style="width: 35%; min-width: 8rem;">{{ app.IssuedOn | date: 'dd-MM-yyyy'}}</td>
+                        <td style="width: 35%; min-width: 8rem;">{{ app.DueDate | date: 'dd-MM-yyyy'}}</td>
+                        <td style="width: 10%; min-width: 7rem;">{{ app.InvoiceStatus}}</td>
+
+                        <td style="width: 15%;">
+                            <div class="btns" style="display:flex; flex-direction: row;">
+                                <button pButton pRipple type="button"  icon="pi pi-eye" class="p-button p-component p-button-text p-button-icon-only"></button>
+                                <button *ngIf="app.InvoiceStatus == 'Rejected'" pButton pRipple type="button" style="color: green;"  icon="pi pi-pencil" class="p-button p-component p-button-text  p-button-icon-only" (click)="onSelect(app)"></button>
+                            </div>
+                            
+                        </td>
+
+                    </tr>
+                </ng-template>
+            </p-table>
+
+        </div>
+    </div>
+
+    <!-- <div class="col-12 xl:col-12">
+        <div class="card"></div>
+    </div> -->
+       
+</div>
+
+
+
+
+
+
+
+
+
+
+<!-- Inbox Code -->
+
+
+
+
+
+
+    
+<div class="card px-6 py-6">
+    <div class="grid">
+      <div class="md:col-12 lg:col-12">
+        <p-panel header="Filter" [collapsed]="true" [toggleable]="true" class="line-height-3 m-0">
+          <div class="mb-4">
+            <div class="grid">
+              <div class="col-12 md:col-12">
+                <p-dropdown [options]="medicineListdata" [(ngModel)]="selectedMedicine" appendTo="body"
+                  [virtualScroll]="true" [virtualScrollItemSize]="50" [filter]="true" [showClear]="true"
+                  optionLabel="BillToName" optionValue = "InvoiceMasterId" [style]="{'width': '100%'}" placeholder="Search Records" 
+                  (onChange)="selectMedicine($event)"></p-dropdown>
+              </div>
+              <!-- <div class="col-12 md:col-3">
+                <p-checkbox [(ngModel)]="showBatchDetail" label="Show Batch Detail" name="Medicines"
+                  value="Show Batch Detail" (onChange)="checkshowBatchDetail(showBatchDetail)"></p-checkbox>
+              </div> -->
+
+              <div class="col-12 md:col-4" >
+                <label class="m-0"><strong style="margin-left: 13px">Enter From Date: <span
+                      class="text-danger">*</span></strong></label>
+                <p-calendar [showIcon]="true" [(ngModel)]="TonearestExpiryDate" inputId="icondisplay" class="calender"
+                   ></p-calendar>
+              </div>
+              <div class="col-12 md:col-4" >
+                <label class="m-0"><strong style="margin-left: 13px">Enter To Date: <span
+                      class="text-danger">*</span></strong></label>
+                <p-calendar [showIcon]="true" [(ngModel)]="FromnearestExpiryDate" inputId="icondisplay" class="calender"
+                   [disabled]="!TonearestExpiryDate"></p-calendar>
+              </div>
+              <div class="col-12 md:col-4">
+              </div>
+
+              <div class="col-12 md:col-4">
+                <p-checkbox [(ngModel)]="IsAllAmount" label="All Invoice" [binary]="IsAllAmount" 
+                   name="Medicines" value="All Invoice"
+                  (onChange)="onNearestExpiryChange(IsAllAmount)"></p-checkbox>
+              </div>
+  
+              <div class="col-12 md:col-4">
+                <p-checkbox [(ngModel)]="IsTotalAmount" label="Only Total Amount Invoice" [binary]="IsTotalAmount" 
+                  name="Medicines" value="Only Total Amount Invoice" (onChange)="onExpiryOnlyChange(IsTotalAmount)"></p-checkbox>
+              </div>
+              
+              <div class="col-12 md:col-4">
+                <p-checkbox [(ngModel)]="IsDueAmount" label="Only Due Amount Invoice"
+                   name="Medicines" value="Only Due Amount Invoice" [binary]="IsDueAmount" 
+                  (onChange)="onNotExpiryOnlyChange(IsDueAmount)"></p-checkbox>
+              </div>
+             
+             
+  
+              <!-- <div class="col-12 md:col-4" *ngIf="showExpirycalendar">
+                <label class="m-0"><strong style="margin-left: 13px">Enter From Expiry Date: <span
+                      class="text-danger">*</span></strong></label>
+                <p-calendar [showIcon]="true" [(ngModel)]="Toexpirydate" inputId="icondisplay" class="calender"
+                  [maxDate]="minDate" (onSelect)="updateFromDateMinforExpire()"></p-calendar>
+              </div>
+              <div class="col-12 md:col-4" *ngIf="showExpirycalendar">
+                <label class="m-0"><strong style="margin-left: 13px">Enter To Expiry Date: <span
+                      class="text-danger">*</span></strong></label>
+                <p-calendar [showIcon]="true" [(ngModel)]="Fromexpirydate" inputId="icondisplay" class="calender"
+                  [maxDate]="minDate" [disabled]="!Toexpirydate"></p-calendar>
+              </div> -->
+            </div>
+  
+            <div class="grid p-fluid">
+              <div class="col-12 md:col-4 lg:col-3">
+                <div class="flex">
+                  <button pButton pRipple type="button" icon="pi pi-filter" label="Search"
+                    class="p-button-primary p-button-outlined mr-2" title="Submit Filter" (click)="submitFilter()"
+                    [disabled]="(showCalender && (FromnearestExpiryDate == null || TonearestExpiryDate == null)) "></button>
+                  <button pButton pRipple type="button" icon="pi pi-filter-slash" label="Clear"
+                    class="p-button-danger p-button-outlined" title="Clear Filter" (click)="clearFilter()"></button>
+                </div>
+              </div>
+            </div>
+  
+          </div>
+        </p-panel>
+      </div>
+  
+  
+    </div>
+
+
+
+
+    <p-table [value]="medicineList" [paginator]="true" [rows]="10" responsiveLayout="scroll">
+      <ng-template pTemplate="header">
+          <tr>
+              <th pSortableColumn="name">Sr. <p-sortIcon field="name"></p-sortIcon></th>
+              <th pSortableColumn="price">Invoice <p-sortIcon field="price"></p-sortIcon></th>
+              <th pSortableColumn="price">Bill To Name <p-sortIcon field="price"></p-sortIcon></th>
+              <th pSortableColumn="price">Date <p-sortIcon field="price"></p-sortIcon></th>
+              <th pSortableColumn="price">Total Amount <p-sortIcon field="price"></p-sortIcon></th>
+              <th pSortableColumn="price">Received Amount<p-sortIcon field="price"></p-sortIcon></th>
+              <th pSortableColumn="price">Discount<p-sortIcon field="price"></p-sortIcon></th>
+              <th pSortableColumn="price">Net Amount<p-sortIcon field="price"></p-sortIcon></th>
+              <th pSortableColumn="price">Due Amount<p-sortIcon field="price"></p-sortIcon></th>
+              <th>Actions</th>
+          </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-app let-rowIndex="rowIndex">
+          <tr>
+            <td style="width: 35%; min-width: 7rem;">{{rowIndex + 1}}</td>
+              <td style="width: 35%; min-width: 7rem;">{{app.InvoiceNumber}}</td>
+              <td style="width: 35%; min-width: 8rem;">{{app.BillToName}}</td>
+              <td style="width: 35%; min-width: 7rem;">{{app.CreatedOn | date: 'dd MMM yyyy'}}</td>
+              <td style="width: 35%; min-width: 8rem;">{{app.TotalAmount}}</td>
+              <td style="width: 35%; min-width: 7rem;">{{app.ReceivedAmount}}</td>
+              <td style="width: 35%; min-width: 7rem;">{{app.ApplyDiscount}}</td>
+              <td style="width: 35%; min-width: 7rem;">{{app.NetAmount}}</td>
+              <td style="width: 35%; min-width: 7rem;">{{app.DueAmount}}</td>
+
+              <td style="text-align: center;">
+                <div class="flex">
+                  <button  pButton pRipple icon="pi pi-eye" class="p-button-rounded p-button-warning mr-2" (click)="viewInvoice(app)"></button>
+                  <!-- <button  pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editInvoice(app)"></button>
+                  <button  pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="deleteInvoice(app)"></button> -->
+              </div>
+              </td>
+
+              <!-- <td *ngIf="app.StatusId == 1">
+                  <p-badge value="Incomplete" severity="info" ></p-badge>
+              </td>
+              <td *ngIf="app.StatusId == 2">
+                  <p-badge value="Submitted" severity="warning" ></p-badge>
+              </td>
+              
+              <td *ngIf="app.StatusId == 3">
+                  <p-badge value="Approved" severity="success" ></p-badge>
+              </td>
+
+              <td *ngIf="app.StatusId == 4">
+                  <p-badge value="Rejected" severity="danger" ></p-badge>
+              </td> -->
+
+              <!-- <td *ngIf="app.IsLocked" style="width: 35%; min-width: 7rem;" class="text-900 font-medium text-xl text-green-500">{{app.IsLocked ? 'Submitted' : 'Incomplete' }}</td>
+              <td *ngIf="!app.IsLocked" style="width: 35%; min-width: 7rem;" class="text-900 font-medium text-xl text-orange-500">{{app.IsLocked ? 'Submitted' : 'Incomplete' }}</td> -->
+              
+              <!-- <td style="width: 35%; min-width: 7rem;">
+                  <button pButton pRipple type="button" (click)="display=true; applicationdetails(app)"  icon="pi pi-info-circle" class="p-button p-component p-button-text p-button-icon-only"></button>
+              </td>
+              
+              <td style="width: 15%;">
+                  <button pButton pRipple type="button" icon="pi pi-pencil" class="p-button p-component p-button-text p-button-icon-only"  [routerLink]="['/application']"></button>
+              </td> -->
+          </tr>
+      </ng-template>
+  </p-table>
+
+
+
+
+
+
+
+    
+    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center" *ngIf="false"
+      style="margin: 7px ; padding-left: 3px;">
+      <h5 class="m-0">Invoice List
+      </h5>
+      <div class="right-align-button">
+        <!-- <p-button icon="pi pi-file-export" class="mr-2" title="Export to PDF"
+          (click)="exportToPDF('Download', 'Stock Value List')"></p-button> -->
+      </div>
+      <!-- <div class="right-align-button">
+        <p-button icon="pi pi-file-export" class="mr-2" title="Export to PDF"   (click)="downloadPDF()" ></p-button>
+    </div> -->
+  
+    </div>
+    <p-table #dt id="Download" class="ptable" [value]="medicineList" scrollDirection="both" [scrollable]="true"
+      scrollHeight="400px" responsiveLayout="scroll" *ngIf="false">
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="text-align: center;">SR No</th>
+          <th style="text-align: center;">Invoice</th>
+          <th style="text-align: center;">Bill To Name</th>
+          <th style="text-align: center;">Date</th>
+          <th style="text-align: center;">Total Amount</th>
+          <th style="text-align: center;">Received Amount</th>
+          <th style="text-align: center;">Discount</th>
+          <th style="text-align: center;">Net Amount</th>
+          <th style="text-align: center;">Due Amount</th>
+          <th style="text-align: center;">Action</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-medicine let-rowIndex="rowIndex">
+        <tr>
+          <td style="text-align: center;"> <b>{{ rowIndex + 1 }}</b></td>
+          <td style="text-align: center;">{{ medicine?.InvoiceNumber }}</td>
+          <td style="text-align: center;">{{ medicine?.BillToName }}</td>
+          <td style="text-align: center;">{{ medicine?.CreatedOn | date: 'dd MMM yyyy' }}</td>
+          <td style="text-align: center;">{{ medicine?.TotalAmount }}</td>
+          <td style="text-align: center;" >{{ medicine?.ReceivedAmount }}</td>
+          <td style="text-align: center;" >{{ medicine?.ApplyDiscount }}</td>
+          <td style="text-align: center;">{{ medicine?.NetAmount}}</td>
+          <td style="text-align: center;">{{ medicine?.DueAmount }}</td>
+         
+
+          
+          <td style="text-align: center;">
+            <div class="flex">
+              <button  pButton pRipple icon="pi pi-eye" class="p-button-rounded p-button-warning mr-2" (click)="viewInvoice(medicine)"></button>
+              <button  pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editInvoice(medicine)"></button>
+              <button  pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="deleteInvoice(medicine)"></button>
+          </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="footer">
+        <tr *ngIf="!IsShowBatchDetailchecks">
+          <td colspan="8" style="text-align: right;"><strong>Total Stock Value:</strong></td>
+          <td style="text-align: center;"> {{ totalStockValue | currency:'PKR ':'symbol' }}</td>
+          <td *ngIf="!IsShowBatchDetailchecks" colspan="1"></td>
+        </tr>
+        <tr *ngIf="IsShowBatchDetailchecks">
+          <td colspan="8" style="text-align: right;"><strong>Total Stock Value:</strong></td>
+          <td style="text-align: center;">{{ totalStockValue | currency:'PKR ':'symbol' }}</td>
+          <td *ngIf="IsShowBatchDetailchecks" colspan="2"></td>
+        </tr>
+      </ng-template>
+    </p-table>
+  
+  </div>
+
+
+
+
+
+
+  <p-dialog [(visible)]="deleteUserDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+    <div class="flex align-items-center justify-content-center mt-3">
+        <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+        <span >Are you sure you want to delete <b>{{BillToName}}</b>?</span>
+    </div>
+    <ng-template pTemplate="footer">
+        <button pButton pRipple icon="pi pi-times" type="button" label="No" class="p-button-danger"  (click)="deleteUserDialog = false"></button>
+        <button pButton pRipple icon="pi pi-check" type="button"  label="Yes"  (click)="confirmDelete()"></button>
+
+    </ng-template>
+</p-dialog>
+
+
+
+
+
+<p-dialog [(visible)]="viewInvoiceDialog" header="Invoice" [modal]="true" [style]="{width:'60%'}">
+  <div class="justify-content-center mt-30" >
+
+    <div id="printableDiv" >
+    
+        <div class="" style="margin: 50px;height: 900px;">
+      
+          <div style="position: relative; font-family: sans-serif; color: black;">
+            <!-- Watermark -->
+            <div
+              style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.1; z-index: -1;">
+              <img
+                src="../../../assets/demo/images/gama.jpeg"
+                alt="Watermark"
+                style="max-width: 800px; max-height: 800px;"
+              />
+            </div>
+          
+            <!-- Header -->
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-align: center;
+                margin-bottom: 20px;
+              "
+            >
+              <div class="row" style="display: flex; align-items: center;">
+                <div class="col-6" style="text-align: center;">
+                  <img
+                    src="../../../assets/demo/images/gama.jpeg"
+                    alt="Gama Typing Services Logo"
+                    class="img-fluid"
+                    style="max-width: 130px;"
+                  />
+                </div>
+          
+                <div class="col-6" style="text-align: center;">
+                  <div style="font-size: x-large; font-weight: bold;">
+                    <div style="color: #ff271c; 
+                    font-weight: 700; 
+                    letter-spacing: 3px; 
+                    text-transform: uppercase; 
+                    font-family: 'Lucida Handwriting', cursive;
+                    text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.3); 
+                    line-height: 1.2;">GAMA</div>
+                    <div style="color: #3755da;font-weight: 700; 
+                    letter-spacing: 3px; 
+                    text-transform: uppercase; 
+                    font-family: 'Lucida Handwriting', cursive;
+                    text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.3); 
+                    line-height: 1.2;">TYPING</div>
+                    <div style="color: #7d8580;font-weight: 700; 
+                    letter-spacing: 3px; 
+                    text-transform: uppercase; 
+                    font-family: 'Lucida Handwriting', cursive;
+                    text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.3); 
+                    line-height: 1.2;">SERVICES</div>
+                  </div>
+                </div>
+              </div>
+          
+              <div style="text-align: center; margin-top: 20px;">
+                <h1 style="font-size: 2em; margin: 0;">INVOICE</h1>
+                <p style="margin: 5px 0;"># {{ViewInvoiceObj.InvoiceNumber}}</p>
+                <p style="margin: 5px 0;">Date: {{ ViewInvoiceObj.CreatedOn | date: 'MMM d, y' }}</p>
+                <div style="background-color: rgb(213, 211, 211); padding: 10px; margin-top: 10px;">
+                  <p style="color: black; margin: 0; font-weight: bold;">
+                    Balance Due: AED {{ViewInvoiceObj.DueAmount}}.00
+                  </p>
+                </div>
+              </div>
+            </div>
+          
+            <!-- Details -->
+            <div style="margin-top: 20px;">
+              <p style="font-weight: bold;">GAMA TYPING SERVICES LLC</p>
+              <p>ABU DHABI MOHAMED BIN ZAYED ME-11<br />AL KHAWATIM STREET</p>
+              <p style="font-weight: bold;">Print By: {{ViewInvoiceObj.PrintBy}}</p>
+              <p style="font-weight: bold;">Bill To: {{ViewInvoiceObj.BillToName}}</p>
+            </div>
+          
+            <!-- Table -->
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+              <thead>
+                <tr style="background-color: #000; color: white; text-align: left;">
+                  <th style="padding: 8px; border: 1px solid #ddd;">Sr.</th>
+                  <th style="padding: 8px; border: 1px solid #ddd;">Item</th>
+                  <th style="padding: 8px; border: 1px solid #ddd;">Quantity</th>
+                  <th style="padding: 8px; border: 1px solid #ddd;">Rate</th>
+                  <th style="padding: 8px; border: 1px solid #ddd;">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of ViewInvoiceObj.InvoiceItemLists; let i = index">
+                  <td style="padding: 8px; border: 1px solid #ddd;">{{i + 1}}</td>
+                  <td style="padding: 8px; border: 1px solid #ddd;">
+                    <b>{{item.ItemName}}</b>
+                  </td>
+                  <td style="padding: 8px; border: 1px solid #ddd;">{{item.Quantity}}</td>
+                  <td style="padding: 8px; border: 1px solid #ddd;">AED {{item.Rate}}</td>
+                  <td style="padding: 8px; border: 1px solid #ddd;">AED {{item.ItemTotalAmount}}.00</td>
+                </tr>
+              </tbody>
+            </table>
+          
+            <!-- Totals -->
+            <div
+              style="
+                text-align: right;
+                margin-top: 10px;
+                font-size: 14px;
+                font-weight: bold;
+              "
+            >
+              Total: AED {{ViewInvoiceObj.TotalAmount}}.00
+            </div>
+          
+            <div
+              *ngIf="ViewInvoiceObj.ApplyDiscount"
+              style="
+                text-align: right;
+                margin-top: 10px;
+                font-size: 14px;
+                font-weight: bold;
+              "
+            >
+              Discount: AED {{ViewInvoiceObj.ApplyDiscount}}.00
+            </div>
+          
+            <div
+              style="
+                text-align: right;
+                margin-top: 10px;
+                font-size: 14px;
+                font-weight: bold;
+              "
+            >
+              Net Total: AED {{ViewInvoiceObj.NetAmount}}.00
+            </div>
+          
+            <div
+              *ngIf="ViewInvoiceObj.ReceivedAmount"
+              style="
+                text-align: right;
+                margin-top: 10px;
+                font-size: 14px;
+                font-weight: bold;
+              "
+            >
+              Paid: AED {{ViewInvoiceObj.ReceivedAmount}}.00
+            </div>
+          
+            <!-- Notes -->
+            <div *ngIf="ViewInvoiceObj.InvoiceDocumentLists?.length > 0" style="margin-top: 20px;">
+              <p style="font-weight: bold;">Notes:</p>
+              <p>REQUIRED DOCUMENTS:</p>
+              <table>
+                <tr *ngFor="let item of ViewInvoiceObj.InvoiceDocumentLists">
+                  <td>{{item.DocumentName}}</td>
+                </tr>
+              </table>
+            </div>
+          
+            <!-- Terms & Conditions -->
+            <div *ngIf="ViewInvoiceObj.TermAndCondition" style="margin-top: 20px;">
+              <p style="font-weight: bold;">Terms & Conditions</p>
+              <p>{{ViewInvoiceObj.TermAndCondition}}</p>
+            </div>
+          </div>
+          
+          
+  
+          </div>
+    
+        </div>
+    
+
+  </div>
+
+  <ng-template pTemplate="footer">
+      <button pButton pRipple icon="pi pi-times" type="button" label="Cancel" class="p-button-danger"  (click)="viewInvoiceDialog = false"></button>
+      <button pButton pRipple icon="pi pi-check" type="button"  label="Print"  (click)="printDiv();viewInvoiceDialog = false"></button>
+
+  </ng-template>
+</p-dialog>
+
+
+
+

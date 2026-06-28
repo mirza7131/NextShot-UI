@@ -1,0 +1,848 @@
+<div class="grid">
+
+  <div class="col-12">
+    <div class="">
+      <p-toast></p-toast>
+      <!-- <div class="flex justify-content-end pb-3">
+                <button pButton pRipple type="button" icon="pi pi-plus" class="p-button-rounded"  title="Add New" (click)="openNew()" ></button>
+            </div> -->
+
+      <!-- Card Filter     -->
+      <div class="mb-4" *ngIf="showFilters">
+        <p-panel [collapsed]="true" header="Filter" [toggleable]="true" class="line-height-3 m-0">
+
+          <div class="grid p-fluid">
+
+            <app-user-level-filter-widget class="col-12 md:col-12 lg:col-12 pb-0" [userLevelFiltersModel]="filterModel"
+              [IsUserLevel]="true" [IsUserFilter]="true" [IsCnicFilter]="true" [IsMobileNoFilter]="true"
+              [IsMrnoFilter]="true" [UserRoleConst]="roleConstant.Registration"></app-user-level-filter-widget>
+
+            <div class="col-12 md:col-4 lg:col-3">
+              <label for="lastname2">&nbsp;</label>
+              <div class="flex">
+                <button pButton pRipple type="button" icon="pi pi-filter" label="Search"
+                  class="p-button-primary p-button-outlined mr-2" title="Submit Filter"
+                  (click)="submitFilter()"></button>
+                <button pButton pRipple type="button" icon="pi pi-filter-slash" label="Clear"
+                  class="p-button-danger p-button-outlined" title="Clear Filter" (click)="clearFilter()"></button>
+              </div>
+            </div>
+          </div>
+        </p-panel>
+      </div>
+      <!-- End Card Filter -->
+
+      <!-- Table Component -->
+      <p-table #dt [value]="patientVisits">
+        <!-- <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Patient Visits</h5> 
+                         <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                        </span> 
+                    </div> 
+                </ng-template>-->
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Sr# </th>
+            <th pSortableColumn="FullName">Patient Name <p-sortIcon field="FullName"></p-sortIcon></th>
+            <th pSortableColumn="Cnic">CNIC <p-sortIcon field="Cnic"></p-sortIcon></th>
+            <th pSortableColumn="MobileNo">Mobile No.<p-sortIcon field="MobileNo"></p-sortIcon></th>
+            <th pSortableColumn="Mrno">MR No. <p-sortIcon field="Mrno"></p-sortIcon></th>
+            <th pSortableColumn="Department">Department <p-sortIcon field="Department"></p-sortIcon></th>
+            <th pSortableColumn="Department">Section <p-sortIcon field="Section"></p-sortIcon></th>
+            <th pSortableColumn="VisitDate">Visit Date<p-sortIcon field="VisitDate"></p-sortIcon></th>
+            <th pSortableColumn="CreatedBy">Created By<p-sortIcon field="CreatedBy"></p-sortIcon></th>
+            <th>Action</th>
+
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-patitentvisit let-rowIndex="rowIndex">
+          <tr>
+            <td style="width:3rem;">
+              <b>{{((filterModel.PageNumber-1)*filterModel.PageSize)+rowIndex+1}}</b>
+            </td>
+            <td style="min-width:2rem;">
+              <span class="p-column-title">Patient Name</span>
+              {{patitentvisit?.FullName}}
+            </td>
+            <td style="min-width:8rem;">
+              <span class="p-column-title">Cnic</span>
+              {{patitentvisit?.Cnic}}
+            </td>
+            <td style="min-width:8rem;">
+              <span class="p-column-title">Mobile No.</span>
+              {{patitentvisit?.MobileNo}}
+            </td>
+            <td style="min-width:10rem;">
+              <span class="p-column-title">MR No.</span>
+              {{patitentvisit?.Mrno}}
+            </td>
+            <td style="min-width:10rem;">
+              <span class="p-column-title">Department</span>
+              {{patitentvisit?.Department}}
+            </td>
+            <td style="min-width:10rem;">
+              <span class="p-column-title">Section</span>
+              {{patitentvisit?.Section}}
+            </td>
+            <td style="min-width:10rem;">
+              <span class="p-column-title">Visit Date</span>
+              {{patitentvisit?.VisitDate | date:'dd-MM-YYYY'}}
+            </td>
+            <td style="min-width:10rem;">
+              <span class="p-column-title">Created By</span>
+              {{patitentvisit?.CreatedBy}}
+              <br />
+              <small class="font9">{{patitentvisit.CreatedOn | date: 'medium'}}</small>
+            </td>
+            <td style="min-width:10rem;">
+              <div class="flex">
+                <button *ngIf="showDoctorReciept" pButton pRipple icon="pi pi-eye" title="View Patient Visit"
+                  class="p-button-rounded p-button-warning mr-2"
+                  (click)="patientPreviousRecord(patitentvisit);"></button>
+                <button pButton pRipple icon="pi pi-ticket" title="View Patient Slip"
+                  class="p-button-rounded p-button-info mr-2"
+                  (click)="showRegistrationSlipByVisit(patitentvisit)"></button>
+                <!-- <button *ngIf="showDeleteListItem" pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="deletePatientVisit(patitentvisit)"></button> -->
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="footer">
+          <tr>
+            <td colspan="11">
+              <p-paginator [rows]="10" [showCurrentPageReport]="true"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                [totalRecords]="filterModel.TotalRecords || 0" [rowsPerPageOptions]="[10,20,30,50,100]"
+                (onPageChange)="paginate($event)"></p-paginator>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+      <!-- End Table Component -->
+
+    </div>
+
+    <!--Patient Visit Dialog -->
+    <p-dialog [(visible)]="patientVisitDialog" [style]="{width: '1000px',height:'700px'}" header="Patient Visit Details"
+      position="center" [draggable]="false" [modal]="true" class="p-fluid">
+      <ng-template pTemplate="content">
+
+
+
+      </ng-template>
+
+      <ng-template pTemplate="footer">
+        <button pButton pRipple label="Cancel" type="button" class="p-button-danger" (click)="hideDialog()"></button>
+        <button pButton pRipple label="Save" type="button" (click)="savePatientVisit()"></button>
+
+      </ng-template>
+    </p-dialog>
+    <!-- End Dialog -->
+
+    <!-- Dialog Delete Patient -->
+
+    <p-dialog [(visible)]="deletePatientVisitDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+      <div class="flex align-items-center justify-content-center mt-3">
+        <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+        <span *ngIf="patientVisit">Are you sure you want to delete <b>{{patientVisit.FullName}}</b>?</span>
+      </div>
+      <ng-template pTemplate="footer">
+        <button pButton pRipple icon="pi pi-times" type="button" label="No" class="p-button-danger"
+          (click)="deletePatientVisitDialog = false"></button>
+        <button pButton pRipple icon="pi pi-check" type="button" label="Yes" (click)="confirmDelete()"></button>
+
+      </ng-template>
+    </p-dialog>
+
+    <!-- End Dialog Delete Patient -->
+
+  </div>
+</div>
+
+<app-registration-popup *ngIf="displaySlipReg" [IsPatientFromVisitList]="IsPatientFromVisitList"
+  [registrationData]="patientregistrationRes"></app-registration-popup>
+
+
+<!-- <p-dialog [(visible)]="patientHistory" header="Doctor Receipt" [modal]="true" [style]="{width:'1000px',height:'1000px'}">
+    <ng-template pTemplate="content">
+      <app-doctor-recipt-print  *ngIf="patientHistory" [patientVisitId]="patientVisitIdGen"></app-doctor-recipt-print>
+    </ng-template>
+  </p-dialog> -->
+
+
+
+<!-- SLIP Registration Successfull -->
+<!-- <p-dialog header="Registration" [(visible)]="displaySlipReg" [style]="{width: '40vw'}">
+  <div class="animated fadeIn" style="width: 100%;font-family: 'system-ui' !important;">
+      <table width="100%">
+          <tbody>
+              <tr>
+                  <td>
+                      <table style="margin: 0px;width: 100%;">
+                          <tbody>
+                              <tr>
+                                  <td>
+                                      <p>
+                                          <img src="../../../../../assets/layout/images/PSHealth_logo.png" alt="Logo"
+                                              style="width: 200px;">
+                                      </p>
+                                  </td>
+                                  <td>
+
+                  <p class="text-center" style="margin: auto;">
+                    <qrcode [allowEmptyString]="true" [qrdata]="patientregistrationRes.Mrno + ',' + patientregistrationRes.PatientOpenVisitId" [width]="70" [errorCorrectionLevel]="'M'" ></qrcode>
+                  </p>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2">
+                  <p class="m-0 h5  text-center">{{patientregistrationRes.HealthFacilityName}}</p>
+                  <p class="m-0 h5 text-center"><strong>{{patientregistrationRes?.Department}} Slip</strong></p>
+                  <p class="m-0 text-center">{{patientregistrationRes.VisitDate | date:'medium'}}</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <hr>
+          <table style="width: 100%; margin-left:20px;">
+            <tbody>
+              <tr>
+                <td colspan="2" class="text-center" style="padding: 2px; border: none;">
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 2px; border: none;">
+                  <p class="m-0">Token No.</p>
+                </td>
+                <td style="padding: 2px; border: none;">
+                  <p class="m-0">{{patientregistrationRes.TokenNo}}</p>
+                </td>
+              </tr>
+
+                              <tr>
+                                  <td style="padding: 2px; border: none;">
+                                      <p class="m-0">MR No.</p>
+                                  </td>
+                                  <td style="padding: 2px; border: none;">
+                                      <p class="m-0">{{patientregistrationRes?.Mrno}}</p>
+                                      </td>
+                              </tr>
+                              <tr>
+                                  <td style="padding: 2px; border: none;">
+                                      <p class="m-0 p-strong">Service</p>
+                                  </td>
+                                  <td style="padding: 2px; border: none;">
+                                      <p class="m-0 p-strong">
+                                          {{patientregistrationRes?.Section}}
+                                      </p>
+                                  </td>
+                              </tr>
+                              <tr>
+                                  <td style="padding: 2px; border: none;">
+                                      <p class="m-0">Patient Name</p>
+                                  </td>
+                                  <td style="padding: 2px; border: none;">
+                                      <p class="m-0">{{patientregistrationRes?.PatientName}}</p>
+                                  </td>
+                              </tr>
+                              <tr>
+                                  <td style="padding: 2px; border: none;">
+                                      S/D/W of
+                                  </td>
+                                  <td style="padding: 2px; border: none;">
+                                      <p class="m-0">{{patientregistrationRes?.GurdianName}}</p>
+                                  </td>
+
+                              </tr>
+                              <tr>
+                                  <td style="padding: 2px; border: none;">
+                                      <p class="m-0 p-strong">Gender</p>
+                                  </td>
+                                  <td style="padding: 2px; border: none;">
+                                      <p class="m-0">{{patientregistrationRes?.Gender}}</p>
+                                  </td>
+                              </tr>
+                              <tr>
+                                  <td style="padding: 2px; border: none;">
+                                      <p class="m-0">CNIC</p>
+                                  </td>
+                                  <td style="padding: 2px; border: none;">
+                                      <p class="m-0">{{patientregistrationRes?.CNIC}}</p>
+                                  </td>
+                              </tr>
+                              <tr>
+                                  <td style="padding: 2px; border: none;">
+                                      <p class="m-0 p-strong">Age</p>
+                                  </td>
+                                  <td style="padding: 2px; border: none;">
+                                      <p class="m-0 p-strong">
+                                          {{calculateAge(patientregistrationRes?.Dob)}}
+                                      </p>
+                                  </td>
+                              </tr>
+                              <tr>
+                                  <td style="padding: 2px; border: none;">
+                                      <p class="m-0 p-strong">MobileNo</p>
+                                  </td>
+                                  <td style="padding: 2px; border: none;">
+                                      <p class="m-0 p-strong">
+                                          {{patientregistrationRes?.ContactNo}}
+                                      </p>
+                                  </td>
+                              </tr>
+
+                              <tr>
+                                  <td class="m-0" style="padding: 2px; border: none;">
+                                      <p class="h5 urdu-text my-2 strong text-center"
+                                          style="font-size: 18px !important;">
+                                          {{urduGazette.registrtionregard}}
+                                      </p>
+                                      <p class="h5 urdu-text my-2 strong text-center"
+                                          style="font-size: 18px !important;">
+                                          {{urduGazette.thankyou}}
+                                      </p>
+                                  </td>
+                              </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<ng-template pTemplate="footer">
+  <p-button label="Print Urdu" (click)="PrintUrduSlip()" icon="pi pi-check" styleClass="p-button-sm"></p-button>
+  <p-button label="Print English" (click)="printSlip()" icon="pi pi-check" styleClass="p-button-sm"></p-button>
+  <p-button icon="pi pi-times" (click)="hideRegistrationSlipByVisit()" [style]="{float:'right'}"
+    styleClass="p-button-danger p-button-sm " label="Close"></p-button>
+</ng-template>
+</p-dialog> -->
+
+<!-- printslip -->
+<div class="animated fadeIn" id="revisitslip" hidden
+  style="width: 400px; height: 600px ;font-family: 'Calibri' !important;">
+  <table width="420px">
+    <tbody>
+      <tr>
+        <td style="padding: 20px 10px;">
+          <table style="margin: 0px;width: 100%;">
+            <tbody>
+              <tr>
+                <td colspan="2">
+                  <p style="text-align: center;">
+                    <img src="../../../../assets/layout/images/PSHealth_logo.png" alt="Logo"
+                      style="height: 50px; margin: auto; color: black;">
+                  </p>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2">
+                  <p class="text-center" id="qrcode">
+                  </p>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2">
+                  <p style="font-size: 20px;" class="m-0 h5 text-center">
+                    <strong>{{patientregistrationRes.HealthFacilityName}}</strong></p>
+              </tr>
+              <tr>
+                <td colspan="2">
+                  <p class="m-0 h5 text-center"><strong> Registrtion Slip</strong></p>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2">
+                  <p class="m-0 text-center">{{patientregistrationRes.VisitDate | date: 'medium'}}</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <hr>
+          <table style="width: 100%; margin-left:20px;">
+            <tbody>
+              <tr>
+                <td colspan="2" class="text-center" style="padding: 2px; border: none;">
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 2px; border: none;">
+                  <p class="m-0" style="color: black; font-size: 25px;"> <strong>Token No.</strong> </p>
+                </td>
+                <td style="padding: 2px; border: none;">
+                  <p class="m-0" style="color: black; font-size: 25px;">
+                    <strong>{{patientregistrationRes.TokenNo}}</strong> </p>
+                </td>
+              </tr>
+              <tr>
+
+                <td style="padding: 2px; border: none;">
+                  <p class="m-0" style="color: black; font-size: 25px;">MR No.</p>
+                </td>
+                <td style="padding: 2px; border: none;">
+                  <p class="m-0" style="color: black;font-size: 25px;">
+                    {{patientregistrationRes?.Mrno}}&nbsp;&nbsp;&nbsp;</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 2px; border: none;">
+                  <p class="m-0 p-strong" style="color: black;font-size: 20px;">Service</p>
+                </td>
+                <td style="padding: 2px; border: none; color: black; font-size: 20px;">
+                  <p class="m-0 p-strong">
+                    <strong> {{patientregistrationRes?.Section}}</strong>
+                  </p>
+                </td>
+              </tr>
+
+              <tr>
+                <td style="padding: 2px; border: none;">
+                  <p class="m-0" style="color: black;font-size: 20px;">Patient Name</p>
+                </td>
+                <td style="padding: 2px; border: none;">
+                  <p class="m-0" style="color: black;font-size: 20px;">{{patientregistrationRes.PatientName}}</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 2px; border: none;">
+                  <p class="m-0" style="color: black;font-size: 20px;"> S/D/W of</p>
+                </td>
+                <td style="padding: 2px; border: none;">
+                  <p class="m-0" style="color: black;font-size: 20px;">{{patientregistrationRes.GurdianName}}</p>
+                </td>
+
+              </tr>
+              <tr>
+                <td style="padding: 2px; border: none;">
+                  <p class="m-0 p-strong" style="color: black;font-size: 20px;">Gender</p>
+                </td>
+                <td style="padding: 2px; border: none;">
+                  <p class="m-0" style="color: black;font-size: 20px;">{{patientregistrationRes?.Gender}}</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 2px; border: none;">
+                  <p class="m-0" style="color: black;font-size: 20px;">CNIC</p>
+                </td>
+                <td style="padding: 2px; border: none;">
+                  <p class="m-0" style="color: black;font-size: 20px;">{{patientregistrationRes.CNIC}}</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 2px; border: none;">
+                  <p class="m-0 p-strong " style="color: black;font-size: 20px;">Age</p>
+                </td>
+                <td style="padding: 2px; border: none;">
+                  <p class="m-0 p-strong" style="color: black;font-size: 20px;">
+                    {{calculateAge(patientregistrationRes?.Dob)}}
+                  </p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 2px; border: none;">
+                  <p class="m-0 p-strong" style="color: black;font-size: 20px;">MobileNo</p>
+                </td>
+                <td style="padding: 2px; border: none;">
+                  <p class="m-0 p-strong" style="color: black;font-size: 20px;">
+                    {{patientregistrationRes.ContactNo}}
+                  </p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr>
+
+    </tbody>
+    <!-- </td> -->
+  </table>
+
+  <div style="width: 400px; padding: 0px 10px;">
+    <!-- <p class="h5 urdu-text text-center"
+      style="font-family: Jameel Noori Nastaleeq; font-size: 20px !important;color: black;">
+      {{urduGazette.registrtionregard}}
+    </p> -->
+    <p class="h5 urdu-text text-center"
+      style="font-family: Jameel Noori Nastaleeq; font-size: 20px !important;color: black;">
+      {{urduGazette.registrtionregard02}}
+    </p>
+    <!-- <p class="h5 urdu-text text-center"
+      style="font-family: Jameel Noori Nastaleeq; font-size: 20px !important;color: black;">
+      {{urduGazette.From}}
+    </p> -->
+    <p class="h5 urdu-text text-center"
+      style="font-family: Jameel Noori Nastaleeq; font-size: 20px !important;color: black;">
+      {{urduGazette.thankyou}}
+    </p>
+    <p class="h5 urdu-text my-4 p-strong text-center" style="font-size: 14 !important; color: black;">
+      Powered & Developed by: Health Information & Service Delivery Unit (HISDU)
+    </p>
+  </div>
+</div>
+<!-- printslip -->
+
+<!-- urduSLip -->
+
+<!-- EndUduLsip -->
+
+<!-- <p-dialog  header="Patient Historyy" [(visible)]="patientHistory"  [style]="{width:'1000px',height:'auto'}">
+    <div class="grid">
+      <div class="col-12 md:col-12  mt-2 " >
+        <div class="page previewslip ng-star-inserted">
+            <div class="animated fadeIn" id="regSlip" style="width: 100%;font-family: 'system-ui' !important;">
+              <table width="100%">
+                <tbody >
+                  <tr>
+                    <td style="padding: 10px;">
+                      <table style="margin: 25px;width: 100%;">
+                        <tbody>
+                          <tr>
+                            <td>
+                              <p>
+                                <img class="logo-height" src="../../../../../assets/layout/images/PSHealth_logo.png" alt="Logo"
+                                  >
+                              </p>
+                            </td>
+                            <td class="p-strong">
+                              <p class="m-0">
+                                <span class="h5">
+                                  {{patientPreviousRecordData.HealthFacilityName}}
+                                </span>
+                                <br/>
+                                <strong >{{patientPreviousRecordData.Department}}&nbsp;Slip</strong>
+                              </p>
+
+                            </td>
+                            <td>
+                              <div class="pull-right">
+                                <div>
+                                  <img class="logo-height" src="../../../../../assets/layout/images/HISDU_HMIS_Logo.png" alt="Hisdu">
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+
+                          <tr>
+                            <td>
+                              <p><strong> MR No.</strong>{{patientPreviousRecordData.Mrno}}</p>
+                            </td>
+                            <td>
+                              <p><strong> Doctor: </strong>{{patientPreviousRecordData.Doctor}}</p>
+                            </td>
+                            <td>
+                              <p><strong> Service:</strong>{{patientPreviousRecordData.Section}}</p>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <div class="grid" >
+
+                        <div style="width: 14%;margin-left: 42px;">
+                          <p class="m-0"> Patient Name:</p>
+                        </div>
+                        <div style="width:26%;">
+                          <p class="m-0 slipLine"> {{patientPreviousRecordData.PatientName}}&nbsp;</p>
+                        </div>&nbsp;&nbsp;
+                        <div style="width: 16%;">
+
+                            <p class="m-0">Guardian Name</p>
+                        </div>
+                        <div class="mb-line" style="width: 30%;">
+                          <p class="m-0 slipLine">{{patientPreviousRecordData.GurdianName}}&nbsp;</p>
+                        </div><br>
+                        <div class="ml-line" style="width:5%;margin-left: 42px;">
+                          <p class="m-0"> Age:</p>
+                        </div>
+                        <div style="width:35%;">
+                          <p class="m-0 slipLine" >{{calculateAge(patientPreviousRecordData.Dob)}}<strong> Y</strong>&nbsp;</p>
+                        </div>&nbsp;&nbsp;
+                        <div style="width:8%;">
+                          <p class="m-0">Gender:</p>
+                        </div>
+                        <div class="mb-line" style="width:38%;">
+                          <p class="m-0 slipLine" >{{patientPreviousRecordData.Gender}}&nbsp;</p>
+                        </div>
+                        <div class="ml-line" style="width:6%;">
+                          <p class="m-0">CNIC:</p>
+                        </div>
+                        <div style="width:34%;">
+                          <p class="m-0 slipLine"> {{patientPreviousRecordData.CNIC}}&nbsp;</p>
+                        </div>&nbsp;&nbsp;
+                        <div style="width:10%;">
+                          <p class="m-0">ContactNo:</p>
+                        </div>
+                        <div class="mb-line" style="width:36%;">
+                           <p class="m- 0 slipLine">{{patientPreviousRecordData.ContactNo}}&nbsp;</p>
+                        </div>
+                        <div class="ml-line" style="width:8%;">
+                          <p class="m-0">Address:</p>
+                        </div>
+                        <div class="mb-line" style="width:79%;">
+                         <p class="m-0 slipLine">{{patientPreviousRecordData.Address}}&nbsp;</p>
+                        </div>
+                        <div class="ml-line" style="width:10%;">
+                          <p class="m-0">Diagnosis:</p>
+                        </div>
+                        <div class="mb-line" style="width:77%;">
+                          <p class="m-0 slipLine">{{patientPreviousRecordData.DiseasesName}}&nbsp;</p>
+                        </div>
+                        <div class="ml-line" style="width:16%;">
+                          <p class="m-0">Next Visit Date:</p>
+                        </div>
+                        <div style="width:71%;" >
+                         <p class="m-0 slipLine">{{patientPreviousRecordData.NextVisitDate|date:'d-M-yy'}}&nbsp;</p>
+                        </div>
+                        <br>
+                        <br>
+                        <div class="row" >
+                            <div class="col-3 md:col-3">
+                                <h6 class="bottom-mar">Compaints</h6>
+                                <div class="text-area-slip">
+                                    <p>{{patientPreviousRecordData.PresentComplaints}}</p>
+                                </div>
+                            </div>
+                            <div class="col-3 md:col-3">
+                                <h6 class="bottom-mar">Examination Finding</h6>
+                                <div class="text-area-slip">
+                                    <p>{{patientPreviousRecordData.Examination}}</p>
+                                </div>
+                            </div>
+
+                            <div class="col-3 md:col-3">
+                                <h6 class="bottom-mar">Medical History</h6>
+                                <div class="text-area-slip">
+                                    <p>{{patientPreviousRecordData.PatientMedicalHistory}}</p>
+                                </div>
+                            </div>
+                            <div class="col-3 md:col-3">
+                                <h6 class="bottom-mar">Advice Given</h6>
+                                <div class="text-area-slip">
+                                    <p>{{patientPreviousRecordData.AdviseGiven}}</p>
+                                </div>
+                            </div>
+                        </div>
+                      </div>
+                      <br>
+                      <div class="grid">
+                        <div class="col-3 md:col-3">
+                          <div>
+                             <tr>
+                              <th>
+                                <p class="h6 m-0 text-center">Vitals:</p>
+                              </th>
+                            </tr>
+                            <table class="tableborder" *ngIf="patientvitals.length >= 1">
+                              <thead>
+                              </thead>
+                              <tbody >
+                                  <tr>
+                                    <td>
+                                      <p class="m-0">BP:</p>
+                                    </td>
+                                    <td>
+                                      <p class="m-0">
+                                        {{patientvitalslastIndex.Bpsystolic}}/{{patientvitalslastIndex.BpdiaSystolic}}&nbsp;
+                                        (mmgh)
+                                       </p>
+                                    </td>
+                                  </tr>
+                                  <tr >
+                                    <td>
+                                      <p class="m-0 p-strong">Pulse:</p>
+                                    </td>
+                                    <td>
+                                      <p class="m-0">{{patientvitalslastIndex.Pulse}}&nbsp;(pulse/min)
+                                      </p>
+                                    </td>
+                                  </tr>
+                                  <tr >
+                                    <td>
+                                      <p class="m-0 p-strong">Temp:</p>
+                                    </td>
+                                    <td>
+                                      <p class="m-0">{{patientvitalslastIndex.Temprature}}&nbsp;(F°)
+                                      </p>
+                                    </td>
+                                  </tr>
+                                  <tr >
+                                    <td>
+                                      <p class="m-0 p-strong">Height:</p>
+                                    </td>
+                                    <td>
+                                      <p class="m-0">{{patientvitalslastIndex.Height}}&nbsp;(cm)
+                                      </p>
+                                    </td>
+                                  </tr>
+                                  <tr >
+                                    <td>
+                                      <p class="m-0 p-strong">Weight:</p>
+                                    </td>
+                                    <td>
+                                      <p class="m-0">{{patientvitalslastIndex.Weight}}&nbsp;(kg)</p>
+                                    </td>
+                                  </tr>
+                                  <tr >
+                                    <td>
+                                      <p class="m-0 p-strong">Respiratory:</p>
+                                    </td>
+                                    <td>
+                                      <p class="m-0">{{patientvitalslastIndex.ResperatoryRate}}&nbsp;(breaths/min) </p>
+                                    </td>
+                                  </tr>
+                              </tbody>
+                            </table>
+                            <br>
+                            <tr>
+                              <td>
+                                <p class="h6 m-0 text-center">Test/Investigations:</p>
+                              </td>
+                            </tr>
+                            <table class="tableborder" style="width: 100%;" >
+                                <tbody *ngFor="let test of patientPreviousRecordData.PatientLabTests; let i=index; ">
+                                    <tr >
+                                        <td>
+                                              <p>{{i + 1}}</p>
+
+                                        </td>
+                                        <td >
+                                          <p>{{test.LabTestName}}</p>
+
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                            </table>
+                          </div>
+                        </div>
+                        <div class="col-9 md:col-9">
+                          <div class="slipLine">
+                          <tr>
+                            <td>
+                              <p class="m-0 h6">Internal Medicine:</p>
+                            </td>
+                            <td>
+                              <div >
+                                <p class="h5 urdu-text p-strong text-right" style="font-size: 16px !important;">
+                                  {{urduPrescription.Internalpharmacy1}}</p>
+                              </div>
+                            </td>
+                          </tr>
+                        </div>
+                          <div>
+                            <table class="animated fadeIn">
+                              <tbody>
+                                <div>
+                                  <div class="slipLine">
+                                  <tr class="grid ml-1">
+                                    <td class="col-12 md:col-3">
+                                      <div>
+                                        <p class="m-0"><strong class="mr-l">Medicine</strong></p>
+                                      </div>
+                                    </td>
+                                    <td class="col-12 md:col-3">
+                                      <div>
+                                        <p class="m-0"><strong>Dose</strong></p>
+                                      </div>
+                                    </td>
+                                    <td class="col-12 md:col-2">
+                                      <div>
+                                        <p class="m-0 "><strong>DoseTime</strong></p>
+                                      </div>
+                                    </td>
+                                    <td class="col-12 md:col-2">
+                                        <div>
+                                          <p class="m-0 "><strong>Days</strong></p>
+                                        </div>
+                                      </td>
+                                    <td class="col-12 md:col-2">
+                                      <div>
+                                        <p class="m-0"><strong>Quantity</strong></p>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                </div>
+                                  <tr class="grid mt-1 ml-1" *ngFor="let medicine of patientPreviousRecordData.PatientMedicine">
+                                    <td class="col-12 md:col-3">
+                                      <div>
+                                        <p class="m-0">{{medicine.MedicineName}}<p>
+                                      </div>
+                                    </td>
+                                    <td class="col-12 md:col-3">
+                                      <div>
+                                        <p class="m-0">{{medicine.DoseName}}<p></p>
+
+                                      </div>
+                                    </td>
+                                    <td class="col-12 md:col-2 ">
+                                      <div>
+                                        <p class="m-0 text-center">{{(medicine.DoseTimeName)}}</p>
+
+                                      </div>
+                                    </td>
+                                    <td class="col-12 md:col-2 ">
+                                        <div>
+                                            <p class="m-0 text-center">{{(medicine.Days)}}</p>
+                                        </div>
+                                      </td>
+                                    <td class="col-12 md:col-2 ">
+                                      <div>
+                                        <p class="m-0 text-center">{{(medicine.Quantity)}}</p>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="col-12 md:col-12">
+                                      <div>
+                                        <p class="h5 urdu-text my-4 p-strong"
+                                          style="font-size: 16px !important;"> {{urduPrescription.Internalpharmacy2}}</p>
+                                      </div>
+                                  </tr>
+                                  <div class="slipLine">
+
+                                </div>
+                                </div>
+                              </tbody>
+                            </table>
+                          </div>
+                          <br>
+
+                          <div>
+                             <p class="h5 urdu-text my-4 p-strong text-center" style="font-size: 22px !important;">
+                              {{urduPrescription.help}}
+                            </p>
+                            <p class="h5 urdu-text my-4 p-strong text-center" style="font-size: 12px !important;">
+                              Powerd by: Health Information & Service Delivery Unit (HISDU)
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+      </div>
+
+  </div>
+  </p-dialog> -->
+
+
+<!-- Start Dialog Print Doctor -->
+
+<p-dialog [(visible)]="patientHistory" header="Patient Historyy" [modal]="true"
+  [style]="{width:'1000px',height:'1000px'}">
+  <ng-template pTemplate="content">
+    <!-- <app-doctor-recipt-print  *ngIf="patientHistory" [patientVisitId]="patientVisitIdGen"></app-doctor-recipt-print> -->
+
+    <app-genral-andphysiotherapist-doctor-print *ngIf="patientHistory" [formType]="formType"
+      [patientVisitId]="patientVisitIdGen" [patientDaignosedId]="patientDiagnoseId">
+    </app-genral-andphysiotherapist-doctor-print>
+
+
+  </ng-template>
+</p-dialog>
+
+<!-- End Dialog Print Lab -->

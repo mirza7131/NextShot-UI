@@ -1,0 +1,113 @@
+<!-- 
+<div *ngIf="userLevelFormGroup" [formGroup]="userLevelFormGroup" class="grid">
+
+    <div *ngIf="!isProvinceLevel" class="col-12 md:col-4 lg:col-4">
+        <label for="province"> Province</label>
+        <p-dropdown [options]="provinceData" optionLabel="Name" optionValue="Id"  [style]="{width: '100%'}"
+        (onChange)="getDivisions(userLevelFiltersModel.ProvinceId)" appendTo="body" [virtualScroll]="true" [virtualScrollItemSize]="50" formControlName="ProvinceId"  [filter]="true" [readonly]="isProvinceLevel" [showClear]="!isProvinceLevel" placeholder="Select a Province"></p-dropdown>
+    </div>
+
+    <div *ngIf="!isDivisionLevel" class="col-12 md:col-4 lg:col-4">
+        <label for="division"> Division</label>
+        <p-dropdown [options]="divisionData" optionLabel="Name" appendTo="body" optionValue="Id" [style]="{width: '100%'}"
+        (filterChange)="handleFilter($event, 'division')"
+          (onChange)="dropdownValueChanged($event, 'division')"  [virtualScroll]="true" [virtualScrollItemSize]="50" formControlName="DivisionId" [filter]="true" [readonly]="isDivisionLevel" [showClear]="!isDivisionLevel" placeholder="Select a Division"></p-dropdown>
+    </div>
+
+    <div *ngIf="!isDistrictLevel" class="col-12 md:col-4 lg:col-4">
+        <label for="district"> District</label>
+        <p-dropdown [options]="districtData" optionLabel="Name" appendTo="body" optionValue="Id" [style]="{width: '100%'}"
+        (onChange)="getTehsil(userLevelFiltersModel.DistrictId)" [virtualScroll]="true" [virtualScrollItemSize]="50" formControlName="DistrictId"  [filter]="true" [readonly]="isDistrictLevel" [showClear]="!isDistrictLevel" placeholder="Select a District"></p-dropdown>
+    </div>
+
+    <div *ngIf="!isTehsilLevel" class="col-12 md:col-4 lg:col-4">
+        <label for="tehsil"> Tehsil</label>
+        <p-dropdown [options]="tehsilData" optionLabel="Name" appendTo="body" optionValue="Id" [style]="{width: '100%'}"
+        (onChange)="getHealthFacility(userLevelFiltersModel.TehsilId)"  [virtualScroll]="true" [virtualScrollItemSize]="50" formControlName="TehsilId" [filter]="true" [readonly]="isTehsilLevel" [showClear]="!isTehsilLevel" placeholder="Select a Tehsil"></p-dropdown>
+    </div>
+    <div *ngIf="!isHealthFacilityLevel" class="col-12 md:col-8 lg:col-8">
+        <label for="healthFacility"> Health Facility</label>
+        <p-dropdown [options]="healthFacilityData" optionLabel="Name" appendTo="body" optionValue="Id" [style]="{width: '100%'}"
+        (onChange)="getHealthFacilityDepartments($event)" [virtualScroll]="true" [virtualScrollItemSize]="50" formControlName="HealthFacilityId" [filter]="true" [readonly]="isHealthFacilityLevel" [showClear]="!isHealthFacilityLevel" placeholder="Select a Health Facility"></p-dropdown>
+    </div>
+
+    <div *ngIf="IsDepartment" class="col-12 md:col-4 lg:col-4">
+        <label for="name">Department</label>
+        <p-dropdown [options]="departmentData"
+        (onChange)="getHealthFacilitySections($event)" appendTo="body" [virtualScroll]="true" [virtualScrollItemSize]="50" formControlName="DepartmentId" [filter]="true" [showClear]="true" optionLabel="Name" optionValue="LookupId" placeholder="Select Department" ></p-dropdown>
+    </div>
+
+    <div *ngIf="IsSection" class="col-12 md:col-4 lg:col-4">
+        <label for="name">Section</label>
+        <p-dropdown [options]="sectionData"
+        [virtualScroll]="true" [virtualScrollItemSize]="50" appendTo="body" formControlName="SectionId" [filter]="true" [showClear]="true" optionLabel="Name" optionValue="LookupId" placeholder="Select Section" ></p-dropdown>
+    </div>
+
+    <app-date-filter-widget *ngIf="IsDateFilter" class="col-12 md:col-12 lg:col-12" [dateFiltersModel]="userLevelFiltersModel"></app-date-filter-widget>
+</div> -->
+
+<div class="grid">
+
+    <!-- <div *ngIf="!isHealthFacilityLevel && !isTehsilLevel" class="col-12">
+        <label > <b>Filter by Health Facility</b></label>
+        <br />
+        <p-inputSwitch [(ngModel)]="userLevelFiltersModel.isFilterFromHf" (onChange)="checkIfHealthFacilityFilter($event)" ></p-inputSwitch>
+    </div> -->
+    <div *ngIf="!isProvinceLevel" class="col-12 md:col-4 lg:col-4">
+        <label for="province"> Province</label>
+        <p-dropdown [options]="provinceData" optionLabel="Name" appendTo="body" optionValue="Id" [style]="{width: '100%'}"
+        (onChange)="getDivisions(userLevelFiltersModel.ProvinceId)" [disabled]="userLevelFiltersModel.isFilterFromHf" [(ngModel)]="userLevelFiltersModel.ProvinceId" [filter]="true" [readonly]="isProvinceLevel" [showClear]="!isProvinceLevel" placeholder={{provicePlaceHolder}}></p-dropdown>
+    </div>
+
+    <div *ngIf="!isDivisionLevel" class="col-12 md:col-4 lg:col-4">
+        <label for="division"> Division</label>
+        <p-dropdown [options]="divisionData" optionLabel="Name" appendTo="body" optionValue="Id" [style]="{width: '100%'}"
+        (filterChange)="handleFilter($event, 'division')" 
+        (onChange)="dropdownValueChanged(userLevelFiltersModel.DivisionId, 'division')" [disabled]="userLevelFiltersModel.isFilterFromHf" [(ngModel)]="userLevelFiltersModel.DivisionId" [filter]="true" [readonly]="isDivisionLevel" [showClear]="!isDivisionLevel" placeholder={{divisionPlaceHolder}}></p-dropdown>
+    </div>
+
+    <div *ngIf="!isDistrictLevel " class="col-12 md:col-4 lg:col-4">
+        <label for="district"> District</label>
+        <p-dropdown [options]="districtData" optionLabel="Name" appendTo="body" optionValue="Id" [style]="{width: '100%'}"
+        (filterChange)="handleFilter($event, 'district')"
+        (onChange)="dropdownValueChanged(userLevelFiltersModel.DistrictId, 'district')" [disabled]="userLevelFiltersModel.isFilterFromHf" [(ngModel)]="userLevelFiltersModel.DistrictId" [filter]="true" [readonly]="isDistrictLevel" [showClear]="!isDistrictLevel" placeholder={{districtPlaceHolder}}></p-dropdown>
+    </div>
+
+    <div *ngIf="!isTehsilLevel" class="col-12 md:col-4 lg:col-4">
+        <label for="tehsil"> Tehsil</label>
+        <p-dropdown [options]="tehsilData" optionLabel="Name" appendTo="body" optionValue="Id" [style]="{width: '100%'}"
+        (filterChange)="handleFilter($event, 'tehsil')"
+        (onChange)="dropdownValueChanged(userLevelFiltersModel.TehsilId, 'tehsil')" [disabled]="userLevelFiltersModel.isFilterFromHf" [(ngModel)]="userLevelFiltersModel.TehsilId" [filter]="true" [readonly]="isTehsilLevel" [showClear]="!isTehsilLevel"  placeholder={{tehsilPlaceHolder}}></p-dropdown>
+    </div>
+
+    <div *ngIf="!isHealthFacilityLevel" class="col-4 md:col-4 lg:col-4">
+        <label for="healthFacilityType"> Health Facility Type</label>
+        <p-dropdown id="healthFacilityType" [options]="healthFacilityTypeData" appendTo="body" optionLabel="Name" optionValue="Id" [style]="{width: '100%'}"
+        (onChange)="dropdownValueChanged(userLevelFiltersModel.HealthFacilityTypeId, 'HFType');" [virtualScroll]="true" [virtualScrollItemSize]="50"  [(ngModel)]="userLevelFiltersModel.HealthFacilityTypeId" [filter]="true" [readonly]="isHealthFacilityLevel" [showClear]="!isHealthFacilityLevel" placeholder={{healthFacilityTypePlaceHolder}}></p-dropdown>
+    </div>
+
+    <div *ngIf="!isHealthFacilityLevel" class="col-12 md:col-8 lg:col-8">
+        <label for="healthFacility"> Health Facility</label>
+        <p-dropdown id="healthFacility" [options]="healthFacilityData" appendTo="body" optionLabel="Name" optionValue="Id" [style]="{width: '100%'}"
+        (onChange)="dropdownValueChanged(userLevelFiltersModel.HealthFacilityId, 'HF');" [virtualScroll]="true" [virtualScrollItemSize]="50"  [(ngModel)]="userLevelFiltersModel.HealthFacilityId" [filter]="true" [readonly]="isHealthFacilityLevel" [showClear]="!isHealthFacilityLevel" placeholder={{healthFacilityPlaceHolder}}></p-dropdown>
+    </div>
+
+    <!-- <div *ngIf="IsDepartment" class="col-12 md:col-4 lg:col-4">
+        <label for="department">Department</label>
+        <p-dropdown [options]="departmentData" optionLabel="Name" appendTo="body" optionValue="LookupId" [style]="{width: '100%'}"
+        (onChange)="getHealthFacilitySections($event)" [(ngModel)]="userLevelFiltersModel.DepartmentId" [virtualScroll]="true" [virtualScrollItemSize]="50"  [filter]="true" [showClear]="true" placeholder="Select Department" ></p-dropdown>
+    </div>
+
+    <div *ngIf="IsSection" class="col-12 md:col-4 lg:col-4">
+        <label for="section">Section</label>
+        <p-dropdown [options]="sectionData" optionLabel="Name" appendTo="body" optionValue="LookupId" [style]="{width: '100%'}"
+        [(ngModel)]="userLevelFiltersModel.SectionId" [virtualScroll]="true" [virtualScrollItemSize]="50" [filter]="true" [showClear]="true" placeholder="Select Section" ></p-dropdown>
+    </div> -->
+
+    <app-date-filter-widget *ngIf="IsDateFilter" class="col-12 md:col-12 lg:col-12 pb-0" [dateFiltersModel]="userLevelFiltersModel" ></app-date-filter-widget>
+    <app-user-list-dropdown-widget *ngIf="IsUserFilter" class="col-12 md:col-4 lg:col-3 pb-0" [userFilterModel]="userLevelFiltersModel" [HealthFacilityId]="userLevelFiltersModel.HealthFacilityId" [RoleConst]="UserRoleConst"></app-user-list-dropdown-widget>
+    <app-cnic-widget *ngIf="IsCnicFilter" class="col-12 md:col-4 lg:col-3 pb-0" [cnicModel]="userLevelFiltersModel"></app-cnic-widget>
+    <app-mobile-no-widget *ngIf="IsMobileNoFilter" class="col-12 md:col-4 lg:col-3 pb-0" [mobilenoModel]="userLevelFiltersModel"></app-mobile-no-widget>
+    <app-mr-no-widget *ngIf="IsMrnoFilter" class="col-12 md:col-4 lg:col-3 pb-0" [mrNoModel]="userLevelFiltersModel"></app-mr-no-widget>
+
+</div>

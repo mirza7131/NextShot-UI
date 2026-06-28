@@ -1,0 +1,23 @@
+<span *ngIf="!disabled">
+    <label><span *ngIf="required" class="text-danger">*</span><b>{{label}}</b></label>
+    <textarea [class]=myClass
+    [rows]="rows"
+    [cols]="cols"
+    [formControl]="control"
+    [readOnly]="readonly"
+    pInputTextarea>
+    </textarea>
+    <app-error-messages *ngIf="required" [control]="control" [label]="label"></app-error-messages>
+</span>
+
+<span *ngIf="disabled" class="p-float-label">
+    <label><b>{{label}}</b></label>
+    <textarea [class]=myClass
+    [rows]="rows"
+    [cols]="cols"
+    pInputTextarea
+    [disabled]="true"
+    >
+    </textarea>
+    <label>{{label}}</label>
+</span>

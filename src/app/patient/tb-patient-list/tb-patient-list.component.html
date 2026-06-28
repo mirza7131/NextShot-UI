@@ -1,0 +1,176 @@
+<div class="grid">
+
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <!-- <div class="flex justify-content-end pb-3">
+                <button pButton pRipple type="button" icon="pi pi-plus" class="p-button-rounded"  title="Add New" (click)="openNew()" ></button>
+            </div> -->
+
+            <!-- Card Filter     -->
+            <div class="mb-4" *ngIf="showFilters">
+              <p-panel [collapsed]="true" header="Filter" [toggleable]="true" class="line-height-3 m-0">
+
+                <div class="grid p-fluid">
+
+                  <app-user-level-filter-widget class="col-12 md:col-12 lg:col-12 pb-0"
+                    [userLevelFiltersModel]="filterModel"
+                    [IsUserLevel]="true"
+                    [IsUserFilter]="true"
+                    [IsCnicFilter]="true"
+                    [IsMobileNoFilter]="true"
+                    [IsMrnoFilter]="true"
+                    [IsDateFilter]="false"
+                    [UserRoleConst]="roleConstant.Registration"
+                   ></app-user-level-filter-widget>
+
+                  <div class="col-12 md:col-4 lg:col-3">
+                    <label for="lastname2">&nbsp;</label>
+                    <div class="flex">
+                      <button pButton pRipple type="button" icon="pi pi-filter" label="Search" class="p-button-primary p-button-outlined mr-2"  title="Submit Filter" (click)="submitFilter()" ></button>
+                      <button pButton pRipple type="button" icon="pi pi-filter-slash" label="Clear" class="p-button-danger p-button-outlined"  title="Clear Filter" (click)="clearFilter()" ></button>
+                    </div>
+                  </div>
+                </div>
+              </p-panel>
+            </div>
+            <!-- End Card Filter -->
+
+            <!-- Table Component -->
+            <p-table #dt [value]="tbPatient">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Tb Patients</h5>
+                        <!-- <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                        </span> -->
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th >Sr# </th>
+                        <th pSortableColumn="FullName">Patient Name <p-sortIcon field="FullName"></p-sortIcon></th>
+                        <th pSortableColumn="Cnic">CNIC <p-sortIcon field="Cnic"></p-sortIcon></th>
+                        <th pSortableColumn="MobileNo">Mobile No.<p-sortIcon field="MobileNo"></p-sortIcon></th>
+                        <th pSortableColumn="Mrno">MR No. <p-sortIcon field="Mrno"></p-sortIcon></th>
+                        <th pSortableColumn="CreatedBy">Created By<p-sortIcon field="CreatedBy"></p-sortIcon></th>
+                        <th>Action</th>
+
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-tbPatitent let-rowIndex="rowIndex">
+                    <tr>
+                        <td style="width:3rem;">
+                          <b>{{((filterModel.PageNumber-1)*filterModel.PageSize)+rowIndex+1}}</b>
+                        </td>
+                        <td style="min-width:2rem;">
+                            <span class="p-column-title">Patient Name</span>
+                            {{tbPatitent.FullName}}
+                        </td>
+                        <td style="min-width:8rem;">
+                            <span class="p-column-title">Cnic</span>
+                            {{tbPatitent.Cnic}}
+                        </td>
+                        <td style="min-width:8rem;">
+                            <span class="p-column-title">Mobile No.</span>
+                            {{tbPatitent.MobileNo}}
+                        </td>
+                        <td style="min-width:10rem;">
+                            <span class="p-column-title">MR No.</span>
+                            {{tbPatitent.Mrno}}
+                        </td>
+                        <td style="min-width:10rem;">
+                            <span class="p-column-title">Created By</span>
+                            {{tbPatitent.CreatedBy}}
+                            <br />
+                            <small class="font9">{{tbPatitent.CreatedOn | date: 'medium'}}</small>
+                        </td>
+                        <td style="min-width:10rem;">
+                            <div class="flex">
+                               <button pButton pRipple icon="pi pi-eye" title="View Tb Patient Contacts" class="p-button-rounded p-button-warning mr-2" (click)="getTbPatientContacts(tbPatitent.PatientId);"></button>
+                                 <!-- <button pButton pRipple icon="pi pi-ticket" title="View Patient Slip" class="p-button-rounded p-button-info mr-2" (click)="showRegistrationSlipByVisit(patitentvisit)"></button> -->
+                                <!-- <button *ngIf="showDeleteListItem" pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="deletePatientVisit(patitentvisit)"></button> -->
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="footer">
+                    <tr>
+                        <td colspan="7">
+                        <p-paginator [rows]="10" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [totalRecords]="filterModel.TotalRecords || 0" [rowsPerPageOptions]="[10,20,30,50,100]" (onPageChange)="paginate($event)"></p-paginator>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+            <!-- End Table Component -->
+
+        </div>
+    </div>
+</div>
+
+
+<p-dialog [(visible)]="tbPatientContactsDialog" header="Tb Patients Contacts" [modal]="true" [style]="{width:'1000px',height:'1000px'}" (onHide)="cancel()">
+    <br>
+    <p-table #dt [value]="tbPatientContact">
+        <ng-template pTemplate="caption" >
+            <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center mt-3">
+                <h5 class="m-0">Contact Details</h5>
+                <!-- <span class="block mt-2 md:mt-0 p-input-icon-left">
+                    <i class="pi pi-search"></i>
+                    <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                </span> -->
+            </div>
+        </ng-template>
+        <ng-template pTemplate="header">
+            <tr>
+                <th >Sr# </th>
+                <th pSortableColumn="FullName">Contact Name <p-sortIcon field="FullName"></p-sortIcon></th>
+                <th pSortableColumn="MobileNo">Mobile No.<p-sortIcon field="MobileNo"></p-sortIcon></th>
+                <th pSortableColumn="Cnic">Age <p-sortIcon field="Cnic"></p-sortIcon></th>
+                <th pSortableColumn="Mrno">Relation <p-sortIcon field="Mrno"></p-sortIcon></th>
+                <th>Action</th>
+
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-tbPatitentContact let-rowIndex="rowIndex">
+            <tr>
+                <td style="width:3rem;">
+                  <b>{{((filterModel.PageNumber-1)*filterModel.PageSize)+rowIndex+1}}</b>
+                </td>
+                <td style="min-width:2rem;">
+                    <span class="p-column-title">Contact Name</span>
+                    {{tbPatitentContact.ContactName}}
+                </td>
+                <td style="min-width:8rem;">
+                    <span class="p-column-title">Contact No</span>
+                    {{tbPatitentContact.ContactNo}}
+                </td>
+              
+                <td style="min-width:10rem;">
+                    <span class="p-column-title">Age</span>
+                    {{tbPatitentContact.Age}}
+                </td>
+                <td style="min-width:10rem;">
+                    <span class="p-column-title">Relation</span>
+                    {{tbPatitentContact.Relation}}
+                </td>
+               
+                <td style="min-width:10rem;">
+                    <div class="flex">
+                       <button id="{{rowIndex}}-Generate" [disabled]="!tbPatitentContact.isSputumCollected" pButton pRipple title="View Tb Patient Contacts" class="p-button-rounded p-button-warning mr-2" (click)="generateVisit(tbPatitentContact)">Generate Visit</button>
+                         <button id="{{rowIndex}}-Sputum" [disabled]="tbPatitentContact.isSputumCollected" pButton pRipple title="View Patient Slip" class="p-button-rounded p-button-info mr-2" (click)="collectSputum(tbPatitentContact.ContactId)">Collect Sputum</button>
+                        <!-- <button *ngIf="showDeleteListItem" pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="deletePatientVisit(patitentvisit)"></button> -->
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="footer">
+            <tr>
+                <td colspan="7">
+                <p-paginator [rows]="10" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [totalRecords]="tbPatientContactDetailsFilterModel?.TotalRecords || 0" [rowsPerPageOptions]="[10,20,30,50,100]" (onPageChange)="paginate($event)"></p-paginator>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</p-dialog>

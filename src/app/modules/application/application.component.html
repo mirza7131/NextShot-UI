@@ -1,0 +1,391 @@
+<div class="invoice-workspace animated fadeIn">
+  <div class="grid">
+    <div class="col-12 xl:col-5">
+      <section class="editor-panel">
+        <div class="editor-panel__header">
+          <div>
+            <p class="eyebrow">Invoice Form</p>
+            <h2>Create and print invoice</h2>
+            <p class="subtext">Add customer details, invoice items, required documents, then save or print in one step.</p>
+          </div>
+          <div class="editor-badge">
+            <span>Invoice No</span>
+            <strong>#{{ invoiceNumberGama }}</strong>
+          </div>
+        </div>
+
+        <div class="summary-strip">
+          <div class="summary-card">
+            <span>Date</span>
+            <strong>{{ today | date:'MMM d, y' }}</strong>
+          </div>
+          <div class="summary-card">
+            <span>Items</span>
+            <strong>{{ billList?.length || 0 }}</strong>
+          </div>
+          <div class="summary-card">
+            <span>Balance Due : </span>
+            <strong>AED {{ dueAmount || 0 }}</strong>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-title">
+            <h3>Customer</h3>
+            <p>Choose who this invoice is for.</p>
+          </div>
+
+               <!-- (keydown.enter)="getBillTo(billTo)"
+              (click)="getBillTo(billTo)" -->
+
+          <div class="field-group full">
+            <label for="billTo">Bill To</label>
+            <p-autoComplete
+              inputId="billTo"
+              [(ngModel)]="billTo"
+              name="billTo"
+              [suggestions]="invoiceMasterDropdownDtoFilter"
+              (completeMethod)="searchCountry($event)"
+         (onSelect)="getBillTo(billTo)"
+              field="BillToName">
+            </p-autoComplete>
+            <small class="error-message" *ngIf="billToError">Bill To is required.</small>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-title">
+            <h3>Add Item</h3>
+            <p>Enter an item, quantity, and rate, then add it to the invoice.</p>
+          </div>
+
+   <!-- (keydown.enter)="getItemName(itemName)"
+              (click)="getItemName(itemName)" -->
+
+          <div class="field-group full">
+            <label for="itemName">Item Name</label>
+            <p-autoComplete
+              inputId="itemName"
+              [(ngModel)]="itemName"
+              name="itemName"
+              [suggestions]="invoiceItemDropdownDtoFilter"
+              (completeMethod)="searchCountryOne($event)"
+           (onSelect)="getItemName(itemName)"
+    (keydown.enter)="moveToQty($event, quantity)"
+              field="ItemName"
+              >
+            </p-autoComplete>
+          </div>
+
+          <div class="grid compact-grid">
+            <div class="col-12 md:col-4">
+              <div class="field-group">
+                <label for="quantity">Quantity</label>
+                <p-inputNumber inputId="quantity" [(ngModel)]="quantity" name="quantity"></p-inputNumber>
+              </div>
+            </div>
+            <div class="col-12 md:col-4">
+              <div class="field-group">
+                <label for="price">Rate</label>
+                <p-inputNumber inputId="price" [(ngModel)]="price" name="price"></p-inputNumber>
+              </div>
+            </div>
+            <div class="col-12 md:col-4 add-item-button">
+              <button
+                pButton
+                type="button"
+                label="Add Item"
+                (click)="fillMed()"
+                [disabled]="!itemName || !quantity || !price"
+                class="p-button-success">
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section" *ngIf="billList?.length > 0">
+          <div class="section-title">
+            <h3>Invoice Items</h3>
+            <p>Review items before saving or printing.</p>
+          </div>
+
+          <div class="item-table-wrap">
+            <table class="item-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Item</th>
+                  <th>Qty</th>
+                  <th>Rate</th>
+                  <th>Total</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of billList; let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ item.itemName }}</td>
+                  <td>{{ item.quantity }}</td>
+                  <td>AED {{ item.price }}</td>
+                  <td>AED {{ item.totalPrice }}</td>
+                  <td class="action-cell">
+                    <button pButton type="button" icon="pi pi-trash" class="p-button-text p-button-danger" (click)="removeRow(item)"></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="form-section" *ngIf="billList?.length > 0">
+          <div class="section-title">
+            <h3>Amounts</h3>
+            <p>Apply discount and payment to keep the invoice totals accurate.</p>
+          </div>
+
+          <div class="grid compact-grid">
+            <div class="col-12 md:col-8">
+              <div class="field-group">
+                <label for="discount">Discount</label>
+                <p-inputNumber
+                  inputId="discount"
+                  [(ngModel)]="discount"
+                  name="discount"
+                  [min]="0"
+                  [max]="netAmount"
+                  [maxlength]="maxLimit"
+                  (onInput)="checkDiscountLimit()"
+                  (keyup)="checkDiscountLimit()"
+                  (keydown)="checkDiscountLimit()">
+                </p-inputNumber>
+              </div>
+            </div>
+            <div class="col-12 md:col-4 action-slot">
+              <button pButton type="button" label="Apply Discount" (click)="applyDiscount()" [disabled]="discount == null" class="p-button-outlined p-button-success"></button>
+            </div>
+
+            <div class="col-12 md:col-8">
+              <div class="field-group">
+                <label for="receivedAmount">Received Amount</label>
+                <p-inputNumber
+                  inputId="receivedAmount"
+                  [(ngModel)]="receivedAmount"
+                  name="receivedAmount"
+                  [min]="0"
+                  [max]="netAmount"
+                  [maxlength]="maxLimit"
+                  (onInput)="checkDiscountLimit()"
+                  (keyup)="checkDiscountLimit()"
+                  (keydown)="checkDiscountLimit()">
+                </p-inputNumber>
+              </div>
+            </div>
+            <div class="col-12 md:col-4 action-slot">
+              <button pButton type="button" label="Apply Payment" (click)="receivedAmt()" [disabled]="receivedAmount == null" class="p-button-outlined"></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-title">
+            <h3>Documents and Notes</h3>
+            <p>Attach the required document list and any invoice notes.</p>
+          </div>
+
+          <div class="grid compact-grid">
+            <div class="col-12 md:col-8">
+              <div class="field-group">
+                <label for="notesName">Required Document</label>
+                <p-autoComplete
+                  inputId="notesName"
+                  [(ngModel)]="notesName"
+                  name="notesName"
+                  [suggestions]="invoiceReqDocumentDropdownDtoFilter"
+                  (completeMethod)="searchCountryDocument($event)"
+                  (keydown.enter)="addNote('enter')"
+                  (click)="getDocumentName(notesName)"
+                  field="DocumentName">
+                </p-autoComplete>
+              </div>
+            </div>
+            <div class="col-12 md:col-4 action-slot">
+              <button pButton type="button" label="Add Document" (click)="addNote('click')" [disabled]="notesName == null" class="p-button-outlined"></button>
+            </div>
+          </div>
+
+          <div class="document-list" *ngIf="notesNameList?.length > 0">
+            <div class="document-chip" *ngFor="let item of notesNameList">
+              <span>{{ item.notesName }}</span>
+              <button pButton type="button" icon="pi pi-times" class="p-button-text p-button-danger" (click)="removeNote(item)"></button>
+            </div>
+          </div>
+
+          <div class="field-group full">
+            <label for="termAndCondition">Terms and Conditions</label>
+            <textarea
+              id="termAndCondition"
+              [(ngModel)]="termAndCondition"
+              maxlength="200"
+              rows="4"
+              pInputTextarea>
+            </textarea>
+          </div>
+        </div>
+
+        <div class="editor-actions">
+          <!-- <button pButton type="button" label="Save Draft" class="p-button-outlined" (click)="saveDraft()"></button> -->
+          <button pButton type="button" label="Download PDF" class="p-button-secondary" [disabled]="!billList?.length" (click)="downloadPdf()"></button>
+          <button pButton type="button" label="Print" class="p-button-help" [disabled]="!billList?.length" (click)="printDiv()"></button>
+          <button pButton type="button" label="Save & Print" [disabled]="!billList?.length" (click)="saveInvoiceGama()"></button>
+        </div>
+      </section>
+    </div>
+
+    <div class="col-12 xl:col-7">
+      <section class="preview-panel" id="printableDiv">
+        <div class="preview-topbar print-hide">
+          <div>
+            <p class="eyebrow">Live Preview</p>
+            <h2>Ready to print</h2>
+          </div>
+          <div class="preview-status">
+            <span>{{ billList?.length || 0 }} item(s)</span>
+          </div>
+        </div>
+
+        <div class="invoice-sheet">
+          <div class="invoice-sheet__header">
+            <div class="brand-block">
+              <!-- <img src="../../../assets/demo/images/gama.jpeg" alt="Gama Typing Services Logo" class="brand-logo"> -->
+           <img [src]="logoBase64" alt="Logo" class="brand-logo">
+              <!-- <div class="brand-copy">
+                <div>GAMA</div>
+                <div>TYPING</div>
+                <div>SERVICES</div>
+              </div> -->
+<div class="col-6" style="text-align: center;">
+                    <div style="font-size: x-large; font-weight: bold;">
+                      <div style="color: #ff271c; 
+                      font-weight: 700; 
+                      letter-spacing: 3px; 
+                      text-transform: uppercase; 
+                      text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.3); 
+                      line-height: 1.2;">GAMA</div>
+                      <div style="color: #3755da;font-weight: 700; 
+                      letter-spacing: 3px; 
+                      text-transform: uppercase; 
+                      text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.3); 
+                      line-height: 1.2;">TYPING</div>
+                      <div style="color: #7d8580;font-weight: 700; 
+                      letter-spacing: 3px; 
+                      text-transform: uppercase; 
+                      text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.3); 
+                      line-height: 1.2;">SERVICES</div>
+                    </div>
+                  </div>
+
+            </div>
+
+            <div class="invoice-meta">
+              <h1>INVOICE</h1>
+              <p># {{ invoiceNumberGama }}</p>
+              <p>Date: {{ today | date:'MMM d, y' }}</p>
+              <div class="balance-box">
+                <span>Balance Due :</span>
+                <strong>AED {{ dueAmount || 0 }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="invoice-sheet__details">
+            <div>
+              <!-- <p class="label">From</p> -->
+              <strong>GAMA TYPING SERVICES LLC</strong>
+              <p style="margin: 0;">ABU DHABI MOHAMED BIN ZAYED ME-11</p>
+              <p style="margin: 0;">AL KHAWATIM STREET</p>
+            </div>
+            <div>
+              <p class="label">Bill To</p>
+              <strong>{{ billTo || 'Customer name' }}</strong>
+              <!-- <p>Prepared by: {{ PrintByFullName || '-' }}</p> -->
+            </div>
+          </div>
+
+          <table class="preview-table">
+            <thead>
+              <tr>
+                <th>Sr.</th>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Rate</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!billList?.length">
+                <td colspan="5" class="empty-state">Add invoice items to preview the printable form.</td>
+              </tr>
+              <tr *ngFor="let item of billList; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ item.itemName }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>AED {{ item.price }}</td>
+                <td>AED {{ item.totalPrice }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="totals-panel">
+            <div class="total-row">
+              <span>Total</span>
+              <strong>AED {{ totalAmount || 0 }}</strong>
+            </div>
+            <div class="total-row" *ngIf="applyDis">
+              <span>Discount</span>
+              <strong>AED {{ applyDis }}</strong>
+            </div>
+            <div class="total-row">
+              <span>Net Total</span>
+              <strong>AED {{ netAmount || 0 }}</strong>
+            </div>
+            <div class="total-row" *ngIf="applyDueAmt">
+              <span>Paid</span>
+              <strong>AED {{ applyDueAmt }}</strong>
+            </div>
+            <div class="total-row balance-row">
+              <span>Balance Due :</span>
+              <strong>AED {{ dueAmount || 0 }}</strong>
+            </div>
+          </div>
+
+
+        <div class="invoice-sheet__details">
+            <div>
+              <!-- <p class="label">From</p> -->
+              <strong>CONTACT:</strong>
+              <p style="margin: 0;">MOBILE : 0522770150 / 0527715180</p>
+              <p style="margin: 0;">EMAIL AT : GAMATYPINGSERVICES&#64;GMAIL.COM</p>
+              <p style="margin: 0;">Prepared by: {{ PrintByFullName || '-' }}</p>
+            </div>
+          </div>
+
+
+
+          <div class="notes-block" *ngIf="notesNameList?.length > 0">
+            <p class="label">Required Documents</p>
+            <ul>
+              <li *ngFor="let item of notesNameList">{{ item.notesName }}</li>
+            </ul>
+          </div>
+
+          <div class="notes-block" *ngIf="termAndCondition">
+            <p class="label">Terms and Conditions</p>
+            <p>{{ termAndCondition }}</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <p-toast [style]="{ marginTop: '70px' }"></p-toast>
+</div>

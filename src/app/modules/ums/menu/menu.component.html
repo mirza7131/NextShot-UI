@@ -1,0 +1,196 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+
+            <p-toast></p-toast>
+
+            <div class="flex justify-content-between flex-wrap">
+                <div class="flex align-items-center justify-content-center">
+                    <h5>Menus</h5>
+                </div>
+                <div class="flex align-items-center justify-content-center m-2">
+                    <button pButton pRipple type="button"
+                        icon="pi pi-plus" class="p-button-rounded" (click)="openNew()" title="Add New"></button>
+                </div>
+            </div>
+
+            <p-tree [value]="modules">
+                <ng-template let-node pTemplate="url">
+                    <a [href]="node.data">{{node.DisplayName}}</a>
+                </ng-template>
+                <ng-template let-node pTemplate="default">
+                    <tr>
+                        <td style="width:80%;vertical-align: middle;">
+                            <b>{{node.DisplayName}} {{node.IsModule ? "(Module)" : (node.IsApi ? "(Api)" : (node.IsLabel
+                                ? "(Label)":"(Menu)"))}} </b>
+                            <p-badge [value]="node.IsActive ? 'Active' : 'Not Active'"
+                                severity="{{node.IsActive ? 'success' : 'danger'}}" styleClass="mr-2"></p-badge>
+                        </td>
+
+                        <td style="width:10%"
+                            *ngIf="(node.IsLabel || node.IsModule ) || (!node.IsLabel && !node.IsModule && !node.IsApi)">
+                            <button pButton pRipple type="button" icon="pi pi-plus"
+                                class="p-button-rounded p-button-text" (click)="openNew(node,node.MenuId)"></button>
+                        </td>
+
+                        <td style="width:10%">
+                            <button pButton pRipple type="button" icon="pi pi-pencil"
+                                class="p-button-rounded p-button-text p-button-success"
+                                (click)="editMenu(node)"></button>
+                        </td>
+
+                        <td style="width:10%" *ngIf="node.children.length === 0">
+                            <button pButton pRipple type="button" icon="pi pi-trash"
+                                class="p-button-rounded p-button-text p-button-danger"
+                                (click)="deleteMenu(node)"></button>
+                        </td>
+
+                    </tr>
+                </ng-template>
+            </p-tree>
+        </div>
+
+        <p-dialog [(visible)]="menuDialog" [style]="{width: '700px'}" header="Menu Details" position="center"
+            [draggable]="false" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+
+                <form [formGroup]="menuForm" class="pt-5" (ngSubmit)="saveMenu()">
+
+                    <div class="formgrid grid">
+
+                        <div class="field col">
+                            <label for="name">Name</label>
+                            <span class="p-float-label p-input-icon-right">
+                                <input type="text" autocomplete="off" pInputText id="name" formControlName="Name"
+                                    [ngClass]="{'ng-invalid ng-dirty' : (submitted && !menuFormControl.Name.valid) || (menuFormControl.Name.touched && !menuFormControl.Name.dirty)}" />
+                                <i class="pi pi-check text-green-700" *ngIf="menuFormControl.Name.valid"></i>
+                                <i class="pi pi-times text-red-500"
+                                    *ngIf="(submitted && !menuFormControl.Name.valid) || (menuFormControl.Name.touched && !menuFormControl.Name.dirty)"></i>
+                            </span>
+                        </div>
+
+                        <div class="field col">
+                            <label for="name">Display Name</label>
+                            <span class="p-float-label p-input-icon-right">
+                                <input type="text" autocomplete="off" pInputText id="DisplayName"
+                                    formControlName="DisplayName"
+                                    [ngClass]="{'ng-invalid ng-dirty' : (submitted && !menuFormControl.DisplayName.valid) || (menuFormControl.DisplayName.touched && !menuFormControl.DisplayName.dirty)}" />
+                                <i class="pi pi-check text-green-700" *ngIf="menuFormControl.DisplayName.valid"></i>
+                                <i class="pi pi-times text-red-500"
+                                    *ngIf="(submitted && !menuFormControl.DisplayName.valid) || (menuFormControl.DisplayName.touched && !menuFormControl.DisplayName.dirty)"></i>
+                            </span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="formgrid grid">
+
+                        <div class="field col" *ngIf="!(menuFormControl.IsLabel.value || false)">
+                            <label for="name">URL</label>
+                            <input type="text" autocomplete="off" pInputText id="url" formControlName="Url" />
+                        </div>
+
+                        <div class="field col">
+                            <label for="name">Icon</label>
+                            <input type="text" autocomplete="off" pInputText id="icon" formControlName="Icon" />
+                        </div>
+
+                    </div>
+
+                    <!-- <div class="formgrid grid">
+                        <div class="field col">
+                            <p-fileUpload mode="basic"  [auto]="true" #fileUpload  [customUpload]="true" (uploadHandler)="onUpload($event)"  accept="image/*" [maxFileSize]=1000000 formControlName="Image" chooseLabel="Upload" [multiple]=true></p-fileUpload>
+                        </div>
+                    </div>
+
+                    <div class="formgrid grid">
+
+
+                            <ng-container *ngFor="let file of uploadedFiles">
+
+                                <div class="grid">
+                                    <div class="col-2">
+                                        <img id="blah" src="{{file}}" alt="your image" width="50" /><i class="pi pi-times" (click)="removeimg(file)"></i>
+                                    </div>
+                                </div>
+
+                            </ng-container>
+
+
+                    </div> -->
+
+                    <div class="formgrid grid">
+
+                        <div class="field col">
+                            <label for="status">API</label><br>
+                            <p-inputSwitch formControlName="IsApi" (onChange)="apiSelection($event)"></p-inputSwitch>
+                        </div>
+
+                        <div class="field col">
+                            <label for="status">Label</label><br>
+                            <p-inputSwitch formControlName="IsLabel"
+                                (onChange)="labelSelection($event)"></p-inputSwitch>
+                        </div>
+
+                        <div class="field col">
+                            <label for="status">Module</label><br>
+                            <p-inputSwitch formControlName="IsModule"
+                                (onChange)="moduleSelection($event)"></p-inputSwitch>
+                        </div>
+
+
+                        <div class="field col">
+                            <label for="status">Display Menu</label><br>
+                            <p-inputSwitch formControlName="IsDisplayMenu"></p-inputSwitch>
+                        </div>
+
+                        <div class="field col">
+                            <label for="status">Active</label><br>
+                            <p-inputSwitch formControlName="IsActive"></p-inputSwitch>
+                        </div>
+                    </div>
+                    <div class="formfrid grid mt-4">
+                        <div class="col-4">
+                            <button class="file-upload-button">
+                                <input type="file" #fileInput (change)="onFileSelect($event)" />
+                            </button>
+                        </div>
+                        <div class="col-8" *ngIf="selectedImage">
+                            <div class="p-relative">
+                                <button (click)="removeImage()" class="close AClass">
+                                    <span>&times;</span>
+                                </button>
+                                <p-image [src]="selectedImage" alt="Image" width="250" height="250"></p-image>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Cancel" type="button" class="p-button-danger"
+                    (click)="hideDialog()"></button>
+                <button pButton pRipple label="Save" [disabled]="!this.menuForm.valid" type="button" (click)="saveMenu()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <!-- Start Dialog Delete Menu -->
+
+        <p-dialog [(visible)]="deleteMenuDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center mt-3">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="menu">Are you sure you want to delete <b>{{menu.DisplayName}}</b>?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" type="button" label="No" class="p-button-danger"
+                    (click)="deleteMenuDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" type="button" label="Yes" (click)="confirmDelete()"></button>
+
+            </ng-template>
+        </p-dialog>
+
+        <!-- End Dialog Delete Menu -->
+
+    </div>
+</div>

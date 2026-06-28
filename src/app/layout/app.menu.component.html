@@ -1,0 +1,35 @@
+<style>
+    .layout-menu {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Ensure the sidebar takes up the full height of its container */
+    position: relative; /* Set the position to relative for absolute positioning of the footer */
+}
+
+.sidebar-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    /* cursor: pointer; */
+     /* Adjust padding as needed */
+/* Example background color */
+}
+</style>
+
+
+<ul class="layout-menu">
+    <ng-container *ngFor="let item of model; let i = index; let isLast = last;">
+        <li app-menuitem *ngIf="!item.separator && !isLast" [item]="item" [index]="i" [root]="true"></li>
+        <li *ngIf="item.separator && !isLast" class="menu-separator"></li>
+
+    </ng-container>
+    
+
+    <!-- Render LogOut section at the end of the sidebar -->
+    
+    <!-- <li class="sidebar-footer" (click)="SignOut()" app-menuitem *ngIf="!model[model.length - 1]?.separator" [item]="model[model.length - 1]" [index]="model.length - 1" [root]="true"></li> -->
+
+   
+</ul>

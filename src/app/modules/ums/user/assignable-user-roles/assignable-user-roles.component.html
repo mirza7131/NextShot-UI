@@ -1,0 +1,32 @@
+<p-dialog [(visible)]="assigsUserRoleDialog" [style]="{width: '1000px',height:'700px'}" header="User Assignable Roles" position="center" [draggable]="false" (onHide)="hideDialog()" [modal]="true" class="p-fluid">
+    <ng-template pTemplate="content" >
+        <p-tabView>
+            <p-tabPanel header="Roles">
+                 
+                    <div class="grid">
+                        <ng-container *ngFor="let role of roles;let i=index;">
+
+                            <div class="col-6">
+                                <div class="grid">
+                                    <div class="col-6">{{role.Name}}</div>
+                                    <div class="col-6"><p-inputSwitch [(ngModel)]="role.IsActive" (onChange)="selectRole($event,role)"></p-inputSwitch></div>
+                                </div>
+
+                            </div>
+
+                        </ng-container>
+
+                    </div>
+
+            </p-tabPanel>
+        </p-tabView>
+
+
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton pRipple label="Cancel" type="button" class="p-button-danger" (click)="hideDialog()"></button>
+        <button pButton pRipple label="Save" type="button" (click)="saveUser()"></button>
+
+    </ng-template>
+</p-dialog>

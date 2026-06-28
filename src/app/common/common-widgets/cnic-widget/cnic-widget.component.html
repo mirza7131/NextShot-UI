@@ -1,0 +1,15 @@
+<div *ngIf="cnicFormGroup" [formGroup]="cnicFormGroup" class="grid">
+    <div class="col-12 md:col-12 lg:col-12">
+        <label for="cnic"> CNIC</label>
+        <p-inputMask formControlName="cnic" [showClear]="true" mask="99999-9999999-9"
+            placeholder="xxxxx-xxxxxxx-x"></p-inputMask>
+    </div>
+</div>
+
+<div *ngIf="!cnicFormGroup" class="grid">
+    <div class="col-12 md:col-12 lg:col-12">
+        <label for="cnic"> CNIC</label>
+        <p-inputMask [(ngModel)]="cnicModel.Cnic" [showClear]="true" mask="99999-9999999-9"
+            placeholder="xxxxx-xxxxxxx-x"></p-inputMask>
+    </div>
+</div>

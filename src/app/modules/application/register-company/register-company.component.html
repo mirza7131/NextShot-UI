@@ -1,0 +1,118 @@
+<div *ngIf="true">
+  <div class="col-12 lg:col-6">
+      <p-toast key="tst"></p-toast>
+  </div>
+<div class="card">
+    <div class="head"><h3>Register</h3></div>
+    <div class="card">
+        <h5>General Information<span class="required-field">*</span></h5>
+        <div class="grid p-fluid mt-5">
+            <div class="field col-12 md:col-6">
+                <label for="invoiceNumber" class="block text-900 text-xl font-medium">Company Name<span class="required-field">*</span></label>
+                <input id="invoiceNumber" type="text" [(ngModel)]="registerData.name"  pInputText class="w-full" style="padding:1rem"  placeholder="Enter Company Name">
+            </div>
+            
+            <div class="field col-12 md:col-6">
+                <label for="ServiceType" class="block text-900 text-xl font-medium">Service Offered<span class="required-field">*</span></label>
+                <p-multiSelect [options]="services" [(ngModel)]="selectedServices"  optionLabel="DisplayName" optionValue="Id" placeholder="Select Services" placeholder="Select Service Type" [showClear]="true" styleClass="w-full" inputStyleClass="w-full"/>
+                <!-- <p-dropdown [options]="services"  optionLabel="DisplayName" optionValue="Id" placeholder="Select Service Type" [showClear]="true" styleClass="w-full" inputStyleClass="w-full" ></p-dropdown> -->
+            </div>
+        </div>
+    </div>  
+    <div class="card">
+        <h5>Location<span class="required-field">*</span><br><span style="font-size:x-small;">(Head Quater or Main Building)</span></h5>
+
+      <div class="grid p-fluid mt-5">
+        <div class="field col-12 md:col-3">
+            <label for="Division" class="block text-900 text-xl font-medium">Division<span class="required-field">*</span></label>
+            <p-dropdown [options]="divisions" [(ngModel)]="selectedDivision" optionLabel="Name" optionValue="Code" placeholder="Select Division" [showClear]="true" styleClass="w-full" inputStyleClass="w-full"
+            (onChange)="getAllDistricts($event.value)">
+        </p-dropdown>
+        </div>
+        <div class="field col-12 md:col-3">
+            <label for="District" class="block text-900 text-xl font-medium">District<span class="required-field">*</span></label>
+            <p-dropdown [options]="districts" [(ngModel)]="registerData.districtCode" optionLabel="Name" optionValue="Code" placeholder="Select District" [showClear]="true" styleClass="w-full" inputStyleClass="w-full"
+           ></p-dropdown>
+        </div>
+
+         <div class="field col-12 md:col-6">
+            <label for="HealthFacility" class="block text-900 text-xl font-medium">
+              Address<span class="required-field">*</span>
+            </label>
+            <textarea rows="1"  cols="79" [(ngModel)]="registerData.address" pInputTextarea [autoResize]="true" placeholder="Enter Address"></textarea>
+          </div>
+      
+         
+     </div>
+ </div>  
+ <div class="card">
+    <h5>Owner Information<span class="required-field">*</span></h5>
+  <div class="grid p-fluid mt-5">
+     <div class="field col-12 md:col-4">
+         <label for="Division" class="block text-900 text-xl font-medium">Owner Name<span class="required-field">*</span></label>
+         <input id="invoiceNumber" type="text" [(ngModel)]="registerData.ownerName" pInputText class="w-full" style="padding:1rem"  placeholder="Enter Owner Name">
+     </div>
+     <div class="field col-12 md:col-4">
+        <label for="District" class="block text-900 text-xl font-medium">Owner CNIC<span class="required-field">*</span></label>
+        <p-inputMask 
+          id="ownerCNIC" 
+          mask="99999-9999999-9" 
+          class="w-full"
+          [(ngModel)]="registerData.owneCnic"
+          placeholder="Enter Owner CNIC">
+        </p-inputMask>
+      </div>
+      
+      <div class="field col-12 md:col-4">
+        <label for="HFTypes" class="block text-900 text-xl font-medium">Owner Mobile No.<span class="required-field">*</span></label>
+        <p-inputMask 
+          id="ownerMobile" 
+          mask="9999-9999999" 
+          class="w-full"
+          [(ngModel)]="registerData.ownerMob"
+          placeholder="Enter Owner Mobile No.">
+        </p-inputMask>
+      </div>
+    
+ </div>
+</div> 
+<div class="card">
+    <h5>Branding<span class="required-field">*</span></h5>
+  <div class="grid p-fluid mt-5">
+    <div class="col-12 md:col-6">
+        <h5>Upload a Logo <span class="required-field">*</span></h5>
+        <p-fileUpload
+        name="file" 
+        url="" 
+        (onSelect)="onLogoUpload($event)" 
+        accept="image/*" 
+        chooseLabel="Choose Image" 
+        auto="true" 
+        [showUploadButton]="false"
+        [showCancelButton]="false"
+></p-fileUpload>
+      </div>
+      <div class="col-12 md:col-6">
+        <h5>Upload a Banner <span class="required-field">*</span></h5>
+        
+<!-- url="http://localhost:4200/uploads"  -->
+<p-fileUpload
+name="file" 
+url="" 
+(onSelect)="onBannerUpload($event)" 
+accept="image/*" 
+chooseLabel="Choose Image" 
+auto="true" 
+[showUploadButton]="false"
+[showCancelButton]="false"
+></p-fileUpload>
+<img *ngIf="imageUrl" [src]="imageUrl" alt="Uploaded Image" style="max-width: 200px; max-height: 200px;"/>
+      </div>
+    
+ </div>
+</div> 
+  <div class="btn-container">
+    <button  pButton  pRipple  type="button"  label="Submit"  class="p-button-primary" (click)="OnRegister()"> </button>
+  </div>
+</div>
+  

@@ -1,0 +1,369 @@
+<!-- <div class="flex mb-2 gap-2 justify-content-end">
+    <p-button (click)="activeIndex = 0" rounded="true" styleClass="w-2rem h-2rem p-0" [outlined]="activeIndex !== 0" label="1"></p-button>
+    <p-button (click)="activeIndex = 1" rounded="true" styleClass="w-2rem h-2rem p-0" [outlined]="activeIndex !== 1" label="2"></p-button>
+    <p-button (click)="activeIndex = 2" rounded="true" styleClass="w-2rem h-2rem p-0" [outlined]="activeIndex !== 2" label="3"></p-button>
+</div> -->
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <p-confirmPopup></p-confirmPopup>
+            <!-- Table Component -->
+            <p-table #dt [value]="hfConfigList">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Health Facility Configurations</h5>
+                        <span >
+                            <button *ngIf="ShowSync" style="margin-right: 2rem" pButton pRipple type="button" icon="pi pi-refresh" class="p-button-rounded"  title="Sync Data" (click)="syncData()" ></button>
+                            <button *ngIf="!ShowSync" pButton pRipple type="button" icon="pi pi-plus" class="p-button-rounded" (click)="openNew()" title="Add New"></button>
+                        </span>
+                    </div>
+                    <div class="block mt-3 md:mt-3">
+                        <input pInputText type="text" [(ngModel)]="filterModel.SearchString" placeholder="Search..." style="width: 90%;"/>
+                        <button  type="submit" pButton pRipple icon="pi pi-search" (click)="onSearch()"  [style]="{'margin-left':'10px'}" styleClass="p-button-sm"></button>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th >SR</th>
+                        <th >Health Facility Name </th>
+                        <th >Created By</th>
+                        <th >Action</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+                    <tr>
+                        <td style="width:5rem;">
+                            <b>{{((filterModel.PageNumber-1)*filterModel.PageSize)+rowIndex+1}}</b>
+                        </td>
+                        <td >
+                            <span class="p-column-title">Name</span>
+                            {{item.HealthFacilityName}}
+                        </td>
+                        <td style="width:200px;">
+                            {{item.CreatedBy}}
+                            <br />
+                            <small class="font9">{{item.CreatedOn | date: 'medium'}}</small>
+                        </td>
+                        <!-- <td style="width:30%; min-width: 10rem;">
+                            <p-badge [value]="item.IsActive ? 'Active' : 'Not Active'" severity="{{item.IsActive ? 'success' : 'danger'}}" styleClass="mr-2"></p-badge>
+                        </td> -->
+                        <td style="width:200px;">
+                            <div *ngIf="!ShowSync" class="flex">
+                                <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="edit(item)"></button>
+                                <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="delete(item)"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="footer">
+                    <tr>
+                        <td colspan="5">
+                            <p-paginator [rows]="10" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [totalRecords]="filterModel.TotalRecords || 0" [rowsPerPageOptions]="[10,20,30,50,100]" (onPageChange)="paginate($event)"></p-paginator>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+            <!-- End Table Component -->
+
+        </div>
+    </div>
+</div>
+
+
+<!-- Dialog Create New Role -->
+<p-dialog [(visible)]="hfConfigDialog" [style]="{width: '1000px',height:'1000px'}" header="{{dialogHeaderText}}" position="center" [draggable]="false" [modal]="true" class="p-fluid" (onHide)="resetAfterSave()">
+    <ng-template pTemplate="content" >
+        <form [formGroup]="hfConfigForm" (ngSubmit)="saveFormData(hfConfigForm)">
+            <div class="grid mt-3">
+                <div class="col-12 md:col-6">
+                    <span class="f14"><strong>Health Facility</strong>&nbsp;<span class="text-danger">*</span></span>
+                    <p-dropdown [options]="healthFacilityList" [disabled]="isEdit"
+                        [style]="{width: '100%'}" [filter]="true" formControlName="HealthFacilityId" optionValue="HealthFacilityId"
+                        class="p-inputtext-sm w100" placeholder="Select Health Facility" filterBy="Name" optionLabel="Name"
+                        (onChange)="checkIfHfConfigExist($event)"
+                        [showClear]="true"></p-dropdown>
+                </div>
+            </div>
+            
+
+            <p-tabView *ngIf="hfConfigForm?.get('HealthFacilityId')?.value" [(activeIndex)]="activeIndex"
+            (onChange)="onTabChange($event)" #tabView>
+                
+                <ng-container formArrayName="PathologyLabTestList">
+                    <p-tabPanel [disabled]="true" header="Pathology Lab Test">
+                        <div class="grid">
+
+                            <div class="col-9 md:col-11">
+                                <span class="f14"><strong>Pathalogy Lab Tests</strong></span>
+                                
+                                <p-multiSelect styleClass="w100P p-inputtext-sm" [options]="PathologyDDLabTestList" defaultLabel="Select Test"
+                                    optionLabel="Name" [(ngModel)]="selectedPathalogyTests" filterBy="Name" [maxSelectedLabels]="5"
+                                    [ngModelOptions]="{standalone: true}"
+                                    [showClear]="true"
+                                    selectedItemsLabel="{0} items selected">
+                                    <ng-template let-labtest pTemplate="item">
+                                    <!-- <div [ngStyle]="applyBgColorOnLabListDD(labtest)"> -->
+                                    <div>
+                                        {{labtest.Name}}
+                                    </div>
+                                    <!-- {{medicine.MedicineName}} <b style="color: rgb(27 120 237);;">({{medicine.AvailableQuantity}})</b> -->
+                                    </ng-template>
+                                </p-multiSelect>
+                    
+                            </div>
+                            <div class="col-3 md:col-1">
+                                <div class="f14 ">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+                                <p-button label="Add" type="button" [disabled]="selectedPathalogyTests==null"
+                                (click)="addLabTest(1)"
+                                styleClass="p-button-sm inputWid" class="btnRight"></p-button>
+                            </div>
+                        </div>
+                        <p-table *ngIf="PathologyLabTestList.value.length > 0" [value]="PathologyLabTestList.controls">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th>SN</th>
+                                    <th>Test Name</th>
+                                    <th>Test Price</th>
+                                    <th>Hospital Laboratory</th>
+                                    <th>External Laboratory</th>
+                                    <th>Is Performed Privately</th>
+                                    <th></th>
+                                </tr>
+                                <tr>
+                                    <th></th>
+                                    <th>
+                                        <p-columnFilter type="text" field="value.TestName"></p-columnFilter>
+                                    </th>
+                                    <th colspan="5"></th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+                                <tr [formGroupName]="rowIndex">
+                                    <td style="width: 20px;" >{{rowIndex+1}}</td>
+                                    <td>
+                                        <span class="p-column-title">TestName</span>
+                                        {{item?.get('TestName')?.value}}
+                                    </td>
+                                    <td style="width: 100px;">
+                                        Rs : {{item?.get('TestPrice')?.value}}
+                                    </td>
+                                    <td style="width: 100px;" class="text-center">
+                                        <p-checkbox formControlName="IsInternalTest" [binary]="true" value="{{item?.get('IsInternalTest')?.value}}" (click)="checkIfExternalOrInternal(rowIndex, 1, 1)"></p-checkbox>
+                                    </td>
+                                    <td style="width: 100px;" class="text-center">
+                                        <p-checkbox formControlName="IsExternalTest" [binary]="true" value="{{item?.get('IsExternalTest')?.value}}" (click)="checkIfExternalOrInternal(rowIndex, 1, 2)"></p-checkbox>
+                                        <!-- <input class="checkbox-lg" type="checkbox" formControlName="IsExternalTest" /> -->
+                                    </td>
+                                    <td style="width: 120px;" class="text-center">
+                                        <p-checkbox formControlName="IsPerformedPrivately" [binary]="true" value="{{item?.get('IsPerformedPrivately')?.value}}"></p-checkbox>
+                                        <!-- <input class="checkbox-lg" type="checkbox" formControlName="IsPerformedPrivately" /> -->
+                                    </td>
+                                    <td style="width: 120px;" class="text-center">
+                                        <p class="m-0 text-center"><i class="pi pi-trash"
+                                            (click)="paymentConfirmation($event, rowIndex, 1)" style='color: red'></i></p>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </p-tabPanel>
+                </ng-container>
+                <ng-container formArrayName="RadiologyLabTestList">
+                    <p-tabPanel [disabled]="true" header="Radiology Lab Test">
+                        <div class="grid">
+
+                            <div class="col-9 md:col-11">
+                                <span class="f14"><strong>Radiology Lab Tests</strong></span>
+                                
+                                <p-multiSelect styleClass="w100P p-inputtext-sm" [options]="RadiologyDDLabTestList" defaultLabel="Select Test"
+                                    optionLabel="Name" [(ngModel)]="selectedRadiologyTests" filterBy="Name" [maxSelectedLabels]="5"
+                                    [ngModelOptions]="{standalone: true}"
+                                    [showClear]="true"
+                                    selectedItemsLabel="{0} items selected">
+                                    <ng-template let-labtest pTemplate="item">
+                                    <!-- <div [ngStyle]="applyBgColorOnLabListDD(labtest)"> -->
+                                    <div>
+                                        {{labtest.Name}}
+                                    </div>
+                                    <!-- {{medicine.MedicineName}} <b style="color: rgb(27 120 237);;">({{medicine.AvailableQuantity}})</b> -->
+                                    </ng-template>
+                                </p-multiSelect>
+                    
+                            </div>
+                            <div class="col-3 md:col-1">
+                                <div class="f14 ">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+                                <p-button label="Add" type="button" [disabled]="selectedRadiologyTests==null"
+                                (click)="addLabTest(2)"
+                                styleClass="p-button-sm inputWid" class="btnRight"></p-button>
+                            </div>
+                        </div>
+                        <p-table *ngIf="RadiologyLabTestList.value.length > 0" [value]="RadiologyLabTestList.controls">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th>SN</th>
+                                    <th>Test Name</th>
+                                    <th>Test Price</th>
+                                    <th>Hospital Laboratory</th>
+                                    <th>External Laboratory</th>
+                                    <th>Is Performed Privately</th>
+                                    <th></th>
+                                </tr>
+                                <tr>
+                                    <th></th>
+                                    <th>
+                                        <p-columnFilter type="text" field="value.TestName"></p-columnFilter>
+                                    </th>
+                                    <th colspan="5"></th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+                                <tr [formGroupName]="rowIndex">
+                                    <td style="width: 20px;">{{rowIndex+1}}</td>
+                                    <td>
+                                        {{item?.get('TestName')?.value}}
+                                    </td>
+                                    <td style="width: 100px;">
+                                        Rs : {{item?.get('TestPrice')?.value}}
+                                    </td>
+                                    <td style="width: 100px;" class="text-center">
+                                        <p-checkbox formControlName="IsInternalTest" [binary]="true" value="{{item?.get('IsInternalTest')?.value}}" (click)="checkIfExternalOrInternal(rowIndex, 2, 1)"></p-checkbox>
+                                    </td>
+                                    <td style="width: 100px;" class="text-center">
+                                        <p-checkbox formControlName="IsExternalTest" [binary]="true" value="{{item?.get('IsExternalTest')?.value}}" (click)="checkIfExternalOrInternal(rowIndex, 2, 2)"></p-checkbox>
+                                        <!-- <input class="checkbox-lg" type="checkbox" formControlName="IsExternalTest" /> -->
+                                    </td>
+                                    <td style="width: 120px;" class="text-center">
+                                        <p-checkbox formControlName="IsPerformedPrivately" [binary]="true" value="{{item?.get('IsPerformedPrivately')?.value}}"></p-checkbox>
+                                        <!-- <input class="checkbox-lg" type="checkbox" formControlName="IsPerformedPrivately" /> -->
+                                    </td>
+                                    <td style="width: 120px;" class="text-center">
+                                        <p class="m-0 text-center"><i class="pi pi-trash"
+                                            (click)="paymentConfirmation($event, rowIndex, 2)" style='color: red'></i></p>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </p-tabPanel>
+                </ng-container>
+                <ng-container formArrayName="UltrasoundLabTestList">
+                    <p-tabPanel [disabled]="true" header="Ultrasound Lab Test">
+                        <div class="grid">
+
+                            <div class="col-9 md:col-11">
+                                <span class="f14"><strong>Ultrasound Lab Tests</strong></span>
+                                
+                                <p-multiSelect styleClass="w100P p-inputtext-sm" [options]="UltrasoundDDLabTestList" defaultLabel="Select Test"
+                                    optionLabel="Name" [(ngModel)]="selectedUltrasoundTests" filterBy="Name" [maxSelectedLabels]="5"
+                                    [ngModelOptions]="{standalone: true}"
+                                    [showClear]="true"
+                                    selectedItemsLabel="{0} items selected">
+                                    <ng-template let-labtest pTemplate="item">
+                                    <!-- <div [ngStyle]="applyBgColorOnLabListDD(labtest)"> -->
+                                    <div>
+                                        {{labtest.Name}}
+                                    </div>
+                                    <!-- {{medicine.MedicineName}} <b style="color: rgb(27 120 237);;">({{medicine.AvailableQuantity}})</b> -->
+                                    </ng-template>
+                                </p-multiSelect>
+                    
+                            </div>
+                            <div class="col-3 md:col-1">
+                                <div class="f14 ">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+                                <p-button label="Add" type="button" [disabled]="selectedUltrasoundTests==null"
+                                (click)="addLabTest(3)"
+                                styleClass="p-button-sm inputWid" class="btnRight"></p-button>
+                            </div>
+                        </div>
+                        <p-table *ngIf="UltrasoundLabTestList.value.length > 0" [value]="UltrasoundLabTestList.controls">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th>SN</th>
+                                    <th>Test Name</th>
+                                    <th>Test Price</th>
+                                    <th>Hospital Laboratory</th>
+                                    <th>External Laboratory</th>
+                                    <th>Is Performed Privately</th>
+                                    <th></th>
+                                </tr>
+                                <tr>
+                                    <th></th>
+                                    <th>
+                                        <p-columnFilter type="text" field="value.TestName"></p-columnFilter>
+                                    </th>
+                                    <th colspan="5"></th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+                                <tr [formGroupName]="rowIndex">
+                                    <td style="width: 20px;" >{{rowIndex+1}}</td>
+                                    <td>
+                                        {{item?.get('TestName')?.value}}
+                                    </td>
+                                    <td style="width: 100px;" >
+                                        Rs : {{item?.get('TestPrice')?.value}}
+                                    </td>
+                                    <td style="width: 100px;" class="text-center">
+                                        <p-checkbox formControlName="IsInternalTest" [binary]="true" value="{{item?.get('IsInternalTest')?.value}}" (click)="checkIfExternalOrInternal(rowIndex, 3, 1)"></p-checkbox>
+                                    </td>
+                                    <td style="width: 100px;" class="text-center">
+                                        <p-checkbox formControlName="IsExternalTest" [binary]="true" value="{{item?.get('IsExternalTest')?.value}}" (click)="checkIfExternalOrInternal(rowIndex, 3, 2)"></p-checkbox>
+                                        <!-- <input class="checkbox-lg" type="checkbox" formControlName="IsExternalTest" /> -->
+                                    </td>
+                                    <td style="width: 120px;" class="text-center">
+                                        <p-checkbox formControlName="IsPerformedPrivately" [binary]="true" value="{{item?.get('IsPerformedPrivately')?.value}}"></p-checkbox>
+                                        <!-- <input class="checkbox-lg" type="checkbox" formControlName="IsPerformedPrivately" /> -->
+                                    </td>
+                                    <td style="width: 120px;" class="text-center">
+                                        <p class="m-0 text-center"><i class="pi pi-trash"
+                                            (click)="paymentConfirmation($event, rowIndex, 3)" style='color: red'></i></p>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </p-tabPanel>
+                </ng-container>
+                <div class="grid mt-3">
+                    <div *ngIf="this.activeIndex > 0" class="md:col-2 sm:col-3">
+                        <button type="button" _ngcontent-tln-c232="" pbutton="" pripple="" label="Prev"
+                          icon="pi pi-arrow-left" (click)="prevTab()" class="p-element p-button-sm inputWid btnRight p-button p-component"
+                          ng-reflect-label="Prev" ng-reflect-icon="pi pi-arrow-left">
+                          <span class="p-button-icon p-button-icon-left pi pi-arrow-left mr-0" aria-hidden="true"></span>
+                          <span class="p-button-label">Prev</span>
+                        </button>
+                    </div>
+                    <div *ngIf="this.activeIndex < totalActiveIndex"  class="md:col-2 sm:col-3">
+                        <button type="button" [disabled]="checkIfDisabled()" _ngcontent-tln-c232="" pbutton="" pripple="" label="Prev"
+                          icon="pi pi-arrow-left" (click)="nextTab()" class="p-element p-button-sm inputWid btnRight p-button p-component"
+                          ng-reflect-label="Prev" ng-reflect-icon="pi pi-arrow-left">
+                          <span class="p-button-label">Next</span>
+                          <span class="p-button-icon p-button-icon-left pi pi-arrow-right mr-0" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                    <div style="text-align: right;" class="md:col-10 sm:col-9">
+                        <p-button *ngIf="hfConfigForm?.get('HealthFacilityId')?.value && this.activeIndex == totalActiveIndex" type="submit" label="Submit" [disabled]="!this.hfConfigForm.valid" class="btn-right pl-4"
+                            styleClass="p-button-sm p-button-success w100"></p-button>
+                    </div>
+                    
+                </div>
+            </p-tabView>
+            
+            
+        </form>
+    </ng-template>
+</p-dialog>
+
+<!-- Dialog Delete Role -->
+
+<p-dialog [(visible)]="deleteDialog" header="Confirmation" [modal]="true" [style]="{width:'450px'}">
+    <div class="flex align-items-center justify-content-center mt-3">
+        <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+        <span *ngIf="selectedHfId">Are you sure you want to delete this record ?</span>
+    </div>
+    <ng-template pTemplate="footer">
+        <button pButton pRipple icon="pi pi-times" type="button" label="No" class="p-button-danger"  (click)="hideDialog()"></button>
+        <button pButton pRipple icon="pi pi-check" type="button"  label="Yes"  (click)="confirmDelete()"></button>
+
+    </ng-template>
+</p-dialog>
+
+<!-- End Dialog Delete Role -->

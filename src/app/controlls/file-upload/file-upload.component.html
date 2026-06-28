@@ -1,0 +1,22 @@
+<h5>{{label}}</h5>
+<p-toast></p-toast>
+<div *ngIf="mode" class="card flex justify-content-center">
+    <p-fileUpload #fileUploadComponent mode="basic" [chooseLabel]="chooseLabel" accept="image/jpeg,image/jpg" [showCancelButton]="true" [maxFileSize]=maxFileSize (onUpload)="uploadFile()"></p-fileUpload>
+    <!-- <p-fileUpload #fileUploadComponent [files]="this.uploadedFiles" (onSelect)="onUpload($event)"  [showUploadButton]="false" [showCancelButton]="false" (onRemove)="onRemove($event)" (onUpload)="uploadFile()" accept="image/jpeg,image/jpg" [maxFileSize]=maxFileSize>
+    </p-fileUpload> -->
+
+</div>
+<div *ngIf="!multiselect && !mode" class="card flex justify-content-center">
+    <!-- <p-fileUpload mode="basic" [auto]="auto" [chooseLabel]="chooseLabel" name="demo[]" accept="image/jpeg,image/jpg" [maxFileSize]=maxFileSize (onUpload)="onUpload($event)"></p-fileUpload> -->
+    <p-fileUpload #fileUploadComponent [files]="this.uploadedFiles" (onSelect)="onUpload($event)"
+        [showUploadButton]="false" [showCancelButton]="false" (onRemove)="onRemove($event)" (onUpload)="uploadFile()"
+        [accept]="acceptFiles == ''? 'image/jpeg,image/jpg' : acceptFiles" [maxFileSize]=maxFileSize>
+    </p-fileUpload>
+
+</div>
+<div *ngIf="multiselect && !mode" class="card flex justify-content-center">
+    <p-fileUpload #fileUploadComponent [files]="this.uploadedFiles" (onSelect)="onUpload($event)"
+        [showUploadButton]="false" [showCancelButton]="false" (onRemove)="onRemove($event)" (onUpload)="uploadFile()"
+        [multiple]="true" accept="image/jpeg,image/jpg" [maxFileSize]=maxFileSize>
+    </p-fileUpload>
+</div>
