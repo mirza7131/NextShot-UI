@@ -1,0 +1,95 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<section class="table-setup-page">
+  <header class="table-setup-header">
+    <div>
+      <p>Next Shot</p>
+      <h1>Table Setup</h1>
+      <span>Add snooker or billiard tables with per hour and per game pricing.</span>
+    </div>
+  </header>
+
+  <form class="table-setup-form" (ngSubmit)="saveTable()">
+    <label>
+      Table No
+      <input pInputText type="number" min="1" name="tableNo" [(ngModel)]="form.tableNo" />
+    </label>
+
+    <label>
+      Table Name
+      <input pInputText type="text" name="tableName" [(ngModel)]="form.tableName" placeholder="Snooker Table 1" />
+    </label>
+
+    <label>
+      Type
+      <select name="tableType" [(ngModel)]="form.tableType">
+        <option *ngFor="let type of tableTypes" [ngValue]="type">{{ type }}</option>
+      </select>
+    </label>
+
+    <label>
+      Price Per Hour
+      <input pInputText type="number" min="1" name="hourlyRate" [(ngModel)]="form.hourlyRate" />
+    </label>
+
+    <label>
+      Price Per Game
+      <input pInputText type="number" min="1" name="gameRate" [(ngModel)]="form.gameRate" />
+    </label>
+
+    <label class="active-toggle">
+      <input type="checkbox" name="isActive" [(ngModel)]="form.isActive" />
+      Active
+    </label>
+
+    <div class="table-form-actions">
+      <button pButton pRipple type="submit" icon="pi pi-save" [label]="form.clubTableId ? 'Update Table' : 'Add Table'" [disabled]="isSaving"></button>
+      <button pButton pRipple type="button" icon="pi pi-refresh" label="Clear" class="p-button-outlined" (click)="resetForm()"></button>
+    </div>
+  </form>
+
+  <div class="table-list-card">
+    <div class="list-title">
+      <div>
+        <h2>Club Tables</h2>
+        <span>{{ tables.length }} configured table{{ tables.length === 1 ? '' : 's' }}</span>
+      </div>
+    </div>
+
+    <div class="table-list-wrap">
+      <table class="setup-table">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Table</th>
+            <th>Type</th>
+            <th>Per Hour</th>
+            <th>Per Game</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let table of tables">
+            <td>{{ table.tableNo }}</td>
+            <td>{{ table.tableName }}</td>
+            <td>{{ table.tableType }}</td>
+            <td>AED {{ table.hourlyRate | number:'1.2-2' }}</td>
+            <td>AED {{ table.gameRate | number:'1.2-2' }}</td>
+            <td><span class="status-chip" [class.status-off]="!table.isActive">{{ table.isActive ? 'Active' : 'Inactive' }}</span></td>
+            <td>
+              <div class="setup-actions">
+                <button pButton pRipple type="button" icon="pi pi-pencil" class="p-button-text setup-edit" title="Edit" (click)="editTable(table)"></button>
+                <button pButton pRipple type="button" icon="pi pi-trash" class="p-button-text setup-delete" title="Delete" (click)="confirmDelete(table)"></button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="!tables.length">
+            <td colspan="7" class="empty-row">No tables added yet.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

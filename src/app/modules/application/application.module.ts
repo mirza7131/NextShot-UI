@@ -23,6 +23,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { DialogModule } from 'primeng/dialog';
 import { FileUploadModule } from 'primeng/fileupload';
 import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { InboxComponent } from './inbox/inbox.component';
 import { CalendarModule } from 'primeng/calendar';
@@ -40,6 +41,8 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { PanelModule } from 'primeng/panel';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { CardModule } from 'primeng/card';
+import { InventoryComponent } from './inventory/inventory.component';
+import { ClubTablesComponent } from './club-tables/club-tables.component';
 
 
 
@@ -57,7 +60,9 @@ import { CardModule } from 'primeng/card';
     NonNegativeNumberDirective,
     EmptySpaceOnly,
     EmailValid,
-    RegisterCompanyComponent
+    RegisterCompanyComponent,
+    InventoryComponent,
+    ClubTablesComponent
   ],
   imports: [
     CommonModule,
@@ -86,6 +91,7 @@ import { CardModule } from 'primeng/card';
     TableModule,
     FileUploadModule,
     ToastModule,
+    ConfirmDialogModule,
     RadioButtonModule,
     CalendarModule,
     InputSwitchModule,

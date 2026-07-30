@@ -1,116 +1,312 @@
 <style>
-   .required-field {
-     color: red;
-     margin-left: 4px; /* Adjust the margin as needed for spacing */
-   }
+    .nextshot-login {
+        min-height: 100vh;
+        width: 100%;
+        display: grid;
+        grid-template-columns: minmax(360px, 520px) minmax(0, 1fr);
+        background:
+            linear-gradient(90deg, rgba(5, 10, 18, .48) 0%, rgba(5, 10, 18, .25) 44%, rgba(5, 10, 18, .72) 100%),
+            url('assets/8bb.png') center center / cover no-repeat;
+        overflow: hidden;
+    }
+
+    .nextshot-brand-panel {
+        position: relative;
+        min-height: 100vh;
+        padding: 3rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: flex-end;
+        text-align: right;
+        color: #ffffff;
+    }
+
+    .nextshot-logo {
+        display: inline-flex;
+        align-items: center;
+        align-self: flex-start;
+        gap: .85rem;
+        font-weight: 900;
+        letter-spacing: 0;
+        font-size: clamp(2rem, 4vw, 3.9rem);
+        color: #f7fbff;
+        text-shadow: 0 14px 40px rgba(0, 0, 0, .45);
+    }
+
+    .nextshot-logo-mark {
+        width: clamp(54px, 7vw, 82px);
+        height: clamp(54px, 7vw, 82px);
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, .88);
+        color: #111827;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, .22);
+        font-size: clamp(1.1rem, 2vw, 1.85rem);
+        font-weight: 900;
+    }
+
+    .nextshot-hero {
+        max-width: 680px;
+        padding: 3rem 0 4rem;
+    }
+
+    .nextshot-kicker {
+        color: #86d7b4;
+        font-size: .9rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .14rem;
+        margin-bottom: 1rem;
+    }
+
+    .nextshot-title {
+        margin: 0;
+        font-size: clamp(4.2rem, 9vw, 9rem);
+        line-height: .94;
+        letter-spacing: 0;
+        font-weight: 900;
+        color: #f8fbff;
+        text-shadow: 0 18px 54px rgba(0, 0, 0, .55);
+    }
+
+    .nextshot-copy {
+        max-width: 560px;
+        margin: 1.35rem 0 0;
+        color: rgba(255, 255, 255, .74);
+        font-size: 1.05rem;
+        line-height: 1.7;
+    }
+
+    .nextshot-form-panel {
+        position: relative;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 2rem 2rem 4rem;
+        order: -1;
+    }
+
+    .nextshot-form-panel .nextshot-logo {
+        position: absolute;
+        top: 2rem;
+        left: 4rem;
+    }
+
+    .nextshot-card {
+        width: min(100%, 450px);
+        background: rgba(7, 14, 22, .72);
+        border: 1px solid rgba(255, 255, 255, .22);
+        border-radius: 8px;
+        padding: 2.4rem;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, .46);
+        backdrop-filter: blur(18px);
+    }
+
+    .nextshot-card-header {
+        margin-bottom: 2rem;
+    }
+
+    .nextshot-card-title {
+        margin: 0 0 .5rem;
+        color: #ffffff;
+        font-size: 2rem;
+        font-weight: 850;
+        letter-spacing: 0;
+    }
+
+    .nextshot-card-subtitle {
+        color: rgba(255, 255, 255, .72);
+        margin: 0;
+        line-height: 1.55;
+    }
+
+    .nextshot-field {
+        margin-bottom: 1.25rem;
+    }
+
+    .nextshot-field label {
+        display: block;
+        margin-bottom: .55rem;
+        color: rgba(255, 255, 255, .88);
+        font-weight: 700;
+        font-size: .95rem;
+    }
+
+    :host ::ng-deep .nextshot-input,
+    :host ::ng-deep .nextshot-input .p-inputtext,
+    :host ::ng-deep .nextshot-password,
+    :host ::ng-deep .nextshot-password .p-password,
+    :host ::ng-deep .nextshot-password .p-inputtext {
+        width: 100%;
+    }
+
+    :host ::ng-deep .nextshot-input .p-inputtext,
+    :host ::ng-deep .nextshot-password .p-inputtext {
+        min-height: 3.25rem;
+        border-radius: 8px;
+        border-color: rgba(255, 255, 255, .24);
+        background: rgba(255, 255, 255, .94);
+        color: #111827;
+        padding: 1rem;
+    }
+
+    :host ::ng-deep .nextshot-input .p-inputtext:enabled:focus,
+    :host ::ng-deep .nextshot-password .p-inputtext:enabled:focus {
+        border-color: #157a57;
+        box-shadow: 0 0 0 .2rem rgba(21, 122, 87, .16);
+    }
+
+    :host ::ng-deep .nextshot-submit.p-button {
+        min-height: 3.35rem;
+        border-radius: 8px;
+        background: #f97316;
+        border-color: #f97316;
+        color: #ffffff;
+        font-weight: 800;
+        letter-spacing: 0;
+    }
+
+    :host ::ng-deep .nextshot-submit.p-button:enabled:hover {
+        background: #ea580c;
+        border-color: #ea580c;
+    }
+
+    :host ::ng-deep .nextshot-submit.p-button:disabled {
+        opacity: .62;
+    }
+
+    .nextshot-footer {
+        margin-top: 1.25rem;
+        color: rgba(255, 255, 255, .58);
+        font-size: .88rem;
+        text-align: center;
+    }
+
+    @media (max-width: 960px) {
+        .nextshot-login {
+            grid-template-columns: 1fr;
+            background:
+                linear-gradient(180deg, rgba(5, 10, 18, .84) 0%, rgba(5, 10, 18, .56) 48%, rgba(5, 10, 18, .2) 100%),
+                url('assets/8bb.png') center center / cover no-repeat;
+        }
+
+        .nextshot-brand-panel {
+            min-height: auto;
+            padding: 2rem 1.25rem 4rem;
+            align-items: flex-end;
+            text-align: right;
+        }
+
+        .nextshot-hero {
+            padding: 3rem 0 1rem;
+        }
+
+        .nextshot-copy {
+            max-width: 100%;
+        }
+
+        .nextshot-form-panel {
+            min-height: auto;
+            padding: 0 1.25rem 2rem;
+            margin-top: -2.75rem;
+            justify-content: center;
+            order: 0;
+        }
+
+        .nextshot-form-panel .nextshot-logo {
+            top: 1.25rem;
+            left: 1.25rem;
+        }
+
+        .nextshot-card {
+            padding: 1.5rem;
+            background: rgba(7, 14, 22, .78);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .nextshot-logo {
+            font-size: 1.65rem;
+        }
+
+        .nextshot-logo-mark {
+            width: 48px;
+            height: 48px;
+        }
+
+        .nextshot-card-title {
+            font-size: 1.65rem;
+        }
+    }
 </style>
 
 <p-toast key="tst"></p-toast>
 
-<div class="surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden">
-   
-    <div class="flex flex-column align-items-center justify-content-center">
-        <!-- <img src="assets/layout/images/mobilelogo.png" height="60" alt="logo"> -->
-        <!-- <img src="assets/demo/images/pmulogo.png" height="120" alt="logo"> -->
+<main class="nextshot-login">
+    <section class="nextshot-brand-panel" aria-label="NextShot">
+        <div class="nextshot-hero">
+            <div class="nextshot-kicker">Snooker Management System</div>
+            <h1 class="nextshot-title">NextShot</h1>
+            <p class="nextshot-copy">
+                Manage tables, sessions, players, billing, and daily club operations from one focused workspace.
+            </p>
+        </div>
+    </section>
 
-
-        <div class="grid">
-        <!-- <a class="layout-topbar-logo" routerLink=""> -->
-            <img src="../../assets/demo/images/gama.jpeg"alt="logo" height="120">
-            <div class="logo" style="font-size: large;  font-weight: bold;align-content: space-evenly;">
-                <div style="color: #ff271c; ">GAMA</div>
-                <div style="color: #3755da;">TYPING</div>
-                <div style="color: #7d8580; ">SERVICES</div>
-              
-            </div>
-            
-            <!-- <span>SAKAI</span> -->
-        <!-- </a> -->
+    <section class="nextshot-form-panel">
+        <div class="nextshot-logo">
+            <span class="nextshot-logo-mark">NS</span>
+            <span>NextShot</span>
         </div>
 
-
-        <div style="border-radius:56px; padding:0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%);">
-            
-            
-            
-            
-            <div class="surface-card py-8 px-5 sm:px-8" style="border-radius:53px">
-                <div class="text-center mb-5">
-                    <!-- <img src="assets/demo/images/login/avatar.png" alt="Image" height="50" class="mb-3"> -->
-                    <div class="text-900 text-3xl font-medium mb-3">Invoice Management System</div>
-                    <span class="text-600 font-medium">Sign in to continue</span>
-                </div>
-
-                <div>
-                    <!-- <label for="email1" class="block text-900 text-xl font-medium mb-2">CNIC</label>
-                    <input id="email1" type="text" [(ngModel)]="login.UserName" placeholder="CNIC" pInputText class="w-full md:w-30rem mb-5" style="padding:1rem"> -->
-
-
-
-
-
-                    <form [formGroup]="signInForm" #signInNgForm="ngForm" class="pt-2">
-
-                        <label for="email1" class="block text-900 text-xl font-medium mb-2">User Name (CNIC)</label>
-                        <p-inputMask id="" mask="99999-9999999-9" formControlName="Cnic" placeholder="xxxxx-xxxxxxx-x"
-                            styleClass="w-full loginpanel mb-2"></p-inputMask>
-
-                        <label for="password1" class="block text-900 font-medium text-xl mb-2">Password</label>
-                        <p-password id="password1" formControlName="Password" placeholder="Password" [feedback]="false"
-                            styleClass="w-full loginpanel mb-5" inputStyleClass="w-full">
-                        </p-password>
-
-                        <!-- <div class="flex align-items-center justify-content-between mb-5 gap-5">
-                                        <div class="flex align-items-center">
-                                            <p-checkbox id="rememberme1" formControlName="rememberMe" [binary]="true"
-                                                styleClass="mr-2"></p-checkbox>
-                                            <label for="rememberme1" class="cursor-pointer" (click)="checkedRememberMe()">Remember
-                                                me</label>
-                                        </div>
-                                    </div> -->
-                        <div *ngIf="IsSearch">
-                            <!-- <lottie-player src="../../../../assets/layout/landingPageImages/loader.json"   background="transparent"  speed="0.7" loop  autoplay >
-                                                    </lottie-player> -->
-                        </div>
-                        <!-- <button (click)="SignIn()" pButton pRipple label="Sign In" class="w-full p-3 text-xl"></button> -->
-                        <button (click)="SignIn()" [loading]="loading" [disabled]="this.signInForm.invalid" pButton pRipple label="Sign In" class="w-full p-3 text-xl" ></button> 
-
-                    </form>
-
-
-
-
-
-
-
-
-
-
-
-
-                    <!-- <label for="CNIC" class="block text-900 text-xl font-medium mb-2">CNIC<span class="required-field">*</span></label>
-                    <p-inputMask inputId="inputmask" mask="99999-9999999-9" [(ngModel)]="login.CNIC" class="w-full md:w-30rem mb-5" styleClass="mb-5 w-full"></p-inputMask>
-
-                    <label for="password1" class="block text-900 font-medium text-xl mb-2">Password<span class="required-field">*</span></label>
-                    <p-password id="password1" [(ngModel)]="login.Password" placeholder="Password" [feedback]="false" [toggleMask]="true" styleClass="mb-5" inputStyleClass="w-full p-3 md:w-30rem"></p-password>
-
-                    <div class="flex align-items-center justify-content-between mb-5 gap-5">
-                        <div class="flex align-items-center"> -->
-                            <!-- <p-checkbox id="rememberme1" [binary]="true" styleClass="mr-2"></p-checkbox>
-                            <label for="rememberme1">Remember me</label> -->
-                        <!-- </div> -->
-                        <!-- <a [routerLink]="['/auth/register']" class="font-medium no-underline ml-2 text-right cursor-pointer" style="color: var(--primary-color)">Register an Account</a> -->
-                    <!-- </div>
-                    <button (click)="SignIn()" [loading]="loading" [disabled]="!login.CNIC || !login.Password" pButton pRipple label="Sign In" class="w-full p-3 text-xl" ></button> -->
-               
-               
-               
-               
-               
-               
-                </div>
+        <div class="nextshot-card">
+            <div class="nextshot-card-header">
+                <h2 class="nextshot-card-title">Welcome back</h2>
+                <p class="nextshot-card-subtitle">Sign in to continue to your NextShot dashboard.</p>
             </div>
 
+            <form [formGroup]="signInForm" #signInNgForm="ngForm" class="pt-1">
+                <div class="nextshot-field">
+                    <label for="cnic">User Name (CNIC)</label>
+                    <p-inputMask
+                        inputId="cnic"
+                        mask="99999-9999999-9"
+                        formControlName="Cnic"
+                        placeholder="xxxxx-xxxxxxx-x"
+                        styleClass="nextshot-input">
+                    </p-inputMask>
+                </div>
+
+                <div class="nextshot-field">
+                    <label for="password1">Password</label>
+                    <p-password
+                        id="password1"
+                        formControlName="Password"
+                        placeholder="Password"
+                        [feedback]="false"
+                        styleClass="nextshot-password"
+                        inputStyleClass="w-full">
+                    </p-password>
+                </div>
+
+                <div *ngIf="IsSearch"></div>
+
+                <button
+                    (click)="SignIn()"
+                    [loading]="loading"
+                    [disabled]="this.signInForm.invalid"
+                    pButton
+                    pRipple
+                    label="Sign In"
+                    class="nextshot-submit w-full p-3 text-xl">
+                </button>
+            </form>
+
+            <div class="nextshot-footer">NextShot Snooker Management System</div>
         </div>
-    </div>
-</div>
+    </section>
+</main>

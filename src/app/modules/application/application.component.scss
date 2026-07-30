@@ -1,5 +1,3 @@
-:host { display: block; }
-
 .invoice-workspace {
   min-height: 100%;
   padding: 1rem;
@@ -110,13 +108,3 @@
   .invoice-meta { text-align: left; }
   .totals-panel { max-width: none; }
 }
-
-@media print {
-  .invoice-workspace > .grid > .col-12:first-child,
-  .print-hide,
-  p-toast { display: none !important; }
-  .invoice-workspace,
-  .preview-panel,
-  .invoice-sheet { padding: 0; background: #fff; box-shadow: none; border: 0; }
-}
-
