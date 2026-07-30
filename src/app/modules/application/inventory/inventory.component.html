@@ -1,0 +1,93 @@
+<section class="inventory-page">
+  <div class="inventory-header">
+    <div>
+      <p>Next Shot</p>
+      <h1>Inventory</h1>
+      <span>Add drinks and snacks that can be added to customer bills.</span>
+    </div>
+  </div>
+
+  <div class="inventory-shell">
+    <div class="inventory-form">
+      <h2>{{ editingItem ? 'Update Item' : 'Add Item' }}</h2>
+
+      <label>
+        Item Name
+        <input pInputText type="text" [(ngModel)]="itemName" placeholder="Coke, Juice, Water" />
+      </label>
+
+      <label>
+        Category
+        <input pInputText type="text" [(ngModel)]="category" placeholder="Drink" />
+      </label>
+
+      <label>
+        Price
+        <input pInputText type="number" min="0" [(ngModel)]="price" />
+      </label>
+
+      <label>
+        Stock
+        <input pInputText type="number" min="0" [(ngModel)]="stock" />
+      </label>
+
+      <button
+        pButton
+        pRipple
+        type="button"
+        [label]="editingItem ? 'Update Inventory' : 'Add Inventory'"
+        [icon]="editingItem ? 'pi pi-check' : 'pi pi-plus'"
+        (click)="addItem()">
+      </button>
+
+      <button
+        pButton
+        pRipple
+        type="button"
+        label="Cancel"
+        icon="pi pi-times"
+        class="p-button-outlined"
+        *ngIf="editingItem"
+        (click)="clearForm()">
+      </button>
+    </div>
+
+    <div class="inventory-list">
+      <div class="inventory-row inventory-row-head">
+        <span>Item</span>
+        <span>Category</span>
+        <span>Price</span>
+        <span>Stock</span>
+        <span>Actions</span>
+      </div>
+
+      <div class="inventory-row" *ngFor="let item of items">
+        <strong>{{ item.name }}</strong>
+        <span>{{ item.category }}</span>
+        <span>AED {{ item.price }}</span>
+        <span [class.low-stock]="item.stock <= 5">{{ item.stock }}</span>
+        <div class="inventory-actions">
+          <button
+            pButton
+            pRipple
+            type="button"
+            icon="pi pi-pencil"
+            class="p-button-rounded p-button-text"
+            title="Edit"
+            (click)="editItem(item)">
+          </button>
+
+          <button
+            pButton
+            pRipple
+            type="button"
+            icon="pi pi-trash"
+            class="p-button-rounded p-button-text p-button-danger"
+            title="Delete"
+            (click)="deleteItem(item)">
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

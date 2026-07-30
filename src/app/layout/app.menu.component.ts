@@ -25,6 +25,16 @@ export class AppMenuComponent implements OnInit {
     menu:any[] = [];
 
     menuModel : MenuModel[] = [];
+    private readonly nextShotMenuItems = [
+        {
+            label: 'Tables',
+            items: [
+                { label: 'Table Floor', icon: 'pi pi-fw pi-th-large', routerLink: ['/application/Inbox'] },
+                { label: 'Table Setup', icon: 'pi pi-fw pi-cog', routerLink: ['/application/Tables'] },
+                { label: 'Inventory', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/application/Inventory'] }
+            ]
+        }
+    ];
 
     constructor(public layoutService: LayoutService, private router: Router,
       
@@ -413,19 +423,16 @@ export class AppMenuComponent implements OnInit {
 
 
                 {
-                    
-                    label: 'Invoice',
+                    label: 'Tables',
                     items: [
                         {
-                            label: 'New Invoice', icon: 'pi pi-fw pi-plus', routerLink: ['/application']
-                        }
-                    ]
-                },
-                {
-                    label: 'Inbox',
-                    items: [
+                            label: 'Table Floor', icon: 'pi pi-fw pi-th-large', routerLink: ['/application/Inbox']
+                        },
                         {
-                            label: 'Inbox', icon: 'pi pi-fw pi-folder', routerLink: ['/application/Inbox']
+                            label: 'Table Setup', icon: 'pi pi-fw pi-cog', routerLink: ['/application/Tables']
+                        },
+                        {
+                            label: 'Inventory', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/application/Inventory']
                         }
                     ]
                 },
@@ -440,16 +447,16 @@ export class AppMenuComponent implements OnInit {
 
                 {
                     
-                    label: 'UMS',
+                    label: 'Management',
                     items: [
                         // {
                         //     label: 'UMS', icon: 'pi pi-fw pi-folder', routerLink: ['/ums']
                         // },
                         {
-                            label: 'USER', icon: 'pi pi-fw pi-folder', routerLink: ['/ums/user']
+                            label: 'Users', icon: 'pi pi-fw pi-users', routerLink: ['/ums/user']
                         },
                         {
-                            label: 'ROLE', icon: 'pi pi-fw pi-folder', routerLink: ['/ums/role']
+                            label: 'Roles', icon: 'pi pi-fw pi-shield', routerLink: ['/ums/role']
                         }
 
                         
@@ -518,7 +525,7 @@ export class AppMenuComponent implements OnInit {
                 }
                 this.menuModel.push(obj);
             })
-            this.model = this.menuModel;
+            this.model = this.withNextShotMenu(this.menuModel);
         });
     }
 
@@ -529,6 +536,32 @@ export class AppMenuComponent implements OnInit {
                 this._localService.setValue('userPermissions' , data)
             });
         }
+    }
+
+    private withNextShotMenu(menu: any[]): any[] {
+        const menuList = this.hideLegacyMenuItems(menu || []);
+        const hasInventory = menuList.some(group =>
+            group.items?.some(item => item.routerLink?.includes('/application/Inventory'))
+        );
+
+        if (hasInventory) {
+            return menuList;
+        }
+
+        return this.hideLegacyMenuItems([...this.nextShotMenuItems, ...menuList]);
+    }
+
+    private hideLegacyMenuItems(menu: any[]): any[] {
+        const hiddenGroupLabels = ['club', 'invoice', 'logout'];
+        const hiddenItemLabels = ['new session', 'inbox', 'create invoice'];
+
+        return (menu || [])
+            .filter(group => !hiddenGroupLabels.includes((group.label || '').toLowerCase()))
+            .map(group => ({
+                ...group,
+                items: (group.items || []).filter(item => !hiddenItemLabels.includes((item.label || '').toLowerCase()))
+            }))
+            .filter(group => !group.items || group.items.length > 0);
     }
 
 

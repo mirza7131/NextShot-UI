@@ -1,764 +1,564 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
-import { MenuItem, MessageService } from 'primeng/api';
-import { Product } from '../../api/product';
-import { ProductService } from '../../service/product.service';
-import { Subscription, debounceTime } from 'rxjs';
-import { LayoutService } from 'src/app/layout/service/app.layout.service';
-import { ApiService } from 'src/Services/api.service';
-import { Router } from '@angular/router';
-import { el } from '@fullcalendar/core/internal-common';
-import { Table } from 'primeng/table';
-import { ApplicationService } from 'src/app/modules/application/application.service';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { Subscription } from 'rxjs';
+import { ClubTableSetup, InventoryItem, InventoryService } from 'src/app/modules/application/inventory/inventory.service';
+
+type DashboardFilter = string;
+
+interface TableSummary {
+    key: DashboardFilter;
+    label: string;
+    games: number;
+    earning: number;
+    color: 'slate' | 'red' | 'green' | 'blue' | 'gold';
+    icon: string;
+}
+
+interface SessionHistoryRow {
+    sr: number;
+    tableSessionId: number;
+    tableNo: number;
+    tableName: string;
+    tableType: string;
+    customerName: string;
+    players: string;
+    startTime?: Date;
+    endTime?: Date;
+    totalTime: string;
+    games: number;
+    tableAmount: number;
+    inventoryAmount: number;
+    discountAmount: number;
+    paidAmount: number;
+    dueAmount: number;
+    netAmount: number;
+    status: string;
+}
 
 @Component({
     templateUrl: './dashboard.component.html',
-    providers: [MessageService],
-    
+    providers: [ConfirmationService, MessageService]
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-    @ViewChild('table', { static: true }) table: Table;
-     displayRegisterDialog:boolean = true;
-    items!: MenuItem[];
-    products!: Product[];
-    chartData: any;
-    chartOptions: any;
-    subscription!: Subscription;
-
-    public applications: any = [];
-    public dashboard: any = [];
-    public user : any = {};
-    public selectedDrop: any;
-    public AffliationType: any = [];
-
-    public filename : string = 'Submitted Invoices';
-
-    public OriginalApplications: any = [];
-
-    cols: any[] = [];
-    allInvoices: any;
-    allInvoiceswithStatus: any[]= [];
-    activeInvoiceCount: number;
-    approvedInvoiceCount: number;
-    rejectedInvoiceCount: number;
-    reissuedInvoiceCount: number;
-    pendingInvoiceCount: number;
-   // stockcheckFilter: any;
-
-
-
-
-Medicines: string[] = [];
-  showBatchDetail: boolean = false;
-  showBatchDetailchecks: boolean = false;
-  IsShowBatchDetailchecks: boolean = false;
-  showNearestExpiry: boolean = false;
-  showCalender: boolean = false;
-  showExpiryOnly: boolean = false;
-  showNotExpiryOnly: boolean = false;
-  showExpirycalendar: boolean = false;
-  IsShowExpired: boolean = false;
-  IsShowNotExpired: boolean = false;
-  TonearestExpiryDate: Date | null = null;
-  FromnearestExpiryDate: Date | null = null;
-  Toexpirydate: Date | null = null;
-  Fromexpirydate: Date | null = null;
-
-  BranchID: any;
-  public loginUserDetail: any = {};
-  medicineList: any[] = [];
-  dashboardCount: any = {};
-  public medicineObject: any = {};
-  public medicineListdata: any = {};
-  public ViewInvoiceObj:any ={};
-  public MedicineId: any;
-  public GuidId: any;
-  currentDate: Date;
-  stockValue: number = 0;
-
-  IsDueAmount: boolean = false;; 
-  IsTotalAmount: boolean = false;; 
-  IsAllAmount: boolean = false;; 
-  PageNumber:number = 1;
-  PageSize:number = 10; 
-
-  deleteUserDialog: boolean = false;
-  viewInvoiceDialog: boolean = false;
-  BillToName:string;
-  InvoiceMasterId:string;
-  @ViewChild('invoiceContent') invoiceContent: ElementRef;
-
-  stockcheckFilter:GetStockCheckboxCheckFilter = new GetStockCheckboxCheckFilter()
-  public minimumDate = new Date();
-  public minDate = new Date();
-
-  @ViewChild('table', { static: false }) table1: ElementRef;
-
-  selectedMedicine: any;
-  filteredMedicineData: any[] = [];
-
-
-
-
-
-
-
-
-
-
-
-
+    selectedFilter: DashboardFilter = 'All';
+    fromDate = '';
+    toDate = '';
+    searchTerm = '';
+    pageSize = 10;
+    currentPage = 1;
+    editDialog = false;
+    editRow: SessionHistoryRow | null = null;
+    inventoryItems: InventoryItem[] = [];
+    selectedInventoryItemId: number | null = null;
+    inventoryQty = 1;
+    tableSummaries: TableSummary[] = [];
+    allRows: SessionHistoryRow[] = [];
+    filteredRows: SessionHistoryRow[] = [];
+    configuredTables: ClubTableSetup[] = [];
+    private historySubscription?: Subscription;
 
     constructor(
-        private productService: ProductService,
-        public layoutService: LayoutService,
-        private apiService: ApiService,
-        private appService:ApplicationService,
-        private router: Router) {
-        this.subscription = this.layoutService.configUpdate$
-        .pipe(debounceTime(25))
-        .subscribe((config) => {
-            this.initChart();
+        private inventoryService: InventoryService,
+        private messageService: MessageService,
+        private confirmationService: ConfirmationService
+    ) {}
+
+    ngOnInit(): void {
+        this.loadInventoryItems();
+        this.loadClubTables();
+        this.loadDashboard();
+    }
+
+    ngOnDestroy(): void {
+        this.historySubscription?.unsubscribe();
+    }
+
+    selectFilter(filter: DashboardFilter): void {
+        this.selectedFilter = filter;
+        this.currentPage = 1;
+        this.applyFilter();
+    }
+
+    applyDateFilter(): void {
+        this.currentPage = 1;
+        this.loadDashboard();
+    }
+
+    clearDateFilter(): void {
+        this.fromDate = '';
+        this.toDate = '';
+        this.currentPage = 1;
+        this.loadDashboard();
+    }
+
+    onSearchChange(): void {
+        this.currentPage = 1;
+    }
+
+    changePage(page: number): void {
+        this.currentPage = Math.min(Math.max(page, 1), this.totalPages);
+    }
+
+    openEdit(row: SessionHistoryRow): void {
+        this.editRow = { ...row };
+        this.selectedInventoryItemId = null;
+        this.inventoryQty = 1;
+        this.editDialog = true;
+    }
+
+    saveEdit(): void {
+        if (!this.editRow) {
+            return;
+        }
+
+        this.recalculateEditRow();
+        this.syncEditedRow();
+
+        this.editDialog = false;
+        this.messageService.add({
+            severity: 'success',
+            summary: 'Updated',
+            detail: 'Dashboard row updated'
         });
     }
 
-    ngOnInit() {
-
-        debugger
-      this.user.token = localStorage.getItem('token');
-      this.user.username = localStorage.getItem('username');
-      // this.user.roles = JSON.parse(localStorage.getItem('roles') || '[]');
-      this.user.email = localStorage.getItem('email');
-      this.user.userId = localStorage.getItem('userId');
-      // this.getApplication();
-
-      this.currentDate = new Date();
-    // this.loginUserDetail = this._AuthService.getLoginUser();
-    // this.BranchID = this.loginUserDetail?.MimsBranchId
-    this.getStockByBrachOrByMedicine();
-     this.getAllMedicineOfHealthFacilityInInventory();
-    }
-    GetAllInvoiceStatus(){
-        this.appService.GetAllInvoiceStatus().subscribe(res => {
-            debugger
-            this.allInvoiceswithStatus = res.data && Array.isArray(res.data) ? res.data : []; 
+    deleteRow(row: SessionHistoryRow): void {
+        this.confirmationService.confirm({
+            header: 'Delete Session',
+            message: `Are you sure you want to delete ${row.tableName} session for ${row.customerName}?`,
+            icon: 'pi pi-exclamation-triangle',
+            acceptLabel: 'Delete',
+            rejectLabel: 'Cancel',
+            acceptButtonStyleClass: 'p-button-danger',
+            accept: () => this.confirmDeleteRow(row)
         });
     }
-    GetAllInvoices() {
-        this.appService.GetInvoiceStatusCount().subscribe(res => {
-            debugger
-            this.allInvoices = res.data[0] ; 
-            console.log('this.allInvoices',this.allInvoices)
-           
+
+    private confirmDeleteRow(row: SessionHistoryRow): void {
+        const removeLocal = () => {
+            this.allRows = this.allRows.filter(item => item.tableSessionId !== row.tableSessionId);
+            this.buildSummaries();
+            this.applyFilter();
+            this.messageService.add({
+                severity: 'success',
+                summary: 'Deleted',
+                detail: 'Session removed from dashboard'
+            });
+        };
+
+        if (!row.tableSessionId) {
+            removeLocal();
+            return;
+        }
+
+        this.inventoryService.deleteTableSession(row.tableSessionId).subscribe({
+            next: () => removeLocal(),
+            error: error => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Delete Failed',
+                    detail: error?.error?.message || error?.message || 'Unable to delete this session'
+                });
+            }
         });
     }
-    onSelect(app) {
-     debugger
-     localStorage.setItem("selectedRow", JSON.stringify(app));
-        // localStorage.setItem("InvoiceNumber",app.InvoiceNumber );
-        // localStorage.setItem("IssuedOn",app.IssuedOn );
-        // localStorage.setItem("DueDate",app.DueDate );
-        // localStorage.setItem("Division",app.Division );
-        // localStorage.setItem("District",app.District );
-        // localStorage.setItem("HFType",app.HFType );
-        // localStorage.setItem("HealthFacilityName",app.HealthFacilityName );
-        // localStorage.setItem("Service",app.Service );
-        // localStorage.setItem("Month",app.Month );
-        
-        this.router.navigate(["/application/"]);
-      }
-      goToRegister() {
-        this.router.navigate(['/application/RegisterCompany']);
-      }
-    // exportToExcel() {
-    //     // Define the columns you want to export
-    //     const columnsToExport = ['InstituteName', 'PrincipalName', 'Mobile', 'Email', 'OwnerName', 'ApplicationStatus'];
-      
-    //     // Set the visible columns in the table
-    //     this.table.columns = this.cols.filter(col => columnsToExport.includes(col.field));
-      
-    //     // Transform the 'ApplicationStatus' values before exporting
-    //     const transformedData = this.table.value.map(row => {
-    //       return {
-    //         ...row,
-    //         ApplicationStatus: row.ApplicationStatus == 1 ? 'Submitted' : 'Incomplete'
-    //       };
-    //     });
-      
-    //     // Set the transformed data to the table (assuming your table has a 'value' property)
-    //     this.table.value = transformedData;
-      
-    //     // Export the CSV with the visible columns and transformed data
-      
-    //     this.table.exportCSV();
-      
-    //     // Reset the visible columns to the original state if needed
-    //     this.table.columns = this.cols;
-    // }
-      
- 
-    exportToExcel() {
-        // Define the columns you want to export
-        const columnsToExport = ['InstituteName', 'PrincipalName', 'Mobile', 'Email', 'OwnerName', 'ApplicationStatus'];
-    
-        // Set the visible columns in the table
-        this.table.columns = this.cols.filter(col => columnsToExport.includes(col.field));
-    
-        // Transform the 'ApplicationStatus' values before exporting
-        const transformedData = this.table.value.map(row => {
+
+    addInventoryToEditRow(): void {
+        if (!this.editRow || !this.editRow.tableSessionId || !this.selectedInventoryItemId || this.inventoryQty <= 0) {
+            return;
+        }
+
+        const item = this.inventoryItems.find(x => x.id === Number(this.selectedInventoryItemId));
+
+        if (!item) {
+            return;
+        }
+
+        if (item.stock < this.inventoryQty) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Stock',
+                detail: 'Stock is not enough'
+            });
+            return;
+        }
+
+        const quantity = this.inventoryQty;
+        const amount = item.price * quantity;
+
+        this.inventoryService.addInventoryItemToSession(this.editRow.tableSessionId, item.id, quantity).subscribe({
+            next: () => {
+                this.editRow!.inventoryAmount += amount;
+                this.recalculateEditRow();
+                this.syncEditedRow();
+                this.selectedInventoryItemId = null;
+                this.inventoryQty = 1;
+                this.loadInventoryItems();
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Inventory Added',
+                    detail: `${item.name} added to bill`
+                });
+            },
+            error: error => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Inventory',
+                    detail: error?.error?.message || error?.message || 'Unable to add inventory'
+                });
+            }
+        });
+    }
+
+    printRow(row: SessionHistoryRow): void {
+        const printWindow = window.open('', '_blank', 'width=380,height=720');
+
+        if (!printWindow) {
+            return;
+        }
+
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Next Shot Receipt</title>
+                    <style>
+                        @page { size: 80mm auto; margin: 4mm; }
+                        body { margin: 0; font-family: Consolas, "Courier New", monospace; color: #111; }
+                        .receipt { width: 72mm; margin: 0 auto; }
+                        .head { text-align: center; border-bottom: 1px dashed #111; padding-bottom: 8px; margin-bottom: 8px; }
+                        .logo { margin: 0 auto 6px; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: #111; color: #fff; font-weight: 900; }
+                        h2 { margin: 0; font-size: 20px; }
+                        .row, .total { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; font-size: 12px; }
+                        .section { border-top: 1px dashed #111; margin-top: 8px; padding-top: 8px; }
+                        .total { font-size: 14px; font-weight: 900; }
+                        .note { text-align: center; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #111; font-size: 11px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="receipt">
+                        <div class="head">
+                            <div class="logo">NS</div>
+                            <h2>NEXT SHOT</h2>
+                            <div>Snooker & Billiards</div>
+                        </div>
+                        <div class="row"><span>Table</span><strong>${row.tableName}</strong></div>
+                        <div class="row"><span>Date</span><strong>${row.endTime ? row.endTime.toLocaleString() : '-'}</strong></div>
+                        <div class="row"><span>Customer</span><strong>${row.customerName}</strong></div>
+                        <div class="row"><span>Players</span><strong>${row.players}</strong></div>
+                        <div class="row"><span>Total Time</span><strong>${row.totalTime}</strong></div>
+                        <div class="section">
+                            <div class="row"><span>Games</span><strong>${row.games}</strong></div>
+                            <div class="row"><span>Table</span><strong>AED ${row.tableAmount.toFixed(2)}</strong></div>
+                            <div class="row"><span>Inventory</span><strong>AED ${row.inventoryAmount.toFixed(2)}</strong></div>
+                            <div class="row"><span>Discount</span><strong>AED ${row.discountAmount.toFixed(2)}</strong></div>
+                            <div class="row"><span>Paid</span><strong>AED ${row.paidAmount.toFixed(2)}</strong></div>
+                            <div class="row"><span>Due</span><strong>AED ${row.dueAmount.toFixed(2)}</strong></div>
+                            <div class="total"><span>Total</span><strong>AED ${row.netAmount.toFixed(2)}</strong></div>
+                        </div>
+                        <div class="note">Good Game • Good Time<br>Thank you for playing</div>
+                    </div>
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+        }, 250);
+    }
+
+    get totalGames(): number {
+        return this.allRows.length;
+    }
+
+    get totalEarning(): number {
+        return this.allRows.reduce((total, row) => total + row.netAmount, 0);
+    }
+
+    get totalDue(): number {
+        return this.allRows.reduce((total, row) => total + row.dueAmount, 0);
+    }
+
+    get totalReceived(): number {
+        return this.allRows.reduce((total, row) => total + row.paidAmount, 0);
+    }
+
+    get selectedFilterLabel(): string {
+        if (this.selectedFilter === 'All') {
+            return 'All Table';
+        }
+
+        return this.tableSummaries.find(summary => summary.key === this.selectedFilter)?.label || this.selectedFilter.split('|').pop() || this.selectedFilter;
+    }
+
+    get searchedRows(): SessionHistoryRow[] {
+        const search = this.searchTerm.trim().toLowerCase();
+
+        if (!search) {
+            return this.filteredRows;
+        }
+
+        return this.filteredRows.filter(row => [
+            row.tableName,
+            row.tableType,
+            row.customerName,
+            row.players,
+            row.status,
+            row.totalTime,
+            row.endTime ? row.endTime.toLocaleDateString() : '',
+            row.games,
+            row.tableAmount,
+            row.inventoryAmount,
+            row.discountAmount,
+            row.netAmount,
+            row.paidAmount,
+            row.dueAmount
+        ].join(' ').toLowerCase().includes(search));
+    }
+
+    get pagedRows(): SessionHistoryRow[] {
+        const start = (this.currentPage - 1) * this.pageSize;
+        return this.searchedRows.slice(start, start + this.pageSize);
+    }
+
+    get totalPages(): number {
+        return Math.max(1, Math.ceil(this.searchedRows.length / this.pageSize));
+    }
+
+    get pageStart(): number {
+        if (!this.searchedRows.length) {
+            return 0;
+        }
+
+        return (this.currentPage - 1) * this.pageSize + 1;
+    }
+
+    get pageEnd(): number {
+        return Math.min(this.currentPage * this.pageSize, this.searchedRows.length);
+    }
+
+    private loadDashboard(): void {
+        this.historySubscription?.unsubscribe();
+        this.historySubscription = this.inventoryService.getTableSessionHistory(this.fromDate, this.toDate).subscribe({
+            next: sessions => {
+                this.allRows = this.mapHistoryRows(sessions);
+                this.buildSummaries();
+                this.applyFilter();
+            },
+            error: () => {
+                this.allRows = [];
+                this.buildSummaries();
+                this.applyFilter();
+            }
+        });
+    }
+
+    private loadInventoryItems(): void {
+        this.inventoryService.getItems().subscribe({
+            next: items => this.inventoryItems = items,
+            error: () => this.inventoryItems = []
+        });
+    }
+
+    private recalculateEditRow(): void {
+        if (!this.editRow) {
+            return;
+        }
+
+        this.editRow.netAmount = Math.max(0, this.editRow.tableAmount + this.editRow.inventoryAmount - this.editRow.discountAmount);
+        this.editRow.dueAmount = Math.max(0, this.editRow.netAmount - this.editRow.paidAmount);
+    }
+
+    private syncEditedRow(): void {
+        if (!this.editRow) {
+            return;
+        }
+
+        const index = this.allRows.findIndex(row => row.tableSessionId === this.editRow!.tableSessionId);
+
+        if (index > -1) {
+            this.allRows[index] = { ...this.editRow };
+            this.buildSummaries();
+            this.applyFilter();
+        }
+    }
+
+    private buildSummaries(): void {
+        const tableCards = this.getDashboardTables();
+
+        this.tableSummaries = [
+            this.createSummary('All', 'Total Tables', 'pi pi-th-large', 'slate'),
+            ...tableCards.map((table, index) =>
+                this.createSummary(
+                    this.getTableFilterKey(table.tableNo, table.tableName),
+                    table.tableName,
+                    table.tableType === 'Billiard' ? 'pi pi-circle-fill' : 'pi pi-circle',
+                    this.getSummaryColor(index)
+                )
+            )
+        ];
+    }
+
+    private createSummary(key: DashboardFilter, label: string, icon: string, color: TableSummary['color']): TableSummary {
+        const rows = key === 'All' ? this.allRows : this.allRows.filter(row => this.isTableMatch(row, key));
+
+        return {
+            key,
+            label,
+            icon,
+            color,
+            games: rows.length,
+            earning: rows.reduce((total, row) => total + row.netAmount, 0)
+        };
+    }
+
+    private applyFilter(): void {
+        this.filteredRows = this.selectedFilter === 'All'
+            ? [...this.allRows]
+            : this.allRows.filter(row => this.isTableMatch(row, this.selectedFilter));
+
+        this.filteredRows = this.filteredRows.map((row, index) => ({ ...row, sr: index + 1 }));
+        this.currentPage = Math.min(this.currentPage, this.totalPages);
+    }
+
+    private mapHistoryRows(sessions: any[]): SessionHistoryRow[] {
+        return (sessions || []).map((session, index) => {
+            const startTimeValue = session.startTime ?? session.StartTime;
+            const endTimeValue = session.endTime ?? session.EndTime;
+            const startTime = startTimeValue ? new Date(startTimeValue) : undefined;
+            const endTime = endTimeValue ? new Date(endTimeValue) : undefined;
+            const players = session.tableSessionPlayers ?? session.TableSessionPlayers ?? [];
+            const games = Number(session.gameCount ?? session.GameCount ?? (session.tableSessionGames ?? session.TableSessionGames ?? []).length ?? 0);
+            const tableAmount = Number(session.tableAmount ?? session.TableAmount ?? 0);
+            const inventoryAmount = Number(session.inventoryAmount ?? session.InventoryAmount ?? 0);
+            const discountAmount = Number(session.discountAmount ?? session.DiscountAmount ?? 0);
+            const paidAmount = Number(session.paidAmount ?? session.PaidAmount ?? 0);
+            const dueAmount = Number(session.dueAmount ?? session.DueAmount ?? 0);
+            const netAmount = Number(session.netAmount ?? session.NetAmount ?? session.totalAmount ?? session.TotalAmount ?? tableAmount + inventoryAmount - discountAmount);
+
             return {
-                ...row,
-                ApplicationStatus: row.IsLocked ? 'Submitted' : 'Incomplete'
+                sr: index + 1,
+                tableSessionId: Number(session.tableSessionId ?? session.TableSessionId ?? 0),
+                tableNo: Number(session.tableNo ?? session.TableNo ?? 0),
+                tableName: this.normalizeTableName(session.tableName ?? session.TableName, Number(session.tableNo ?? session.TableNo ?? 0)),
+                tableType: session.tableType ?? session.TableType ?? '-',
+                customerName: session.customerName ?? session.CustomerName ?? 'Walk-in Customer',
+                players: this.mapPlayers(players),
+                startTime,
+                endTime,
+                totalTime: this.getDuration(startTime, endTime),
+                games,
+                tableAmount,
+                inventoryAmount,
+                discountAmount,
+                paidAmount,
+                dueAmount,
+                netAmount,
+                status: session.status ?? session.Status ?? '-'
             };
         });
-    
-        // Set the transformed data to the table (assuming your table has a 'value' property)
-        this.table.value = transformedData;
-    
-        // Export the CSV with the visible columns and transformed data
-        this.table.exportCSV();
-    
-        // Reset the visible columns to the original state if needed
-        this.table.columns = this.cols;
     }
-    
-    
-      
 
-   
-      
+    private isTableMatch(row: SessionHistoryRow, key: DashboardFilter): boolean {
+        if (key === 'All') {
+            return true;
+        }
 
+        const [tableNo, ...nameParts] = key.split('|');
+        const keyTableNo = Number(tableNo);
+        const keyTableName = nameParts.join('|');
 
-    initChart() {
-        const documentStyle = getComputedStyle(document.documentElement);
-        const textColor = documentStyle.getPropertyValue('--text-color');
-        const textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
-        const surfaceBorder = documentStyle.getPropertyValue('--surface-border');
+        return row.tableNo === keyTableNo || row.tableName === keyTableName || row.tableName === key;
+    }
 
-        this.chartData = {
-            labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-            datasets: [
-                {
-                    label: 'First Dataset',
-                    data: [65, 59, 80, 81, 56, 55, 40],
-                    fill: false,
-                    backgroundColor: documentStyle.getPropertyValue('--bluegray-700'),
-                    borderColor: documentStyle.getPropertyValue('--bluegray-700'),
-                    tension: .4
-                },
-                {
-                    label: 'Second Dataset',
-                    data: [28, 48, 40, 19, 86, 27, 90],
-                    fill: false,
-                    backgroundColor: documentStyle.getPropertyValue('--green-600'),
-                    borderColor: documentStyle.getPropertyValue('--green-600'),
-                    tension: .4
-                }
-            ]
-        };
+    private normalizeTableName(tableName: string | undefined, tableNo: number): string {
+        const configuredTable = this.configuredTables.find(table => table.tableNo === tableNo);
+        return tableName || configuredTable?.tableName || `Table ${tableNo || '-'}`;
+    }
 
-        this.chartOptions = {
-            plugins: {
-                legend: {
-                    labels: {
-                        color: textColor
-                    }
-                }
+    private mapPlayers(players: any[]): string {
+        const names = (players || [])
+            .map(player => player.playerName ?? player.PlayerName)
+            .filter(Boolean);
+
+        return names.length ? names.join(' vs ') : '-';
+    }
+
+    private getDuration(startTime?: Date, endTime?: Date): string {
+        if (!startTime || !endTime) {
+            return '00:00:00';
+        }
+
+        const elapsedSeconds = Math.max(0, Math.floor((endTime.getTime() - startTime.getTime()) / 1000));
+        const hours = Math.floor(elapsedSeconds / 3600);
+        const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+        const seconds = elapsedSeconds % 60;
+
+        return [hours, minutes, seconds].map(value => value.toString().padStart(2, '0')).join(':');
+    }
+
+    private loadClubTables(): void {
+        this.inventoryService.getClubTables().subscribe({
+            next: tables => {
+                this.configuredTables = tables.filter(table => table.isActive).sort((a, b) => a.tableNo - b.tableNo);
+                this.allRows = this.allRows.map(row => ({
+                    ...row,
+                    tableName: this.normalizeTableName(row.tableName, row.tableNo)
+                }));
+                this.buildSummaries();
+                this.applyFilter();
             },
-            scales: {
-                x: {
-                    ticks: {
-                        color: textColorSecondary
-                    },
-                    grid: {
-                        color: surfaceBorder,
-                        drawBorder: false
-                    }
-                },
-                y: {
-                    ticks: {
-                        color: textColorSecondary
-                    },
-                    grid: {
-                        color: surfaceBorder,
-                        drawBorder: false
-                    }
-                }
-            }
-        };
-    }
-
-    ngOnDestroy() {
-        if (this.subscription) {
-            this.subscription.unsubscribe();
-        }
-    }
-
-    GetCounts()
-    {
-        this.apiService.get('Application', 'MainDashboard', null).subscribe(response => {
-            if(response)
-            {
-              this.dashboard = response;
+            error: () => {
+                this.configuredTables = [];
+                this.buildSummaries();
+                this.applyFilter();
             }
         });
     }
 
-  
-    getApplication()
-    {
-        let TypeId = null;
-        if(this.selectedDrop)
-        {
-            TypeId = this.selectedDrop.id ;
-            this.apiService.get('Application', 'GetApplications', {TypeId: TypeId}).subscribe(response => {
-                if(response)
-                {
-                  debugger
-                  this.applications = response;
-                  this.OriginalApplications = response;
-                }
-             });
-        }
-        else
-        {
-            this.apiService.get('Application', 'GetApplications', null).subscribe(response => {
-                if(response)
-                {
-                  debugger
-                  this.applications = response;
-                  this.OriginalApplications = response;
-                }
-             });
-        }
-        
-    }
-    
-
-    FilterStatus(statusId: number)
-    {
-        debugger
-        this.table.first = 0;
-        if(statusId == 1)
-        {
-            this.applications = this.OriginalApplications;
-        }
-
-        if(statusId == 2)
-        {
-            this.applications = this.OriginalApplications.filter(x=> x.IsLocked == true);
-        }
-       
-        if(statusId == 3)
-        {
-            this.applications = this.OriginalApplications.filter(x=> x.IsLocked == false || x.IsLocked == null);
-        }
-        
-    }
-
-    navigateToDetails(grantApplicationId: string, userId: string): void {
-        debugger
-        // Use the Router to navigate to the DetailsComponent with parameters
-        // this.router.navigate(['dashboard/details', grantApplicationId]);
-
-        const url = this.router.serializeUrl(this.router.createUrlTree(['dashboard/details', grantApplicationId], { queryParams: { userId } }));
-
-        // Open the URL in a new tab
-       window.open(url, '_blank');
-
-    }
-
-    onDropdownChange(event: any): void {
-        let TypeId = null;
-        this.table.first = 0;
-        if(this.selectedDrop)
-        {
-            TypeId = this.selectedDrop.id ;
-            this.apiService.get('Application', 'GetApplications', {TypeId: TypeId}).subscribe(response => {
-                if(response)
-                {
-                  debugger
-                  this.applications = response;
-                  this.OriginalApplications = response;
-                }
-             });
-        }
-        else
-        {
-            this.GetCounts();
-            this.apiService.get('Application', 'GetApplications', null).subscribe(response => {
-                if(response)
-                {
-                  debugger
-                  this.applications = response;
-                  this.OriginalApplications = response;
-                }
-             });
-        }
-    }
-
-
-
-
-
-
-
-
-
-
-
-    getStockByBrachOrByMedicine() {
-        debugger
-    
-        if (this.showBatchDetailchecks) {
-          this.IsShowBatchDetailchecks = true
-        }
-        else {
-          this.IsShowBatchDetailchecks = false
-        }
-        if(!this.medicineListdata){
-          this.MedicineId = null;
-        }
-        this.stockcheckFilter.MimsBranchId = this.BranchID
-        this.stockcheckFilter.IsBatchWise = this.showBatchDetailchecks;
-        this.stockcheckFilter.MedicineId = this.MedicineId;
-        this.stockcheckFilter.ToNearestExpire = this.TonearestExpiryDate;
-        this.stockcheckFilter.FromNearestExpire = this.FromnearestExpiryDate;
-        this.stockcheckFilter.ToExpired = this.Toexpirydate;
-        this.stockcheckFilter.FromExpired = this.Fromexpirydate;
-        this.stockcheckFilter.IsShowExpired = this.IsShowExpired;
-        this.stockcheckFilter.IsShowNotExpired = this.IsShowNotExpired;
-    
-        this.stockcheckFilter.GuidId = this.GuidId; 
-        this.stockcheckFilter.IsDueAmount = this.IsDueAmount; 
-        this.stockcheckFilter.IsTotalAmount = this.IsTotalAmount; 
-        this.stockcheckFilter.IsAllAmount = this.IsAllAmount; 
-    
-        // let date = new Date(this.TonearestExpiryDate);
-        // date.setTime(date.getTime() + (5 * 60 * 60 * 1000));
-        // this.TonearestExpiryDate = date;
-    
-        // let dateO = new Date(this.FromnearestExpiryDate);
-        // date.setTime(date.getTime() + (5 * 60 * 60 * 1000));
-        // this.TonearestExpiryDate = dateO;
-    
-        this.stockcheckFilter.FromDate = this.TonearestExpiryDate; 
-        this.stockcheckFilter.ToDate = this.FromnearestExpiryDate; 
-    
-        this.stockcheckFilter.PageNumber = this.PageNumber; 
-        this.stockcheckFilter.PageSize = this.PageSize; 
-    
-        this.appService.getInvoiceDetailList(this.stockcheckFilter).subscribe((response: any) => {
-          if (response) {
-            debugger
-            this.medicineList = response.invoiceMaster;
-            this.dashboardCount = response.invoiceDashboardCountDto[0];
-            console.log("Medcine List: ", response)
-          }
-        })
-      }
-    
-      getAllMedicineOfHealthFacilityInInventory() {
-        debugger
-        this.stockcheckFilter.MimsBranchId = this.BranchID
-        this.appService.getInvoiceDetailByGuidId().subscribe((response: any) => {
-          if (response) {
-            debugger
-            this.medicineObject = response
-            this.medicineListdata = response
-            this.medicineListdata = this.medicineListdata.map(item => ({
-              ...item,
-              BillToName: item.BillToName ? item.BillToName.toString() : ''
+    private getDashboardTables(): Array<{ tableNo: number; tableName: string; tableType: string }> {
+        if (this.configuredTables.length) {
+            return this.configuredTables.map(table => ({
+                tableNo: table.tableNo,
+                tableName: table.tableName,
+                tableType: table.tableType
             }));
-            console.log("medicineListdata List: ", this.medicineListdata)
-            
-          }
-        })
-      }
+        }
 
+        const historyTables = this.allRows
+            .filter(row => row.tableNo || row.tableName)
+            .reduce((tables, row) => {
+                const key = this.getTableFilterKey(row.tableNo, row.tableName);
+                if (!tables.some(table => this.getTableFilterKey(table.tableNo, table.tableName) === key)) {
+                    tables.push({
+                        tableNo: row.tableNo,
+                        tableName: row.tableName,
+                        tableType: row.tableType
+                    });
+                }
+                return tables;
+            }, [] as Array<{ tableNo: number; tableName: string; tableType: string }>)
+            .sort((a, b) => a.tableNo - b.tableNo);
 
-      printDiv() {
-        const printableContent = document.getElementById('printableDiv');
-      
-        if (printableContent) {
-          const printWindow = window.open('', '_blank', 'width=800,height=900');
-          printWindow?.document.open();
-          printWindow?.document.write(`
-            <html>
-              <head>
-                <title>Print Invoice</title>
-                <style>
-                  /* General print styles */
-                  @media print {
-                    @page {
-                      size: A4; /* Ensures content is sized for A4 page */
-                      margin: 0; /* Removes page margins */
-                    }
-                    body {
-                      margin: 0;
-                      padding: 0;
-                      box-sizing: border-box;
-                      font-family: Arial, sans-serif;
-                    }
-                    #content {
-                      width: 100%;
-                      page-break-inside: avoid; /* Prevents content from breaking */
-                    }
-                   
-                   
-                    /* Ensure no elements break unnecessarily */
-                    .header, .total, .details, .notes {
-                      page-break-before: avoid;
-                      page-break-after: avoid;
-                    }
-                  }
-                </style>
-              </head>
-              <body>
-                <div id="content">
-                  ${printableContent.innerHTML}
-                </div>
-              </body>
-            </html>
-          `);
-          printWindow?.document.close();
-          printWindow?.print();
-      
-          setTimeout(() => {
-            printWindow?.close();
-          }, 1000);
-          
+        if (historyTables.length) {
+            return historyTables;
         }
-      }
-      
 
-      selectMedicine(e: any) {
-        debugger
-        if (e.value) {
-          this.GuidId = e.value;
-        }
-        else {
-          this.GuidId = null
-        }
-      }
-      // onChangeDate(val: any) {
-      //   debugger
-      //   this.NearestExpirationDate = val
-      //   console.log("Nearest Expiration: ", this.NearestExpirationDate)
-      // }
-    
-      submitFilter() {
-        debugger
-        this.getStockByBrachOrByMedicine();
-      }
-      clearFilter() {
-       // this.medicineListdata = [];
-        this.selectedMedicine = null;
-        this.MedicineId = null;
-        this.showBatchDetail = false;
-        this.showBatchDetailchecks = false;
-        this.showCalender = false;
-        this.showExpirycalendar = false;
-        this.showNearestExpiry = false;
-        this.showExpiryOnly = false;
-        this.FromnearestExpiryDate = null;
-        this.TonearestExpiryDate = null;
-        this.Toexpirydate = null;
-        this.Fromexpirydate = null;
-        this.IsShowExpired = false;
-        this.IsShowNotExpired = false;
-        this.showNotExpiryOnly = false;
-    
-        this.GuidId  = null;
-        this.IsDueAmount = null;; 
-        this.IsTotalAmount = null;; 
-       this.IsAllAmount = null;; 
-        this.getStockByBrachOrByMedicine();
-        this.getAllMedicineOfHealthFacilityInInventory();
-      }
-    
-      checkshowBatchDetail(val: any) {
-        debugger
-        if (val.length >= 1) {
-          this.showBatchDetailchecks = true;
-          this.IsShowExpired = false;
-          this.IsShowNotExpired = false;
-    
-    
-        }
-        else if (val = []) {
-          this.showBatchDetailchecks = false;
-          this.showCalender = false;
-          this.showExpirycalendar = false;
-          this.showNearestExpiry = false;
-          this.showExpiryOnly = false;
-          this.FromnearestExpiryDate = null;
-          this.TonearestExpiryDate = null;
-          this.Toexpirydate = null;
-          this.Fromexpirydate = null;
-          this.IsShowExpired = false;
-          this.IsShowNotExpired = false;
-          this.showNotExpiryOnly = false;
-    
-        }
-      }
-      onNearestExpiryChange(value: any) {
-        debugger
-        if (value.length >= 1) {
-    
-            this.IsAllAmount = true;
-            this.IsTotalAmount = false;
-            this.IsDueAmount = false
-    
-        }
-        else if (value = []) {
-          this.IsAllAmount = false;
-          this.IsTotalAmount = false;
-          this.IsDueAmount = false
-    
-        }
-    
-      }
-    
-      onExpiryOnlyChange(val: any) {
-        debugger
-        if (val.length >= 1) {
-          this.IsAllAmount = false;
-          this.IsTotalAmount = true;
-          this.IsDueAmount = false
-        }
-        else if (val = []) {
-          this.IsAllAmount = false;
-          this.IsTotalAmount = false;
-          this.IsDueAmount = false
-        }
-      }
-      onNotExpiryOnlyChange(val: any) {
-        debugger
-        if (val.length >= 1) {
-          // this.showNotExpiryOnly = true
-          this.IsAllAmount = false;
-          this.IsTotalAmount = false;
-          this.IsDueAmount = true
-    
-        }
-        else if (val = []) {
-          this.IsAllAmount = false;
-          this.IsTotalAmount = false;
-          this.IsDueAmount = false
-        }
-      }
-      isExpired(expDate: string): boolean {
-        const medicineExpDate = new Date(expDate);
-        return medicineExpDate <= this.currentDate;
-      }
-      get totalStockValue(): number {
-        if (!this.IsShowBatchDetailchecks) {
-          return this.medicineList.reduce((sum, medicine) => sum + ((medicine.AvailableQty + medicine.BatchHoldQty) * medicine.UnitPrice), 0);
-        }
-        return this.medicineList.reduce((sum, medicine) => sum + (medicine.AvailableQty * medicine.UnitPrice), 0);
-      }
-      updateFromDateMin() {
-        this.resetFromNearestExpiryDate();
-        if (this.TonearestExpiryDate) {
-          this.minimumDate = new Date(this.TonearestExpiryDate);
-        } else {
-          this.minimumDate = new Date(); // Reset to current date if TonearestExpiryDate is null
-        }
-      }
-      updateFromDateMinforExpire() {
-        this.resetFromNearestExpiryDate();
-        if (this.Toexpirydate) {
-          this.minimumDate = new Date(this.Toexpirydate);
-        } else {
-          this.minimumDate = new Date(); // Reset to current date if TonearestExpiryDate is null
-        }
-      }
-      resetFromNearestExpiryDate() {
-        this.FromnearestExpiryDate = null;
-        this.Fromexpirydate = null
-      }
-      
-    
-      // Utility function to format date (similar to Angular date pipe)
-      formatDate(date: any) {
-        if (!date) {
-          return 'Invalid Date';
-        }
-        try {
-          const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
-          return new Intl.DateTimeFormat('en-US', options).format(new Date(date));
-        } catch (error) {
-          console.error('Error formatting date:', error);
-          return 'Invalid Date';
-        }
-      }
-    
-      // Utility function to check if a date is expired
-      isExpireds(expDate: any) {
-        if (!expDate) {
-          return false;
-        }
-        const today = new Date();
-        const expiryDate = new Date(expDate);
-        return today > expiryDate;
-      }
-    
-    
-      deleteInvoice(medicine){
-    this.deleteUserDialog = true;
-    this.BillToName = medicine.BillToName;  
-    this.InvoiceMasterId = medicine?.InvoiceMasterId;
-      }
-    editInvoice(medicine){}
-    viewInvoice(medicine){
-      debugger
-      this.viewInvoiceDialog = true
-      this.appService.GetViewInvoiceById(medicine?.InvoiceMasterId || '').subscribe((data: any) => {
-        if (data) {
-          debugger
-          this.ViewInvoiceObj = data
-          console.log("ViewInvoiceObj : ", this.ViewInvoiceObj)
-          
-        }
-       
-        });
+        return [
+            { tableNo: 1, tableName: 'Snooker Table 1', tableType: 'Snooker' },
+            { tableNo: 2, tableName: 'Snooker Table 2', tableType: 'Snooker' },
+            { tableNo: 3, tableName: 'Snooker Table 3', tableType: 'Snooker' },
+            { tableNo: 4, tableName: 'Billiard Table', tableType: 'Billiard' }
+        ];
     }
-    
-    
-    confirmDelete() {
-    
-      this.deleteUserDialog = false;
-    
-      this.appService.delete(this.InvoiceMasterId || '').subscribe((data: any) => {
-      this.getStockByBrachOrByMedicine();
-        // this.users = this.users.filter(val => val.UserId !== this.user.UserId);
-        this.user = {};
-      });
-    
-    }
-    
 
+    private getTableFilterKey(tableNo: number, tableName: string): DashboardFilter {
+        return `${tableNo}|${tableName}`;
+    }
+
+    private getSummaryColor(index: number): TableSummary['color'] {
+        const colors: TableSummary['color'][] = ['red', 'green', 'blue', 'gold'];
+        return colors[index % colors.length];
+    }
 }
-
-
-
-export class GetStockCheckboxCheckFilter{
-    MedicineId?: number;
-    MimsBranchId: string;
-    IsBatchWise:boolean;
-    ToNearestExpire?:Date| null = null;
-    FromNearestExpire?:Date| null = null;
-    ToExpired?:Date| null = null;
-    FromExpired?:Date| null = null;
-    IsShowExpired:boolean;
-    IsShowNotExpired:boolean;
-  
-    GuidId?: string| null = null; 
-    IsDueAmount?:boolean| null = null; 
-    IsTotalAmount?:boolean| null = null; 
-    IsAllAmount?:boolean| null = null; 
-    PageNumber?: number; 
-    PageSize?: number; 
-    FromDate?:Date| null = null;
-    ToDate?:Date| null = null;
-  }

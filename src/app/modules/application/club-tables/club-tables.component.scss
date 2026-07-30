@@ -1,0 +1,157 @@
+.table-setup-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.table-setup-header,
+.table-setup-form,
+.table-list-card {
+  border: 1px solid #dfe8df;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.table-setup-header {
+  padding: 1.25rem;
+}
+
+.table-setup-header p {
+  margin: 0 0 .35rem;
+  color: #2f8f2f;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.table-setup-header h1,
+.list-title h2 {
+  margin: 0;
+  color: #132018;
+}
+
+.table-setup-header span,
+.list-title span {
+  color: #647067;
+}
+
+.table-setup-form {
+  display: grid;
+  grid-template-columns: .7fr 1.4fr 1fr 1fr 1fr auto;
+  gap: .75rem;
+  align-items: end;
+  padding: 1rem;
+}
+
+.table-setup-form label {
+  display: grid;
+  gap: .35rem;
+  color: #334155;
+  font-weight: 800;
+}
+
+.table-setup-form input,
+.table-setup-form select {
+  min-height: 2.65rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: .65rem .75rem;
+  background: #fff;
+  color: #132018;
+}
+
+.active-toggle {
+  display: flex !important;
+  flex-direction: row;
+  gap: .5rem !important;
+  align-items: center;
+  min-height: 2.65rem;
+}
+
+.table-form-actions,
+.setup-actions {
+  display: flex;
+  gap: .35rem;
+  align-items: center;
+}
+
+.table-list-card {
+  padding: 1rem;
+}
+
+.list-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.table-list-wrap {
+  overflow: auto;
+}
+
+.setup-table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+}
+
+.setup-table th,
+.setup-table td {
+  padding: .9rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.setup-table th {
+  background: #f1f5f1;
+  color: #334155;
+}
+
+.setup-table td {
+  color: #475569;
+}
+
+.status-chip {
+  display: inline-flex;
+  padding: .3rem .55rem;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+  font-weight: 900;
+}
+
+.status-off {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.setup-actions .p-button {
+  width: 2.2rem;
+  height: 2.2rem;
+}
+
+.setup-edit,
+.setup-edit .p-button-icon {
+  color: #2563eb;
+}
+
+.setup-delete,
+.setup-delete .p-button-icon {
+  color: #dc2626;
+}
+
+.empty-row {
+  text-align: center !important;
+  color: #64748b !important;
+}
+
+@media (max-width: 1200px) {
+  .table-setup-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .table-setup-form {
+    grid-template-columns: 1fr;
+  }
+}
