@@ -23,6 +23,9 @@ export interface ClubTableSetup {
   hourlyRate: number;
   minuteRate: number;
   gameRate: number;
+  doubleHourlyRate: number;
+  doubleMinuteRate: number;
+  doubleGameRate: number;
   isActive: boolean;
 }
 
@@ -31,6 +34,8 @@ export interface BillItem {
   name: string;
   price: number;
   quantity: number;
+  buyerName?: string;
+  clubCustomerId?: number;
 }
 
 export interface ClubCustomer {
@@ -48,6 +53,37 @@ export interface SessionPlayer {
   isWalkIn: boolean;
 }
 
+export interface CustomerPendingPayment {
+  clubCustomerId: number;
+  customerName: string;
+  phoneNo: string;
+  dueAmount: number;
+  lastPaymentDate?: string | Date;
+  paymentCount?: number;
+}
+
+export interface CustomerPendingPaymentHistory {
+  customerPaymentId: number;
+  clubCustomerId: number;
+  customerName: string;
+  phoneNo: string;
+  tableSessionId?: number;
+  inventorySaleId?: number;
+  receiptNo?: string;
+  players?: string;
+  totalTime?: string;
+  tableTimeAmount?: number;
+  inventoryAmount?: number;
+  inventoryItems?: BillItem[];
+  totalAmount: number;
+  paidAmount: number;
+  discountAmount: number;
+  dueAmount: number;
+  paymentStatus: string;
+  paymentType?: string;
+  createdOn?: string | Date;
+}
+
 export interface RunningTableSession {
   tableSessionId: number;
   tableNo: number;
@@ -61,6 +97,7 @@ export interface RunningTableSession {
   minuteRate?: number;
   hourlyRate?: number;
   gameRate?: number;
+  playType?: 'Single' | 'Double';
   startTime: string | Date;
   receiptNo?: string;
   status: string;
@@ -74,6 +111,27 @@ export interface CustomerRequest {
   phoneNo: string;
 }
 
+export interface InventorySaleRequest {
+  clubCustomerId?: number;
+  customerName: string;
+  phoneNo?: string;
+  inventoryItemId: number;
+  quantity: number;
+  price: number;
+  items?: Array<{
+    inventoryItemId: number;
+    itemName: string;
+    price: number;
+    quantity: number;
+  }>;
+  totalAmount: number;
+  discountAmount: number;
+  cashAmount: number;
+  cardAmount: number;
+  paidAmount: number;
+  dueAmount: number;
+}
+
 export interface StartTableSessionRequest {
   tableNo: number;
   tableName: string;
@@ -83,6 +141,7 @@ export interface StartTableSessionRequest {
   customerPhone?: string;
   playerCount: number;
   sessionMode: string;
+  playType?: 'Single' | 'Double';
   hourlyRate: number;
   gameRate?: number;
   minuteRate?: number;
@@ -176,7 +235,11 @@ export class InventoryService {
         tableName: table.tableName,
         tableType: table.tableType,
         hourlyRate: table.hourlyRate,
+        singleHourlyRate: table.hourlyRate,
         gameRate: table.gameRate,
+        singleGameRate: table.gameRate,
+        doubleHourlyRate: table.doubleHourlyRate,
+        doubleGameRate: table.doubleGameRate,
         isActive: table.isActive
       }
     );
@@ -191,7 +254,11 @@ export class InventoryService {
         tableName: table.tableName,
         tableType: table.tableType,
         hourlyRate: table.hourlyRate,
+        singleHourlyRate: table.hourlyRate,
         gameRate: table.gameRate,
+        singleGameRate: table.gameRate,
+        doubleHourlyRate: table.doubleHourlyRate,
+        doubleGameRate: table.doubleGameRate,
         isActive: table.isActive
       }
     );
@@ -216,6 +283,13 @@ export class InventoryService {
     return this.http.post<any>(
       `${this.apiBaseUrl}${EndPointConstant.Invoice.ReduceInventoryStock()}`,
       { inventoryItemId: itemId, quantity }
+    );
+  }
+
+  createInventorySale(request: InventorySaleRequest): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiBaseUrl}${EndPointConstant.Invoice.CreateInventorySale()}`,
+      request
     );
   }
 
@@ -251,6 +325,27 @@ export class InventoryService {
       }));
   }
 
+  getCustomerPendingPayments(): Observable<CustomerPendingPayment[]> {
+    return this.http
+      .get<any>(`${this.apiBaseUrl}${EndPointConstant.Invoice.GetCustomerPendingPayments()}`)
+      .pipe(map(response => this.mapCustomerPendingPayments(response)));
+  }
+
+  getCustomerPendingPaymentHistory(clubCustomerId: number): Observable<CustomerPendingPaymentHistory[]> {
+    const params = new HttpParams().set('clubCustomerId', clubCustomerId);
+
+    return this.http
+      .get<any>(`${this.apiBaseUrl}${EndPointConstant.Invoice.GetCustomerPendingPaymentHistory()}`, { params })
+      .pipe(map(response => this.mapCustomerPendingPaymentHistory(response)));
+  }
+
+  payCustomerPendingAmount(clubCustomerId: number, paidAmount: number): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiBaseUrl}${EndPointConstant.Invoice.PayCustomerPendingAmount()}`,
+      { clubCustomerId, paidAmount }
+    );
+  }
+
   addPlayerToSession(tableSessionId: number, player: SessionPlayer): Observable<any> {
     return this.http.post<any>(
       `${this.apiBaseUrl}${EndPointConstant.Invoice.AddPlayerToSession()}`,
@@ -278,10 +373,10 @@ export class InventoryService {
     );
   }
 
-  addInventoryItemToSession(tableSessionId: number, inventoryItemId: number, quantity: number): Observable<any> {
+  addInventoryItemToSession(tableSessionId: number, inventoryItemId: number, quantity: number, buyerName?: string, clubCustomerId?: number): Observable<any> {
     return this.http.post<any>(
       `${this.apiBaseUrl}${EndPointConstant.Invoice.AddInventoryItemToSession()}`,
-      { tableSessionId, inventoryItemId, quantity }
+      { tableSessionId, inventoryItemId, quantity, buyerName, clubCustomerId }
     );
   }
 
@@ -323,8 +418,10 @@ export class InventoryService {
 
   private mapClubTable(item: any): ClubTableSetup {
     const id = item.clubTableId ?? item.ClubTableId ?? item.id ?? item.Id;
-    const hourlyRate = Number(item.hourlyRate ?? item.HourlyRate ?? 30);
-    const gameRate = Number(item.gameRate ?? item.GameRate ?? 15);
+    const hourlyRate = Number(item.hourlyRate ?? item.HourlyRate ?? item.singleHourlyRate ?? item.SingleHourlyRate ?? 30);
+    const gameRate = Number(item.gameRate ?? item.GameRate ?? item.singleGameRate ?? item.SingleGameRate ?? 15);
+    const doubleHourlyRate = Number(item.doubleHourlyRate ?? item.DoubleHourlyRate ?? hourlyRate);
+    const doubleGameRate = Number(item.doubleGameRate ?? item.DoubleGameRate ?? gameRate);
 
     return {
       id,
@@ -335,6 +432,9 @@ export class InventoryService {
       hourlyRate,
       minuteRate: Number(item.minuteRate ?? item.MinuteRate ?? hourlyRate / 60),
       gameRate,
+      doubleHourlyRate,
+      doubleMinuteRate: Number(item.doubleMinuteRate ?? item.DoubleMinuteRate ?? doubleHourlyRate / 60),
+      doubleGameRate,
       isActive: item.isActive ?? item.IsActive ?? true
     };
   }
@@ -348,6 +448,66 @@ export class InventoryService {
       customerName: item.customerName ?? item.CustomerName ?? '',
       phoneNo: item.phoneNo ?? item.PhoneNo ?? '',
       balanceAmount: item.balanceAmount ?? item.BalanceAmount ?? 0
+    }));
+  }
+
+  private mapCustomerPendingPayments(response: any): CustomerPendingPayment[] {
+    const data = response?.data || response;
+    const list = data?.list || data?.List || data?.items || data?.Items || data?.records || data?.Records || data?.customerPendingPayments || data?.CustomerPendingPayments || data || [];
+    const rows = Array.isArray(list) ? list : [list];
+
+    return rows.map((item: any) => ({
+      clubCustomerId: Number(item.clubCustomerId ?? item.ClubCustomerId ?? item.customerId ?? item.CustomerId ?? item.id ?? item.Id ?? 0),
+      customerName: item.customerName ?? item.CustomerName ?? item.clubCustomerName ?? item.ClubCustomerName ?? item.name ?? item.Name ?? item.playerName ?? item.PlayerName ?? '',
+      phoneNo: item.phoneNo ?? item.PhoneNo ?? '',
+      dueAmount: Number(item.dueAmount ?? item.DueAmount ?? item.totalDueAmount ?? item.TotalDueAmount ?? item.pendingAmount ?? item.PendingAmount ?? item.balanceAmount ?? item.BalanceAmount ?? 0),
+      lastPaymentDate: item.lastPaymentDate ?? item.LastPaymentDate ?? item.createdOn ?? item.CreatedOn ?? item.updatedOn ?? item.UpdatedOn,
+      paymentCount: item.paymentCount ?? item.PaymentCount ?? item.totalRecords ?? item.TotalRecords ?? item.count ?? item.Count ?? 0
+    })).filter((item: CustomerPendingPayment) => item.clubCustomerId > 0 || item.customerName || item.dueAmount > 0);
+  }
+
+  private mapCustomerPendingPaymentHistory(response: any): CustomerPendingPaymentHistory[] {
+    const data = response?.data || response;
+    const list = data?.list || data?.List || data?.items || data?.Items || data?.records || data?.Records || data || [];
+    const rows = Array.isArray(list) ? list : [list];
+
+    return rows.map((item: any) => ({
+      customerPaymentId: Number(item.customerPaymentId ?? item.CustomerPaymentId ?? item.id ?? item.Id ?? 0),
+      clubCustomerId: Number(item.clubCustomerId ?? item.ClubCustomerId ?? item.customerId ?? item.CustomerId ?? 0),
+      customerName: item.customerName ?? item.CustomerName ?? item.name ?? item.Name ?? '',
+      phoneNo: item.phoneNo ?? item.PhoneNo ?? '',
+      tableSessionId: item.tableSessionId ?? item.TableSessionId,
+      inventorySaleId: item.inventorySaleId ?? item.InventorySaleId,
+      receiptNo: item.receiptNo ?? item.ReceiptNo ?? '',
+      players: item.players ?? item.Players ?? item.playerNames ?? item.PlayerNames ?? '',
+      totalTime: item.totalTime ?? item.TotalTime ?? item.sessionTime ?? item.SessionTime ?? '',
+      tableTimeAmount: Number(item.tableTimeAmount ?? item.TableTimeAmount ?? item.tableAmount ?? item.TableAmount ?? item.timeAmount ?? item.TimeAmount ?? 0),
+      inventoryAmount: Number(item.inventoryAmount ?? item.InventoryAmount ?? 0),
+      inventoryItems: this.mapHistoryInventoryItems(item.inventoryItems ?? item.InventoryItems ?? item.tableSessionInventoryItems ?? item.TableSessionInventoryItems ?? []),
+      totalAmount: Number(item.totalAmount ?? item.TotalAmount ?? item.amount ?? item.Amount ?? 0),
+      paidAmount: Number(item.paidAmount ?? item.PaidAmount ?? 0),
+      discountAmount: Number(item.discountAmount ?? item.DiscountAmount ?? 0),
+      dueAmount: Number(item.dueAmount ?? item.DueAmount ?? 0),
+      paymentStatus: item.paymentStatus ?? item.PaymentStatus ?? '',
+      paymentType: item.paymentType ?? item.PaymentType ?? '',
+      createdOn: item.createdOn ?? item.CreatedOn
+    })).filter((item: CustomerPendingPaymentHistory) => item.customerPaymentId > 0 || item.dueAmount > 0);
+  }
+
+  private mapHistoryInventoryItems(value: any): BillItem[] {
+    if (!value) {
+      return [];
+    }
+
+    const rows = Array.isArray(value) ? value : [];
+
+    return rows.map((item: any) => ({
+      itemId: item.itemId ?? item.ItemId ?? item.inventoryItemId ?? item.InventoryItemId ?? 0,
+      name: item.name ?? item.Name ?? item.itemName ?? item.ItemName ?? '',
+      price: Number(item.price ?? item.Price ?? 0),
+      quantity: Number(item.quantity ?? item.Quantity ?? 1),
+      buyerName: item.buyerName ?? item.BuyerName ?? '',
+      clubCustomerId: item.clubCustomerId ?? item.ClubCustomerId
     }));
   }
 
@@ -365,6 +525,7 @@ export class InventoryService {
       customerPhone: item.customerPhone ?? item.CustomerPhone,
       playerCount: item.playerCount ?? item.PlayerCount,
       sessionMode: item.sessionMode ?? item.SessionMode ?? 'Time',
+      playType: item.playType ?? item.PlayType ?? 'Single',
       minuteRate: item.minuteRate ?? item.MinuteRate,
       hourlyRate: item.hourlyRate ?? item.HourlyRate,
       gameRate: item.gameRate ?? item.GameRate,

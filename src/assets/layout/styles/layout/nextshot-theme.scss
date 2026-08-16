@@ -591,14 +591,19 @@
 
 .nextshot-dashboard {
     display: grid;
-    gap: 1.25rem;
+    gap: 1rem;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .dashboard-hero {
     display: flex;
     justify-content: space-between;
     gap: 1rem;
-    padding: 1.25rem;
+    min-width: 0;
+    padding: 1rem 1.1rem;
     border-radius: 8px;
     background: #ffffff;
     border: 1px solid #dfe8df;
@@ -614,10 +619,11 @@
 .dashboard-hero h1 {
     margin: 0;
     color: #132018;
-    font-size: clamp(1.75rem, 3vw, 3rem);
+    font-size: clamp(1.65rem, 2.6vw, 2.55rem);
 }
 
 .dashboard-totals {
+    flex: 0 0 auto;
     text-align: right;
 }
 
@@ -630,21 +636,23 @@
 .dashboard-totals strong {
     display: block;
     color: #ba5b12;
-    font-size: 1.6rem;
+    font-size: 1.35rem;
 }
 
 .summary-grid {
     display: grid;
-    grid-template-columns: repeat(5, minmax(180px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: .75rem;
+    min-width: 0;
 }
 
 .summary-card {
     display: flex;
     justify-content: space-between;
-    gap: 1rem;
-    min-height: 150px;
-    padding: 1.4rem;
+    gap: .75rem;
+    min-width: 0;
+    min-height: 96px;
+    padding: .8rem;
     border: 1px solid #cfd8e3;
     border-radius: 8px;
     background: #f3f6f9;
@@ -659,25 +667,28 @@
 }
 
 .summary-card strong {
-    margin: 1.1rem 0 .4rem;
+    margin: .45rem 0 .2rem;
     color: #132018;
-    font-size: 1.3rem;
+    font-size: .98rem;
+    line-height: 1.2;
 }
 
 .summary-card small {
     color: #2f8f2f;
-    font-size: 1.15rem;
+    font-size: .9rem;
+    line-height: 1.25;
 }
 
 .summary-card i {
     display: grid;
     place-items: center;
-    width: 46px;
-    height: 46px;
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
     border-radius: 8px;
     background: #dbeafe;
     color: #2563eb;
-    font-size: 1.4rem;
+    font-size: 1.1rem;
 }
 
 .summary-card.summary-red { background: #fff1f2; border-color: #fda4af; }
@@ -706,12 +717,14 @@
 
 .finance-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(180px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: .75rem;
+    min-width: 0;
 }
 
 .finance-grid div {
-    padding: 1rem 1.25rem;
+    min-width: 0;
+    padding: .75rem .85rem;
     border-radius: 8px;
     background: #ffffff;
     border: 1px solid #dfe8df;
@@ -726,11 +739,13 @@
     display: block;
     margin-top: .45rem;
     color: #132018;
-    font-size: 1.35rem;
+    font-size: .98rem;
+    line-height: 1.2;
 }
 
 .dashboard-list {
-    padding: 1.25rem;
+    min-width: 0;
+    padding: 1rem;
     border-radius: 8px;
     background: #ffffff;
     border: 1px solid #dfe8df;
@@ -738,7 +753,7 @@
 
 .date-filter-bar {
     display: grid;
-    grid-template-columns: repeat(2, minmax(180px, 240px)) auto auto;
+    grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
     gap: .75rem;
     align-items: end;
     margin-bottom: 1rem;
@@ -750,12 +765,15 @@
 
 .date-filter-bar label {
     display: grid;
+    min-width: 0;
     gap: .35rem;
     color: #334155;
     font-weight: 800;
 }
 
 .date-filter-bar input {
+    width: 100%;
+    min-width: 0;
     min-height: 2.65rem;
     padding: .65rem .75rem;
     border: 1px solid #cbd5e1;
@@ -770,6 +788,11 @@
     color: #fff;
 }
 
+.date-filter-bar .p-button {
+    width: 100%;
+    min-width: 0;
+}
+
 .list-head {
     display: flex;
     justify-content: space-between;
@@ -778,9 +801,43 @@
     margin-bottom: 1rem;
 }
 
+.list-head > div {
+    min-width: 0;
+}
+
 .list-head h2 {
     margin: 0 0 .25rem;
     color: #132018;
+}
+
+.dashboard-head-actions {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.dashboard-head-actions .dashboard-daily-button,
+.dashboard-head-actions .dashboard-daily-button .p-button-icon,
+.dashboard-head-actions .dashboard-daily-button .p-button-label {
+    color: #fff;
+}
+
+.dashboard-head-actions .dashboard-daily-button {
+    min-height: 2.75rem;
+    min-width: 128px;
+    padding-inline: 1rem;
+    border: 1px solid #5f5ff0;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #6564f4, #5653df);
+    box-shadow: 0 10px 22px rgba(86, 83, 223, .18);
+    font-weight: 900;
+}
+
+.dashboard-head-actions .dashboard-daily-button:hover {
+    border-color: #4b49cb;
+    background: linear-gradient(180deg, #5a58e7, #4946c7);
 }
 
 .table-tools {
@@ -789,11 +846,14 @@
     gap: 1rem;
     align-items: center;
     margin-bottom: 1rem;
+    flex-wrap: wrap;
+    min-width: 0;
 }
 
 .table-search {
     position: relative;
     flex: 1;
+    min-width: min(100%, 280px);
     max-width: 520px;
 }
 
@@ -831,23 +891,38 @@
 
 .dashboard-table-wrap {
     overflow: auto;
+    max-width: 100%;
 }
 
 .dashboard-table {
     width: 100%;
     min-width: 1180px;
     border-collapse: collapse;
+    font-size: .92rem;
+}
+
+.dashboard-table .history-type-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: .25rem .55rem;
+    border-radius: 999px;
+    background: #e8f7df;
+    color: #1f7a29;
+    font-size: .8rem;
+    font-weight: 900;
+    white-space: nowrap;
 }
 
 .dashboard-table th {
-    padding: 1rem;
+    padding: .6rem .65rem;
     background: #f0f2f4;
     color: #334155;
     text-align: left;
 }
 
 .dashboard-table td {
-    padding: 1rem;
+    padding: .6rem .65rem;
     border-bottom: 1px solid #e5e7eb;
     color: #475569;
     vertical-align: top;
@@ -927,6 +1002,99 @@
     color: #132018;
 }
 
+.daily-sale-layout {
+    display: grid;
+    grid-template-columns: 360px minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.daily-sale-list {
+    display: grid;
+    gap: .65rem;
+    max-height: 64vh;
+    overflow: auto;
+    padding-right: .25rem;
+}
+
+.daily-sale-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(74px, .7fr));
+    gap: .65rem;
+    align-items: center;
+    width: 100%;
+    padding: .85rem;
+    border: 1px solid #dbe7dd;
+    border-radius: 8px;
+    background: #fff;
+    color: #132018;
+    text-align: left;
+    cursor: pointer;
+}
+
+.daily-sale-card:hover,
+.daily-sale-active {
+    border-color: #2f8f2f;
+    background: #f2fbef;
+}
+
+.daily-sale-card strong,
+.daily-sale-card span,
+.daily-sale-card small {
+    display: block;
+}
+
+.daily-sale-card span,
+.daily-sale-card small {
+    color: #64748b;
+    font-size: .82rem;
+}
+
+.daily-sale-card div:not(:first-child) {
+    text-align: right;
+}
+
+.daily-sale-detail {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.daily-sale-detail-head {
+    display: grid;
+    grid-template-columns: minmax(160px, 1.2fr) repeat(4, minmax(110px, .8fr));
+    gap: .75rem;
+}
+
+.daily-sale-detail-head > div {
+    padding: .85rem;
+    border: 1px solid #dbe7dd;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.daily-sale-detail-head span {
+    display: block;
+    color: #64748b;
+    font-size: .85rem;
+}
+
+.daily-sale-detail-head strong {
+    display: block;
+    color: #132018;
+    font-size: 1.05rem;
+}
+
+.daily-sale-table-wrap {
+    overflow: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+.daily-sale-table {
+    min-width: 1180px;
+}
+
 @media (max-width: 991px) {
     .layout-topbar .layout-topbar-logo {
         width: auto;
@@ -959,6 +1127,11 @@
     .dashboard-pagination {
         flex-direction: column;
         align-items: stretch;
+    }
+
+    .daily-sale-layout,
+    .daily-sale-detail-head {
+        grid-template-columns: 1fr;
     }
 
     .dashboard-totals {

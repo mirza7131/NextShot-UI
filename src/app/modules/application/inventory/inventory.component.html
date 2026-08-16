@@ -5,11 +5,24 @@
       <h1>Inventory</h1>
       <span>Add drinks and snacks that can be added to customer bills.</span>
     </div>
+    <div class="inventory-stats">
+      <div>
+        <strong>{{ items.length }}</strong>
+        <span>Items</span>
+      </div>
+      <div>
+        <strong>{{ lowStockCount }}</strong>
+        <span>Low Stock</span>
+      </div>
+    </div>
   </div>
 
   <div class="inventory-shell">
     <div class="inventory-form">
-      <h2>{{ editingItem ? 'Update Item' : 'Add Item' }}</h2>
+      <div class="inventory-form-title">
+        <h2>{{ editingItem ? 'Update Item' : 'Add Item' }}</h2>
+        <span>Stock and sale price</span>
+      </div>
 
       <label>
         Item Name
@@ -53,39 +66,76 @@
     </div>
 
     <div class="inventory-list">
-      <div class="inventory-row inventory-row-head">
-        <span>Item</span>
-        <span>Category</span>
-        <span>Price</span>
-        <span>Stock</span>
-        <span>Actions</span>
+      <div class="inventory-list-title">
+        <div>
+          <h2>Inventory List</h2>
+          <span>{{ filteredItems.length }} item{{ filteredItems.length === 1 ? '' : 's' }}</span>
+        </div>
+        <div class="inventory-tools">
+          <input pInputText type="text" placeholder="Search item or category" [(ngModel)]="searchText" (input)="applySearch()" />
+          <label>
+            Show
+            <select [(ngModel)]="pageSize" (change)="changePageSize()">
+              <option *ngFor="let size of pageSizeOptions" [ngValue]="size">{{ size }}</option>
+            </select>
+          </label>
+        </div>
       </div>
 
-      <div class="inventory-row" *ngFor="let item of items">
-        <strong>{{ item.name }}</strong>
-        <span>{{ item.category }}</span>
-        <span>AED {{ item.price }}</span>
-        <span [class.low-stock]="item.stock <= 5">{{ item.stock }}</span>
-        <div class="inventory-actions">
-          <button
-            pButton
-            pRipple
-            type="button"
-            icon="pi pi-pencil"
-            class="p-button-rounded p-button-text"
-            title="Edit"
-            (click)="editItem(item)">
-          </button>
+      <div class="inventory-table-wrap">
+        <table class="inventory-table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of pagedItems" [class.inventory-row-low]="item.stock < 10">
+              <td><strong>{{ item.name }}</strong></td>
+              <td>{{ item.category }}</td>
+              <td>AED {{ item.price | number:'1.2-2' }}</td>
+              <td><span class="stock-chip" [class.low-stock]="item.stock < 10">{{ item.stock }}</span></td>
+              <td>
+                <div class="inventory-actions">
+                  <button
+                    pButton
+                    pRipple
+                    type="button"
+                    icon="pi pi-pencil"
+                    class="p-button-rounded p-button-text setup-edit"
+                    title="Edit"
+                    (click)="editItem(item)">
+                  </button>
 
-          <button
-            pButton
-            pRipple
-            type="button"
-            icon="pi pi-trash"
-            class="p-button-rounded p-button-text p-button-danger"
-            title="Delete"
-            (click)="deleteItem(item)">
-          </button>
+                  <button
+                    pButton
+                    pRipple
+                    type="button"
+                    icon="pi pi-trash"
+                    class="p-button-rounded p-button-text setup-delete"
+                    title="Delete"
+                    (click)="deleteItem(item)">
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="!filteredItems.length">
+              <td colspan="5" class="empty-row">No inventory items found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="inventory-pagination" *ngIf="filteredItems.length">
+        <span>Showing {{ pageStart }} to {{ pageEnd }} of {{ filteredItems.length }}</span>
+        <div>
+          <button pButton pRipple type="button" icon="pi pi-chevron-left" label="Prev" class="p-button-outlined" [disabled]="pageNumber === 1" (click)="previousPage()"></button>
+          <strong>Page {{ pageNumber }} / {{ totalPages }}</strong>
+          <button pButton pRipple type="button" icon="pi pi-chevron-right" iconPos="right" label="Next" class="p-button-outlined" [disabled]="pageNumber === totalPages" (click)="nextPage()"></button>
         </div>
       </div>
     </div>

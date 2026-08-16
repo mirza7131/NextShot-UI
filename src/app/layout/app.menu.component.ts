@@ -25,13 +25,21 @@ export class AppMenuComponent implements OnInit {
     menu:any[] = [];
 
     menuModel : MenuModel[] = [];
+    private readonly dashboardMenuItem = {
+        label: 'Dashboard',
+        items: [
+            { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/dashboard'] }
+        ]
+    };
+
     private readonly nextShotMenuItems = [
         {
             label: 'Tables',
             items: [
                 { label: 'Table Floor', icon: 'pi pi-fw pi-th-large', routerLink: ['/application/Inbox'] },
                 { label: 'Table Setup', icon: 'pi pi-fw pi-cog', routerLink: ['/application/Tables'] },
-                { label: 'Inventory', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/application/Inventory'] }
+                { label: 'Inventory', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/application/Inventory'] },
+                { label: 'Customer Pending', icon: 'pi pi-fw pi-wallet', routerLink: ['/application/CustomerPending'] }
             ]
         }
     ];
@@ -85,17 +93,6 @@ export class AppMenuComponent implements OnInit {
                         }
                     ]
                 },
-
-
-                {
-                    label: 'LogOut',
-                    items: [
-                        {
-                            label: 'SignOut', icon: 'pi pi-fw pi-power-off'
-                        }
-                    ]
-                },
-
 
                 // {
                 //     label: 'UI Components',
@@ -264,15 +261,6 @@ export class AppMenuComponent implements OnInit {
                         }
                     ]
                 },
-
-                {
-                    label: 'LogOut',
-                    items: [
-                        {
-                            label: 'SignOut', icon: 'pi pi-fw pi-power-off'
-                        }
-                    ]
-                },
             ]
         }
         else
@@ -423,6 +411,15 @@ export class AppMenuComponent implements OnInit {
 
 
                 {
+                    label: 'Dashboard',
+                    items: [
+                        {
+                            label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/dashboard']
+                        }
+                    ]
+                },
+
+                {
                     label: 'Tables',
                     items: [
                         {
@@ -433,6 +430,9 @@ export class AppMenuComponent implements OnInit {
                         },
                         {
                             label: 'Inventory', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/application/Inventory']
+                        },
+                        {
+                            label: 'Customer Pending', icon: 'pi pi-fw pi-wallet', routerLink: ['/application/CustomerPending']
                         }
                     ]
                 },
@@ -462,16 +462,6 @@ export class AppMenuComponent implements OnInit {
                         
                     ]
                 },
-
-
-                {
-                    label: 'LogOut',
-                    items: [
-                        {
-                            label: 'SignOut', icon: 'pi pi-fw pi-power-off'
-                        }
-                    ]
-                }
             ];
         }
       
@@ -540,26 +530,31 @@ export class AppMenuComponent implements OnInit {
 
     private withNextShotMenu(menu: any[]): any[] {
         const menuList = this.hideLegacyMenuItems(menu || []);
+        const hasDashboard = menuList.some(group =>
+            (group.label || '').trim().toLowerCase() === 'dashboard' ||
+            group.items?.some(item => item.routerLink?.includes('/dashboard'))
+        );
         const hasInventory = menuList.some(group =>
             group.items?.some(item => item.routerLink?.includes('/application/Inventory'))
         );
+        const fixedMenu = [
+            ...(hasDashboard ? [] : [this.dashboardMenuItem]),
+            ...(hasInventory ? [] : this.nextShotMenuItems)
+        ];
 
-        if (hasInventory) {
-            return menuList;
-        }
-
-        return this.hideLegacyMenuItems([...this.nextShotMenuItems, ...menuList]);
+        return this.hideLegacyMenuItems([...fixedMenu, ...menuList]);
     }
 
     private hideLegacyMenuItems(menu: any[]): any[] {
-        const hiddenGroupLabels = ['club', 'invoice', 'logout'];
-        const hiddenItemLabels = ['new session', 'inbox', 'create invoice'];
+        const hiddenGroupLabels = ['club', 'invoice', 'logout', 'log out'];
+        const hiddenItemLabels = ['new session', 'inbox', 'create invoice', 'signout', 'sign out', 'logout', 'log out'];
+        const normalizeLabel = (value: string | undefined) => (value || '').trim().toLowerCase();
 
         return (menu || [])
-            .filter(group => !hiddenGroupLabels.includes((group.label || '').toLowerCase()))
+            .filter(group => !hiddenGroupLabels.includes(normalizeLabel(group.label)))
             .map(group => ({
                 ...group,
-                items: (group.items || []).filter(item => !hiddenItemLabels.includes((item.label || '').toLowerCase()))
+                items: (group.items || []).filter(item => !hiddenItemLabels.includes(normalizeLabel(item.label)))
             }))
             .filter(group => !group.items || group.items.length > 0);
     }

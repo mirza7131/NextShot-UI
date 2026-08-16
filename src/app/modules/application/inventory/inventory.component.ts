@@ -14,6 +14,10 @@ export class InventoryComponent implements OnInit {
   price: number = 0;
   stock: number = 0;
   editingItem: InventoryItem | null = null;
+  searchText = '';
+  pageNumber = 1;
+  pageSize = 5;
+  pageSizeOptions = [5, 10, 20, 50];
 
   constructor(private inventoryService: InventoryService) {}
 
@@ -97,9 +101,62 @@ export class InventoryComponent implements OnInit {
     this.stock = 0;
   }
 
+  get filteredItems(): InventoryItem[] {
+    const search = this.searchText.trim().toLowerCase();
+
+    if (!search) {
+      return this.items;
+    }
+
+    return this.items.filter(item =>
+      item.name.toLowerCase().includes(search) ||
+      item.category.toLowerCase().includes(search)
+    );
+  }
+
+  get pagedItems(): InventoryItem[] {
+    const startIndex = (this.pageNumber - 1) * this.pageSize;
+    return this.filteredItems.slice(startIndex, startIndex + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredItems.length / this.pageSize));
+  }
+
+  get pageStart(): number {
+    return this.filteredItems.length ? (this.pageNumber - 1) * this.pageSize + 1 : 0;
+  }
+
+  get pageEnd(): number {
+    return Math.min(this.pageNumber * this.pageSize, this.filteredItems.length);
+  }
+
+  get lowStockCount(): number {
+    return this.items.filter(item => item.stock < 10).length;
+  }
+
+  applySearch(): void {
+    this.pageNumber = 1;
+  }
+
+  changePageSize(): void {
+    this.pageNumber = 1;
+  }
+
+  previousPage(): void {
+    this.pageNumber = Math.max(1, this.pageNumber - 1);
+  }
+
+  nextPage(): void {
+    this.pageNumber = Math.min(this.totalPages, this.pageNumber + 1);
+  }
+
   private loadItems(): void {
     this.inventoryService.getItems().subscribe(items => {
       this.items = items;
+      if (this.pageNumber > this.totalPages) {
+        this.pageNumber = this.totalPages;
+      }
     });
   }
 

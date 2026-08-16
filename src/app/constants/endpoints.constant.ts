@@ -33,6 +33,7 @@ export class EndPointConstant {
             DeleteInventoryItem:()=> this.Invoice.Controller + 'DeleteInventoryItem',
             ChangeInventoryStatus:()=> this.Invoice.Controller + 'ChangeInventoryStatus',
             ReduceInventoryStock:()=> this.Invoice.Controller + 'ReduceInventoryStock',
+            CreateInventorySale:()=> this.Invoice.Controller + 'CreateInventorySale',
             StartTableSession:()=> this.Invoice.Controller + 'StartTableSession',
             EndTableSession:()=> this.Invoice.Controller + 'EndTableSession',
             GetRunningTableSessions:()=> this.Invoice.Controller + 'GetRunningTableSessions',
@@ -52,7 +53,10 @@ export class EndPointConstant {
             GetClubTables:()=> this.Invoice.Controller + 'GetClubTables',
             CreateClubTable:()=> this.Invoice.Controller + 'CreateClubTable',
             UpdateClubTable:()=> this.Invoice.Controller + 'UpdateClubTable',
-            DeleteClubTable:()=> this.Invoice.Controller + 'DeleteClubTable'
+            DeleteClubTable:()=> this.Invoice.Controller + 'DeleteClubTable',
+            GetCustomerPendingPayments:()=> this.Invoice.Controller + 'GetCustomerPendingPayments',
+            GetCustomerPendingPaymentHistory:()=> this.Invoice.Controller + 'GetCustomerPendingPaymentHistory',
+            PayCustomerPendingAmount:()=> this.Invoice.Controller + 'PayCustomerPendingAmount'
         }
 
     //#endregion

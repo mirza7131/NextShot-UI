@@ -6,46 +6,80 @@
     <div>
       <p>Next Shot</p>
       <h1>Table Setup</h1>
-      <span>Add snooker or billiard tables with per hour and per game pricing.</span>
+      <span>Add snooker or billiard tables with single and double game pricing.</span>
+    </div>
+    <div class="header-stat">
+      <strong>{{ tables.length }}</strong>
+      <span>Tables</span>
     </div>
   </header>
 
   <form class="table-setup-form" (ngSubmit)="saveTable()">
-    <label>
-      Table No
-      <input pInputText type="number" min="1" name="tableNo" [(ngModel)]="form.tableNo" />
-    </label>
+    <div class="form-section">
+      <div class="form-section-title">
+        <strong>{{ form.clubTableId ? 'Edit Table' : 'Add Table' }}</strong>
+        <span>Basic table details</span>
+      </div>
 
-    <label>
-      Table Name
-      <input pInputText type="text" name="tableName" [(ngModel)]="form.tableName" placeholder="Snooker Table 1" />
-    </label>
+      <div class="form-grid identity-grid">
+        <label>
+          Table No
+          <input pInputText type="number" min="1" name="tableNo" [(ngModel)]="form.tableNo" />
+        </label>
 
-    <label>
-      Type
-      <select name="tableType" [(ngModel)]="form.tableType">
-        <option *ngFor="let type of tableTypes" [ngValue]="type">{{ type }}</option>
-      </select>
-    </label>
+        <label>
+          Table Name
+          <input pInputText type="text" name="tableName" [(ngModel)]="form.tableName" placeholder="Snooker Table 1" />
+        </label>
 
-    <label>
-      Price Per Hour
-      <input pInputText type="number" min="1" name="hourlyRate" [(ngModel)]="form.hourlyRate" />
-    </label>
+        <label>
+          Type
+          <select name="tableType" [(ngModel)]="form.tableType">
+            <option *ngFor="let type of tableTypes" [ngValue]="type">{{ type }}</option>
+          </select>
+        </label>
+      </div>
+    </div>
 
-    <label>
-      Price Per Game
-      <input pInputText type="number" min="1" name="gameRate" [(ngModel)]="form.gameRate" />
-    </label>
+    <div class="form-section price-section">
+      <div class="form-section-title">
+        <strong>Pricing</strong>
+        <span>Single and double rates</span>
+      </div>
 
-    <label class="active-toggle">
-      <input type="checkbox" name="isActive" [(ngModel)]="form.isActive" />
-      Active
-    </label>
+      <div class="price-grid">
+        <label>
+          Single Per Hour
+          <input pInputText type="number" min="1" name="hourlyRate" [(ngModel)]="form.hourlyRate" />
+        </label>
 
-    <div class="table-form-actions">
-      <button pButton pRipple type="submit" icon="pi pi-save" [label]="form.clubTableId ? 'Update Table' : 'Add Table'" [disabled]="isSaving"></button>
-      <button pButton pRipple type="button" icon="pi pi-refresh" label="Clear" class="p-button-outlined" (click)="resetForm()"></button>
+        <label>
+          Single Per Game
+          <input pInputText type="number" min="1" name="gameRate" [(ngModel)]="form.gameRate" />
+        </label>
+
+        <label>
+          Double Per Hour
+          <input pInputText type="number" min="1" name="doubleHourlyRate" [(ngModel)]="form.doubleHourlyRate" />
+        </label>
+
+        <label>
+          Double Per Game
+          <input pInputText type="number" min="1" name="doubleGameRate" [(ngModel)]="form.doubleGameRate" />
+        </label>
+      </div>
+    </div>
+
+    <div class="form-footer">
+      <label class="active-toggle">
+        <input type="checkbox" name="isActive" [(ngModel)]="form.isActive" />
+        <span>Active table</span>
+      </label>
+
+      <div class="table-form-actions">
+        <button pButton pRipple type="submit" icon="pi pi-save" [label]="form.clubTableId ? 'Update Table' : 'Add Table'" [disabled]="isSaving"></button>
+        <button pButton pRipple type="button" icon="pi pi-refresh" label="Clear" class="p-button-outlined" (click)="resetForm()"></button>
+      </div>
     </div>
   </form>
 
@@ -53,7 +87,16 @@
     <div class="list-title">
       <div>
         <h2>Club Tables</h2>
-        <span>{{ tables.length }} configured table{{ tables.length === 1 ? '' : 's' }}</span>
+        <span>{{ filteredTables.length }} configured table{{ filteredTables.length === 1 ? '' : 's' }}</span>
+      </div>
+      <div class="list-tools">
+        <input pInputText type="text" placeholder="Search table" [(ngModel)]="searchText" (input)="applySearch()" />
+        <label>
+          Show
+          <select [(ngModel)]="pageSize" (change)="changePageSize()">
+            <option *ngFor="let size of pageSizeOptions" [ngValue]="size">{{ size }}</option>
+          </select>
+        </label>
       </div>
     </div>
 
@@ -64,19 +107,23 @@
             <th>No</th>
             <th>Table</th>
             <th>Type</th>
-            <th>Per Hour</th>
-            <th>Per Game</th>
+            <th>Single / Hour</th>
+            <th>Single / Game</th>
+            <th>Double / Hour</th>
+            <th>Double / Game</th>
             <th>Status</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let table of tables">
+          <tr *ngFor="let table of pagedTables">
             <td>{{ table.tableNo }}</td>
             <td>{{ table.tableName }}</td>
             <td>{{ table.tableType }}</td>
             <td>AED {{ table.hourlyRate | number:'1.2-2' }}</td>
             <td>AED {{ table.gameRate | number:'1.2-2' }}</td>
+            <td>AED {{ table.doubleHourlyRate | number:'1.2-2' }}</td>
+            <td>AED {{ table.doubleGameRate | number:'1.2-2' }}</td>
             <td><span class="status-chip" [class.status-off]="!table.isActive">{{ table.isActive ? 'Active' : 'Inactive' }}</span></td>
             <td>
               <div class="setup-actions">
@@ -85,11 +132,20 @@
               </div>
             </td>
           </tr>
-          <tr *ngIf="!tables.length">
-            <td colspan="7" class="empty-row">No tables added yet.</td>
+          <tr *ngIf="!filteredTables.length">
+            <td colspan="9" class="empty-row">No tables added yet.</td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="table-pagination" *ngIf="filteredTables.length">
+      <span>Showing {{ pageStart }} to {{ pageEnd }} of {{ filteredTables.length }}</span>
+      <div>
+        <button pButton pRipple type="button" icon="pi pi-chevron-left" label="Prev" class="p-button-outlined" [disabled]="pageNumber === 1" (click)="previousPage()"></button>
+        <strong>Page {{ pageNumber }} / {{ totalPages }}</strong>
+        <button pButton pRipple type="button" icon="pi pi-chevron-right" iconPos="right" label="Next" class="p-button-outlined" [disabled]="pageNumber === totalPages" (click)="nextPage()"></button>
+      </div>
     </div>
   </div>
 </section>
