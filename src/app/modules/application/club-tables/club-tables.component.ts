@@ -16,6 +16,10 @@ export class ClubTablesComponent implements OnInit {
   tableTypes: TableType[] = ['Snooker', 'Billiard'];
   isSaving = false;
   form = this.createEmptyForm();
+  searchText = '';
+  pageNumber = 1;
+  pageSize = 5;
+  pageSizeOptions = [5, 10, 20, 50];
 
   constructor(
     private inventoryService: InventoryService,
@@ -28,11 +32,11 @@ export class ClubTablesComponent implements OnInit {
   }
 
   saveTable(): void {
-    if (!this.form.tableName.trim() || this.form.hourlyRate <= 0 || this.form.gameRate <= 0) {
+    if (!this.form.tableName.trim() || this.form.hourlyRate <= 0 || this.form.gameRate <= 0 || this.form.doubleHourlyRate <= 0 || this.form.doubleGameRate <= 0) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Table Setup',
-        detail: 'Table name, per hour price, and per game price are required'
+        detail: 'Table name, single prices, and double prices are required'
       });
       return;
     }
@@ -69,7 +73,10 @@ export class ClubTablesComponent implements OnInit {
       ...table,
       hourlyRate: Number(table.hourlyRate),
       minuteRate: Number(table.hourlyRate) / 60,
-      gameRate: Number(table.gameRate)
+      gameRate: Number(table.gameRate),
+      doubleHourlyRate: Number(table.doubleHourlyRate || table.hourlyRate),
+      doubleMinuteRate: Number(table.doubleHourlyRate || table.hourlyRate) / 60,
+      doubleGameRate: Number(table.doubleGameRate || table.gameRate)
     };
   }
 
@@ -89,9 +96,61 @@ export class ClubTablesComponent implements OnInit {
     this.form = this.createEmptyForm();
   }
 
+  get filteredTables(): ClubTableSetup[] {
+    const search = this.searchText.trim().toLowerCase();
+
+    if (!search) {
+      return this.tables;
+    }
+
+    return this.tables.filter(table =>
+      table.tableName.toLowerCase().includes(search) ||
+      table.tableType.toLowerCase().includes(search) ||
+      String(table.tableNo).includes(search)
+    );
+  }
+
+  get pagedTables(): ClubTableSetup[] {
+    const startIndex = (this.pageNumber - 1) * this.pageSize;
+    return this.filteredTables.slice(startIndex, startIndex + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredTables.length / this.pageSize));
+  }
+
+  get pageStart(): number {
+    return this.filteredTables.length ? (this.pageNumber - 1) * this.pageSize + 1 : 0;
+  }
+
+  get pageEnd(): number {
+    return Math.min(this.pageNumber * this.pageSize, this.filteredTables.length);
+  }
+
+  applySearch(): void {
+    this.pageNumber = 1;
+  }
+
+  changePageSize(): void {
+    this.pageNumber = 1;
+  }
+
+  previousPage(): void {
+    this.pageNumber = Math.max(1, this.pageNumber - 1);
+  }
+
+  nextPage(): void {
+    this.pageNumber = Math.min(this.totalPages, this.pageNumber + 1);
+  }
+
   private loadTables(): void {
     this.inventoryService.getClubTables().subscribe({
-      next: tables => this.tables = tables.sort((a, b) => a.tableNo - b.tableNo),
+      next: tables => {
+        this.tables = tables.sort((a, b) => a.tableNo - b.tableNo);
+        if (this.pageNumber > this.totalPages) {
+          this.pageNumber = this.totalPages;
+        }
+      },
       error: error => {
         this.tables = [];
         this.messageService.add({
@@ -133,6 +192,9 @@ export class ClubTablesComponent implements OnInit {
       hourlyRate: 30,
       minuteRate: 0.5,
       gameRate: 15,
+      doubleHourlyRate: 60,
+      doubleMinuteRate: 1,
+      doubleGameRate: 30,
       isActive: true
     };
   }

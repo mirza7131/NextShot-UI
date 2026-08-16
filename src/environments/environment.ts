@@ -9,16 +9,16 @@ export const environment = {
   // apiUrl: '/api',
  // apiUrl: 'http://hisdu.com/api'
  //  apiUrl: 'https://gamatypingservices-dsfmf8ckf0asayed.canadacentral-01.azurewebsites.net/api',
- // apiUrl: 'https://localhost:7082/api',
+//  apiUrl: 'https://localhost:7082/api',
 
-     apiUrl: 'http://api.nextshotsnooker.club/api',
-    apiURL: 'http://api.nextshotsnooker.club/api',
+     apiUrl: 'https://api.nextshotsnooker.club/api',
+    apiURL: 'https://api.nextshotsnooker.club/api',
 
 
    uiURL: "https://localhost:4200",
     // cdnURL : "http://116.58.20.67:1119/",
     cdnURL : "https://cdn.pshealthpunjab.gov.pk/",
-  //  apiURL: "https://localhost:7082/api",
+   // apiURL: "https://localhost:7082/api",
     //apiURL: "https://gamatypingservices-dsfmf8ckf0asayed.canadacentral-01.azurewebsites.net/api",
     patientApiURL: 'https://localhost:7151/api',
     pathologyApiURL: 'https://localhost:7202/api',
@@ -38,7 +38,7 @@ export const environment = {
    // ApiURLGama: "https://gamatypingservices-dsfmf8ckf0asayed.canadacentral-01.azurewebsites.net/api",
     // ApiURLGama: "https://localhost:7082/api",
 
-     ApiURLGama: "http://api.nextshotsnooker.club/api",
+     ApiURLGama: "https://api.nextshotsnooker.club/api",
 
 
   };

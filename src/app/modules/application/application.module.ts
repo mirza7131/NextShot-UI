@@ -43,6 +43,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { CardModule } from 'primeng/card';
 import { InventoryComponent } from './inventory/inventory.component';
 import { ClubTablesComponent } from './club-tables/club-tables.component';
+import { CustomerPendingComponent } from './customer-pending/customer-pending.component';
 
 
 
@@ -62,7 +63,8 @@ import { ClubTablesComponent } from './club-tables/club-tables.component';
     EmailValid,
     RegisterCompanyComponent,
     InventoryComponent,
-    ClubTablesComponent
+    ClubTablesComponent,
+    CustomerPendingComponent
   ],
   imports: [
     CommonModule,

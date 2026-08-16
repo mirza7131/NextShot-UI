@@ -1,0 +1,195 @@
+<p-toast></p-toast>
+
+<section class="pending-page">
+  <header class="pending-header">
+    <div>
+      <p>Next Shot</p>
+      <h1>Customer Pending</h1>
+      <span>Track customer remaining balances and receive pending payments.</span>
+    </div>
+    <div class="pending-total">
+      <span>Total Due</span>
+      <strong>AED {{ totalDueAmount | number:'1.2-2' }}</strong>
+    </div>
+    <div class="pending-count">
+      <strong>{{ filteredRecords.length }}</strong>
+      <span>Customers</span>
+    </div>
+  </header>
+
+  <div class="pending-toolbar">
+    <input pInputText type="text" [(ngModel)]="searchText" (input)="applySearch()" placeholder="Search customer or phone" />
+    <div class="pending-tools">
+      <label>
+        Show
+        <select [(ngModel)]="pageSize" (change)="changePageSize()">
+          <option *ngFor="let size of pageSizeOptions" [ngValue]="size">{{ size }}</option>
+        </select>
+      </label>
+      <button pButton pRipple type="button" icon="pi pi-refresh" label="Refresh" class="p-button-outlined" (click)="loadPending()"></button>
+    </div>
+  </div>
+
+  <div class="pending-table-wrap">
+    <table class="pending-table">
+      <thead>
+        <tr>
+          <th>Sr.</th>
+          <th>Customer</th>
+          <th>Phone</th>
+          <th>Records</th>
+          <th>Last Date & Time</th>
+          <th>Due Amount</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of pagedRecords; let i = index">
+          <td>{{ pageStart + i }}</td>
+          <td><strong>{{ row.customerName }}</strong></td>
+          <td>{{ row.phoneNo || '-' }}</td>
+          <td>{{ row.paymentCount || '-' }}</td>
+          <td>{{ row.lastPaymentDate ? (row.lastPaymentDate | date:'MMM d, y, h:mm a') : '-' }}</td>
+          <td><strong>AED {{ row.dueAmount | number:'1.2-2' }}</strong></td>
+          <td>
+            <div class="action-buttons">
+              <button pButton pRipple type="button" icon="pi pi-eye" class="p-button-outlined" title="View history" (click)="openHistory(row)"></button>
+              <button pButton pRipple type="button" icon="pi pi-wallet" label="Pay" (click)="openPay(row)"></button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="!isLoading && !filteredRecords.length">
+          <td colspan="7" class="empty-row">No pending customer amount found.</td>
+        </tr>
+        <tr *ngIf="isLoading">
+          <td colspan="7" class="empty-row">Loading pending records...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pending-pagination" *ngIf="filteredRecords.length">
+    <span>Showing {{ pageStart }} to {{ pageEnd }} of {{ filteredRecords.length }}</span>
+    <div>
+      <button pButton pRipple type="button" icon="pi pi-chevron-left" label="Prev" class="p-button-outlined" [disabled]="pageNumber === 1" (click)="previousPage()"></button>
+      <strong>Page {{ pageNumber }} / {{ totalPages }}</strong>
+      <button pButton pRipple type="button" icon="pi pi-chevron-right" iconPos="right" label="Next" class="p-button-outlined" [disabled]="pageNumber === totalPages" (click)="nextPage()"></button>
+    </div>
+  </div>
+</section>
+
+<p-dialog
+  [(visible)]="payDialog"
+  [modal]="true"
+  [style]="{ width: 'min(94vw, 420px)' }"
+  [draggable]="false"
+  [resizable]="false">
+  <ng-template pTemplate="header">
+    <div class="pay-title">
+      <strong>{{ selectedCustomer?.customerName }}</strong>
+      <span>Due AED {{ selectedCustomer?.dueAmount | number:'1.2-2' }}</span>
+    </div>
+  </ng-template>
+
+  <label class="pay-field">
+    Paid Amount
+    <input pInputText type="number" min="1" [max]="selectedCustomer?.dueAmount || 0" [(ngModel)]="paidAmount" />
+  </label>
+
+  <ng-template pTemplate="footer">
+    <button pButton pRipple type="button" label="Cancel" class="p-button-text" (click)="payDialog = false"></button>
+    <button pButton pRipple type="button" label="Save Payment" icon="pi pi-check" [disabled]="isSaving || paidAmount <= 0" (click)="payAmount()"></button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="historyDialog"
+  [modal]="true"
+  [style]="{ width: 'min(98vw, 1280px)' }"
+  styleClass="pending-history-dialog"
+  [draggable]="false"
+  [resizable]="false">
+  <ng-template pTemplate="header">
+    <div class="pay-title">
+      <strong>{{ selectedCustomer?.customerName }} Pending History</strong>
+      <span>Total due AED {{ historyTotalDue | number:'1.2-2' }}</span>
+    </div>
+  </ng-template>
+
+  <div class="history-layout">
+    <div class="history-table-wrap">
+      <table class="pending-table history-table">
+        <thead>
+          <tr>
+            <th>Sr.</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Receipt</th>
+            <th>Players</th>
+            <th>Time</th>
+            <th>Table Bill</th>
+            <th>Inventory</th>
+            <th>Total</th>
+            <th>Paid</th>
+            <th>Due</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of historyRecords; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ row.createdOn ? (row.createdOn | date:'MMM d, y, h:mm a') : '-' }}</td>
+            <td><span class="history-type-pill">{{ getPaymentTypeLabel(row) }}</span></td>
+            <td>{{ getReceiptLabel(row) }}</td>
+            <td>{{ getPlayersText(row) }}</td>
+            <td>{{ row.totalTime || '-' }}</td>
+            <td>AED {{ (row.tableTimeAmount || 0) | number:'1.2-2' }}</td>
+            <td>{{ getInventoryText(row) }}</td>
+            <td>AED {{ row.totalAmount | number:'1.2-2' }}</td>
+            <td>AED {{ row.paidAmount | number:'1.2-2' }}</td>
+            <td><strong>AED {{ row.dueAmount | number:'1.2-2' }}</strong></td>
+            <td>{{ row.paymentStatus || '-' }}</td>
+          </tr>
+          <tr *ngIf="!isHistoryLoading && !historyRecords.length">
+            <td colspan="12" class="empty-row">No payment history found.</td>
+          </tr>
+          <tr *ngIf="isHistoryLoading">
+            <td colspan="12" class="empty-row">Loading history...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pending-slip">
+      <div class="slip-head">
+        <h2>NEXT SHOT</h2>
+        <span>Pending Balance Slip</span>
+      </div>
+      <div class="slip-row"><span>Customer</span><strong>{{ selectedCustomer?.customerName }}</strong></div>
+      <div class="slip-row"><span>Phone</span><strong>{{ selectedCustomer?.phoneNo || '-' }}</strong></div>
+      <div class="slip-row"><span>Date</span><strong>{{ today | date:'dd/MM/yyyy' }}</strong></div>
+      <div class="slip-items">
+        <div class="slip-row" *ngFor="let row of historyRecords">
+          <span>
+            {{ getReceiptLabel(row) }}
+            <small class="slip-detail">Type: {{ getPaymentTypeLabel(row) }}</small>
+            <small class="slip-detail" *ngIf="row.players">Players: {{ row.players }}</small>
+            <small class="slip-detail" *ngIf="row.totalTime">Time: {{ row.totalTime }}</small>
+            <small class="slip-detail" *ngIf="row.tableTimeAmount">Table: AED {{ row.tableTimeAmount | number:'1.2-2' }}</small>
+            <small class="slip-detail" *ngIf="row.inventoryItems?.length">Items: {{ getInventoryText(row) }}</small>
+          </span>
+          <strong>AED {{ row.dueAmount | number:'1.2-2' }}</strong>
+        </div>
+      </div>
+      <div class="slip-row"><span>Paid</span><strong>AED {{ historyTotalPaid | number:'1.2-2' }}</strong></div>
+      <div class="slip-row slip-total"><span>Total Due</span><strong>AED {{ historyTotalDue | number:'1.2-2' }}</strong></div>
+      <div class="slip-note">Thank you for playing at Next Shot</div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton pRipple type="button" label="Close" class="p-button-text" (click)="historyDialog = false"></button>
+    <button pButton pRipple type="button" label="Print Slip" icon="pi pi-print" [disabled]="!historyRecords.length" (click)="printPendingSlip()"></button>
+    <button pButton pRipple type="button" label="Pay" icon="pi pi-wallet" [disabled]="!selectedCustomer" (click)="historyDialog = false; selectedCustomer && openPay(selectedCustomer)"></button>
+  </ng-template>
+</p-dialog>

@@ -12,6 +12,10 @@
     <div class="club-stats">
       <div><strong>{{ availableTables }}</strong><span>Available</span></div>
       <div><strong>{{ runningTables }}</strong><span>Running</span></div>
+      <button type="button" class="counter-sale-button" (click)="openCounterSale()">
+        <i class="pi pi-plus"></i>
+        <span>Sale</span>
+      </button>
     </div>
   </header>
 
@@ -59,12 +63,234 @@
       </div>
 
       <div class="rate-row">
-        <span>AED {{ table.minuteRate * 60 }} / hour</span>
-        <span>AED {{ table.gameRate }} / game</span>
+        <span>Single: AED {{ table.singleMinuteRate * 60 }} / hour, AED {{ table.singleGameRate }} / game</span>
+        <span>Double: AED {{ table.doubleMinuteRate * 60 }} / hour, AED {{ table.doubleGameRate }} / game</span>
       </div>
     </button>
   </div>
 </section>
+
+<p-dialog
+  [(visible)]="counterSaleDialog"
+  [modal]="true"
+  [style]="{ width: 'min(98vw, 1120px)' }"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="counter-sale-dialog">
+  <ng-template pTemplate="header">
+    <div class="dialog-title">
+      <span>Counter Sale</span>
+      <small>Sell drinks or snacks without starting a table session.</small>
+    </div>
+  </ng-template>
+
+  <div class="counter-sale-body">
+    <div class="counter-sale-form">
+      <div class="counter-sale-section">
+        <div class="counter-sale-section-title">
+          <strong>Customer</strong>
+          <span>Save customer or choose a saved customer</span>
+        </div>
+
+        <div class="form-grid-two">
+          <label>
+            Customer Name
+            <input pInputText type="text" [(ngModel)]="counterSaleCustomerName" [disabled]="!!counterSaleReceipt" placeholder="Walk-in Customer" />
+          </label>
+
+          <label>
+            Phone
+            <input pInputText type="text" [(ngModel)]="counterSalePhone" [disabled]="!!counterSaleReceipt" placeholder="03xx / 05x / phone" />
+          </label>
+        </div>
+
+        <button
+          pButton
+          pRipple
+          type="button"
+          label="Save Customer"
+          icon="pi pi-save"
+          class="save-customer-button"
+          [disabled]="!counterSaleCustomerName || !!counterSaleReceipt"
+          (click)="saveCounterSaleCustomer()">
+        </button>
+
+        <div class="player-box counter-customer-box">
+          <strong>Saved Customer</strong>
+          <div class="player-add-row">
+            <p-autoComplete
+              [(ngModel)]="counterSaleCustomer"
+              [suggestions]="counterSaleSuggestions"
+              field="customerName"
+              [dropdown]="true"
+              placeholder="Search saved customer"
+              [disabled]="!!counterSaleReceipt"
+              (onSelect)="useCounterSaleCustomer()"
+              (completeMethod)="searchCounterSaleCustomers($event)">
+              <ng-template let-customer pTemplate="item">
+                <div class="player-dropdown-option">
+                  <div>
+                    <strong>{{ customer.customerName }}</strong>
+                    <small>{{ customer.phoneNo || 'No phone' }}</small>
+                  </div>
+                </div>
+              </ng-template>
+            </p-autoComplete>
+            <button pButton pRipple type="button" icon="pi pi-check" label="Use" [disabled]="!counterSaleCustomer || !!counterSaleReceipt" (click)="useCounterSaleCustomer()"></button>
+          </div>
+          <div class="selected-counter-customer" *ngIf="counterSaleCustomerId && counterSaleCustomer">
+            <span>
+              Using: <strong>{{ counterSaleCustomer.customerName }}</strong>
+              <small *ngIf="counterSaleCustomer.phoneNo">{{ counterSaleCustomer.phoneNo }}</small>
+            </span>
+            <button type="button" [disabled]="!!counterSaleReceipt" (click)="clearCounterSaleCustomer()">x</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="counter-sale-section">
+        <div class="counter-sale-section-title">
+          <strong>Inventory</strong>
+          <span>Add drink or snack to bill</span>
+        </div>
+
+        <div class="counter-sale-item-grid">
+          <label>
+            Inventory Item
+            <select [(ngModel)]="counterSaleInventoryItemId" [disabled]="!!counterSaleReceipt">
+              <option [ngValue]="null">Select item</option>
+              <option
+                *ngFor="let item of inventoryItems"
+                [ngValue]="item.id"
+                [disabled]="item.stock <= 0"
+                [class.sale-low-stock]="item.stock < 10">
+                {{ item.name }} - AED {{ item.price }} ({{ item.stock }} left){{ item.stock < 10 ? ' - LOW STOCK' : '' }}
+              </option>
+            </select>
+          </label>
+
+          <label>
+            Qty
+            <input pInputText type="number" min="1" [(ngModel)]="counterSaleQty" [disabled]="!!counterSaleReceipt" />
+          </label>
+        </div>
+
+        <button
+          pButton
+          pRipple
+          type="button"
+          label="Add Item"
+          icon="pi pi-plus"
+          [disabled]="isCounterSaleItemInvalid() || !!counterSaleReceipt"
+          (click)="addCounterSaleItem()">
+        </button>
+
+        <div class="counter-sale-cart" *ngIf="counterSaleItems.length">
+          <div class="counter-sale-cart-row counter-sale-cart-head">
+            <span>Item</span>
+            <span>Qty</span>
+            <span>Amount</span>
+            <span></span>
+          </div>
+          <div class="counter-sale-cart-row" *ngFor="let item of counterSaleItems; let i = index">
+            <strong>{{ item.name }}</strong>
+            <span>{{ item.quantity }}</span>
+            <span>AED {{ item.price * item.quantity | number:'1.2-2' }}</span>
+            <button pButton pRipple type="button" icon="pi pi-times" class="p-button-rounded p-button-text p-button-danger" title="Remove" *ngIf="!counterSaleReceipt" (click)="removeCounterSaleItem(i)"></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="counter-sale-section">
+        <div class="counter-sale-section-title">
+          <strong>Payment</strong>
+          <span>Cash, card, discount, and remaining</span>
+        </div>
+
+        <div class="counter-sale-money-grid">
+          <label>
+            Discount
+            <input pInputText type="number" min="0" [(ngModel)]="counterSaleDiscount" [disabled]="!!counterSaleReceipt" />
+          </label>
+
+          <label>
+            Cash
+            <input pInputText type="number" min="0" [(ngModel)]="counterSaleCash" [disabled]="!!counterSaleReceipt" />
+          </label>
+
+          <label>
+            Card
+            <input pInputText type="number" min="0" [(ngModel)]="counterSaleCard" [disabled]="!!counterSaleReceipt" />
+          </label>
+        </div>
+
+        <div class="counter-sale-summary">
+          <div><span>Gross</span><strong>AED {{ getCounterSaleGross() | number:'1.2-2' }}</strong></div>
+          <div><span>Net</span><strong>AED {{ getCounterSaleNet() | number:'1.2-2' }}</strong></div>
+          <div><span>Paid</span><strong>AED {{ getCounterSalePaid() | number:'1.2-2' }}</strong></div>
+          <div><span>Due</span><strong>AED {{ getCounterSaleDue() | number:'1.2-2' }}</strong></div>
+        </div>
+      </div>
+
+      <small class="counter-sale-warning" *ngIf="isCounterSaleItemInvalid() && getCounterSaleItem()">
+        Stock is not enough for selected quantity.
+      </small>
+      <small class="counter-sale-warning" *ngIf="isCounterSalePaymentOverPaid()">
+        Cash and card amount cannot be greater than net bill.
+      </small>
+      <small class="counter-sale-warning" *ngIf="isCounterSaleDueWithoutCustomer()">
+        Select a saved customer before saving pending amount.
+      </small>
+    </div>
+
+    <div class="counter-sale-receipt">
+      <div class="thermal-head">
+        <div class="thermal-logo">NS</div>
+        <h2>NEXT SHOT</h2>
+        <span>Snooker & Billiards</span>
+        <small>{{ counterSaleReceipt ? 'Counter Sale Receipt' : 'Counter Sale Preview' }}</small>
+      </div>
+
+      <div class="thermal-meta">
+        <div class="thermal-row"><span>Receipt</span><strong>{{ counterSaleReceipt?.receiptNo || 'New Sale' }}</strong></div>
+        <div class="thermal-row"><span>Date</span><strong>{{ (counterSaleReceipt?.createdOn || currentTime) | date:'dd/MM/yyyy hh:mm a' }}</strong></div>
+        <div class="thermal-row"><span>Customer</span><strong>{{ counterSaleReceipt?.customerName || getCounterSaleCustomerName() }}</strong></div>
+        <div class="thermal-row" *ngIf="getCounterSaleCustomerPhone() || counterSaleReceipt?.customerPhone"><span>Phone</span><strong>{{ counterSaleReceipt?.customerPhone || getCounterSaleCustomerPhone() }}</strong></div>
+      </div>
+
+      <div class="thermal-items">
+        <div class="thermal-row" *ngFor="let item of (counterSaleReceipt?.items || counterSaleItems)">
+          <span>{{ item.name }} x {{ item.quantity }}</span>
+          <strong>AED {{ item.price * item.quantity | number:'1.2-2' }}</strong>
+        </div>
+        <div class="thermal-row" *ngIf="!(counterSaleReceipt?.items?.length || counterSaleItems.length)">
+          <span>No items added</span>
+          <strong>AED 0.00</strong>
+        </div>
+      </div>
+
+      <div class="thermal-summary">
+        <div class="thermal-row"><span>Discount</span><strong>AED {{ (counterSaleReceipt?.discountAmount ?? counterSaleDiscount) | number:'1.2-2' }}</strong></div>
+        <div class="thermal-row"><span>Cash</span><strong>AED {{ (counterSaleReceipt?.cashAmount ?? counterSaleCash) | number:'1.2-2' }}</strong></div>
+        <div class="thermal-row"><span>Card</span><strong>AED {{ (counterSaleReceipt?.cardAmount ?? counterSaleCard) | number:'1.2-2' }}</strong></div>
+        <div class="thermal-row"><span>Paid</span><strong>AED {{ (counterSaleReceipt?.paidAmount ?? getCounterSalePaid()) | number:'1.2-2' }}</strong></div>
+        <div class="thermal-row"><span>Remaining</span><strong>AED {{ (counterSaleReceipt?.dueAmount ?? getCounterSaleDue()) | number:'1.2-2' }}</strong></div>
+        <div class="thermal-total-row"><span>Total</span><strong>AED {{ (counterSaleReceipt?.totalAmount ?? getCounterSaleNet()) | number:'1.2-2' }}</strong></div>
+      </div>
+
+      <div class="thermal-note">
+        <strong>Good Game - Good Time</strong>
+        <span>Thank you for visiting Next Shot</span>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton pRipple type="button" label="Close" class="p-button-text" (click)="counterSaleDialog = false"></button>
+    <button pButton pRipple type="button" label="Print Receipt" icon="pi pi-print" *ngIf="counterSaleReceipt" (click)="printCounterSaleReceipt()"></button>
+    <button pButton pRipple type="button" label="Save Sale" icon="pi pi-check" *ngIf="!counterSaleReceipt" [disabled]="isSaving || isCounterSaleInvalid()" (click)="saveCounterSale()"></button>
+  </ng-template>
+</p-dialog>
 
 <p-dialog
   [(visible)]="sessionDialog"
@@ -152,6 +378,30 @@
         </div>
       </div>
 
+      <div class="start-time-box" *ngIf="selectedTable.status === 'Available'">
+        <strong>Game Type</strong>
+        <div class="start-time-toggle">
+          <button
+            pButton
+            pRipple
+            type="button"
+            label="Single Game"
+            icon="pi pi-user"
+            [class.p-button-outlined]="playType !== 'Single'"
+            (click)="setPlayType('Single')">
+          </button>
+          <button
+            pButton
+            pRipple
+            type="button"
+            label="Double Game"
+            icon="pi pi-users"
+            [class.p-button-outlined]="playType !== 'Double'"
+            (click)="setPlayType('Double')">
+          </button>
+        </div>
+      </div>
+
       <label>
         Billing Mode
         <select [(ngModel)]="sessionMode" [disabled]="selectedTable.status === 'Running'">
@@ -193,10 +443,17 @@
 
       <div class="inventory-bill-box">
         <strong>Add Drink / Snack</strong>
+        <select [(ngModel)]="selectedInventoryBuyer">
+          <option *ngFor="let buyer of getInventoryBuyerOptions(selectedTable)" [ngValue]="buyer.value">{{ buyer.label }}</option>
+        </select>
         <select [(ngModel)]="selectedInventoryItemId">
           <option [ngValue]="null">Select item</option>
-          <option *ngFor="let item of inventoryItems" [ngValue]="item.id" [disabled]="item.stock <= 0">
-            {{ item.name }} - AED {{ item.price }} ({{ item.stock }} left)
+          <option
+            *ngFor="let item of inventoryItems"
+            [ngValue]="item.id"
+            [disabled]="item.stock <= 0"
+            [class.sale-low-stock]="item.stock < 10">
+            {{ item.name }} - AED {{ item.price }} ({{ item.stock }} left){{ item.stock < 10 ? ' - LOW STOCK' : '' }}
           </option>
         </select>
         <input pInputText type="number" min="1" [(ngModel)]="inventoryQty" />
@@ -223,6 +480,7 @@
 
       <div class="receipt-lines">
         <div><span>Receipt</span><strong>{{ selectedTable.receiptNo || 'New Session' }}</strong></div>
+        <div><span>Game Type</span><strong>{{ selectedTable.playType || playType }}</strong></div>
         <div><span>Players</span><strong>{{ getPlayerNames(selectedTable) }}</strong></div>
         <div *ngIf="selectedTable.sessionMode === 'Game'"><span>Bill To</span><strong>{{ selectedTable.customerName || customerName || 'Select loser' }}</strong></div>
         <div><span>Start Time</span><strong>{{ selectedTable.startTime ? (selectedTable.startTime | date:'medium') : 'Not started' }}</strong></div>
@@ -255,21 +513,10 @@
 
       <div class="bill-items" *ngIf="selectedTable.billItems?.length">
         <div class="bill-item" *ngFor="let item of selectedTable.billItems">
-          <span>{{ item.name }} x {{ item.quantity }}</span>
+          <span>{{ item.name }} x {{ item.quantity }} <small *ngIf="item.buyerName">- {{ item.buyerName }}</small></span>
           <strong>AED {{ item.price * item.quantity | number:'1.2-2' }}</strong>
         </div>
         <div class="bill-item"><span>Inventory Total</span><strong>AED {{ getInventoryTotal(selectedTable) | number:'1.2-2' }}</strong></div>
-      </div>
-
-      <div class="payment-box">
-        <label>
-          Discount
-          <input pInputText type="number" min="0" [(ngModel)]="discountAmount" />
-        </label>
-        <label>
-          Paid
-          <input pInputText type="number" min="0" [(ngModel)]="paidAmount" />
-        </label>
       </div>
 
       <div class="receipt-lines">
@@ -298,6 +545,7 @@
         <div class="thermal-row"><span>Receipt</span><strong>{{ invoicePreview.receiptNo }}</strong></div>
         <div class="thermal-row"><span>Date</span><strong>{{ invoicePreview.endTime | date:'dd/MM/yyyy hh:mm a' }}</strong></div>
         <div class="thermal-row"><span>Table</span><strong>{{ invoicePreview.tableName }}</strong></div>
+        <div class="thermal-row"><span>Game Type</span><strong>{{ invoicePreview.playType }}</strong></div>
         <div class="thermal-row"><span>Bill To</span><strong>{{ invoicePreview.customerName }}</strong></div>
         <div class="thermal-row" *ngIf="invoicePreview.customerPhone"><span>Phone</span><strong>{{ invoicePreview.customerPhone }}</strong></div>
         <div class="thermal-row"><span>Players</span><strong>{{ invoicePreview.players }}</strong></div>
@@ -317,20 +565,25 @@
           <span>{{ bill.playerName }}</span>
           <strong>AED {{ bill.amount | number:'1.2-2' }}</strong>
         </div>
+        <div class="thermal-row" *ngFor="let bill of invoicePreview.playerBills">
+          <span>{{ bill.playerName }} due</span>
+          <strong>AED {{ bill.dueAmount | number:'1.2-2' }}</strong>
+        </div>
       </div>
 
       <div class="thermal-items">
         <div class="thermal-row" *ngIf="invoicePreview.timeAmount > 0"><span>Table Time</span><strong>AED {{ invoicePreview.timeAmount | number:'1.2-2' }}</strong></div>
         <div class="thermal-row" *ngIf="invoicePreview.gameAmount > 0"><span>Games</span><strong>AED {{ invoicePreview.gameAmount | number:'1.2-2' }}</strong></div>
         <div class="thermal-row" *ngFor="let item of invoicePreview.billItems">
-          <span>{{ item.name }} x {{ item.quantity }}</span>
+          <span>{{ item.name }} x {{ item.quantity }}<small *ngIf="item.buyerName"> - {{ item.buyerName }}</small></span>
           <strong>AED {{ item.price * item.quantity | number:'1.2-2' }}</strong>
         </div>
       </div>
 
       <div class="thermal-summary">
         <div class="thermal-row"><span>Inventory</span><strong>AED {{ invoicePreview.inventoryAmount | number:'1.2-2' }}</strong></div>
-        <div class="thermal-row"><span>Discount</span><strong>AED {{ invoicePreview.discountAmount | number:'1.2-2' }}</strong></div>
+        <div class="thermal-row" *ngIf="invoicePreview.playerBills.length"><span>Cash</span><strong>AED {{ (invoicePreview.playerBills[0].cashAmount || 0) | number:'1.2-2' }}</strong></div>
+        <div class="thermal-row" *ngIf="invoicePreview.playerBills.length"><span>Card</span><strong>AED {{ (invoicePreview.playerBills[0].cardAmount || 0) | number:'1.2-2' }}</strong></div>
         <div class="thermal-row"><span>Paid</span><strong>AED {{ invoicePreview.paidAmount | number:'1.2-2' }}</strong></div>
         <div class="thermal-row"><span>Remaining</span><strong>AED {{ invoicePreview.dueAmount | number:'1.2-2' }}</strong></div>
         <div class="thermal-total-row"><span>Total</span><strong>AED {{ invoicePreview.totalAmount | number:'1.2-2' }}</strong></div>
@@ -346,9 +599,142 @@
   <ng-template pTemplate="footer">
     <button pButton pRipple type="button" label="Close" class="p-button-text" (click)="invoicePreview ? closeInvoice() : sessionDialog = false"></button>
     <button pButton pRipple type="button" label="Print Receipt" icon="pi pi-print" *ngIf="invoicePreview" (click)="printReceipt()"></button>
-    <button pButton pRipple type="button" [label]="getGameButtonLabel()" icon="pi pi-plus" *ngIf="selectedTable?.status === 'Running' && selectedTable?.sessionMode === 'Game'" (click)="addGame()"></button>
-    <button pButton pRipple type="button" label="End Game" class="p-button-danger" *ngIf="selectedTable?.status === 'Running'" (click)="endSession()"></button>
+    <button pButton pRipple type="button" [label]="getGameButtonLabel()" icon="pi pi-plus" *ngIf="selectedTable?.status === 'Running' && selectedTable?.sessionMode === 'Game' && !invoicePreview" (click)="addGame()"></button>
+    <button pButton pRipple type="button" label="End Game" class="p-button-danger" *ngIf="selectedTable?.status === 'Running' && !invoicePreview" (click)="endSession()"></button>
     <button pButton pRipple type="button" label="Start Game" icon="pi pi-play" *ngIf="selectedTable?.status === 'Available' && !invoicePreview" [disabled]="isStartGameDisabled()" (click)="startSession()"></button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="paymentDialog"
+  [modal]="true"
+  [style]="{ width: 'min(98vw, 1180px)' }"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="payment-dialog">
+  <ng-template pTemplate="header">
+    <div class="dialog-title">
+      <span>End Game Payment</span>
+      <small>Set discount and paid amount for each player/customer.</small>
+    </div>
+  </ng-template>
+
+  <div *ngIf="selectedTable?.sessionMode === 'Time'" style="display:grid;gap:.5rem;margin-bottom:1rem;padding:1rem;border:1px solid #dbe4ef;border-radius:8px;background:#f8fafc">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+      <strong style="color:#0f172a">Who will pay table time bill?</strong>
+      <button pButton pRipple type="button" label="All Players" icon="pi pi-users" class="p-button-outlined" (click)="selectAllHourlyBillPayers()"></button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:.6rem">
+      <button
+        type="button"
+        *ngFor="let payer of getHourlyPayerOptions()"
+        (click)="toggleHourlyBillPayer(payer.playerName)"
+        [style.background]="hourlyBillPayerNames.includes(payer.playerName) ? '#e8f7df' : '#fff'"
+        [style.border]="hourlyBillPayerNames.includes(payer.playerName) ? '1px solid #2c8f28' : '1px solid #cbd5e1'"
+        [style.color]="hourlyBillPayerNames.includes(payer.playerName) ? '#14532d' : '#334155'"
+        style="height:42px;padding:0 .9rem;border-radius:999px;font-weight:800;cursor:pointer">
+        {{ payer.playerName }}
+      </button>
+    </div>
+    <small>Selected players split table time equally. Snacks stay with the customer/player selected when inventory was added.</small>
+  </div>
+
+  <div *ngIf="selectedTable?.sessionMode === 'Time'" style="display:grid;gap:.75rem;margin-bottom:1rem;padding:1rem;border:1px solid #dbe4ef;border-radius:8px;background:#f8fafc">
+    <strong style="color:#0f172a">End Time</strong>
+    <div class="start-time-toggle">
+      <button
+        pButton
+        pRipple
+        type="button"
+        label="Auto"
+        icon="pi pi-clock"
+        [class.p-button-outlined]="endTimeMode !== 'Auto'"
+        (click)="setEndTimeMode('Auto')">
+      </button>
+      <button
+        pButton
+        pRipple
+        type="button"
+        label="Custom"
+        icon="pi pi-calendar"
+        [class.p-button-outlined]="endTimeMode !== 'Custom'"
+        (click)="setEndTimeMode('Custom')">
+      </button>
+    </div>
+    <input
+      *ngIf="endTimeMode === 'Custom'"
+      pInputText
+      type="datetime-local"
+      [(ngModel)]="customEndTime"
+      (change)="onCustomEndTimeChange()"
+      style="max-width:360px" />
+    <small *ngIf="endTimeMode === 'Custom'">Bill time will calculate from start time to this selected end time.</small>
+  </div>
+
+  <div class="payment-split-list" style="display:grid;gap:1rem;max-height:62vh;overflow:auto;padding-right:.25rem">
+    <div class="payment-split-row" *ngFor="let payment of playerPayments" style="display:grid;grid-template-columns:minmax(180px,1fr) minmax(460px,2fr) minmax(150px,.75fr) 180px;gap:1.25rem;align-items:end;padding:1rem;border:1px solid #dbe4ef;border-radius:8px;background:#f8fafc">
+      <div style="display:grid;gap:.3rem">
+        <strong style="font-size:1.05rem;color:#0f172a">{{ payment.playerName }}</strong>
+        <span style="font-weight:800;color:#1f2937">Bill AED {{ payment.amount | number:'1.2-2' }}</span>
+        <small *ngIf="selectedTable?.sessionMode === 'Game'">Rate AED {{ selectedTable?.gameRate | number:'1.2-2' }} / game</small>
+        <small *ngIf="selectedTable?.sessionMode === 'Time'">Rate AED {{ ((selectedTable?.minuteRate || 0) * 60) | number:'1.2-2' }} / hour</small>
+        <small *ngIf="payment.timeAmount">Table Time AED {{ payment.timeAmount | number:'1.2-2' }}</small>
+        <div class="player-inventory-details" *ngIf="payment.inventoryAmount">
+          <small *ngFor="let item of getPlayerInventoryDetails(payment)">
+            {{ item.name }} x {{ item.quantity }} - AED {{ item.price * item.quantity | number:'1.2-2' }}
+          </small>
+          <small *ngIf="!getPlayerInventoryDetails(payment).length">
+            Snack AED {{ payment.inventoryAmount | number:'1.2-2' }}
+          </small>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.75rem;align-items:end">
+        <label *ngIf="selectedTable?.sessionMode === 'Game'" style="display:grid;gap:.35rem;min-width:0">
+          Games
+          <input pInputText type="number" min="0" step="1" [(ngModel)]="payment.gameCount" (ngModelChange)="updatePlayerPayment(payment)" style="width:100%" />
+        </label>
+        <div *ngIf="selectedTable?.sessionMode === 'Time'" style="display:grid;gap:.35rem;min-width:0">
+          <span>Table Bill</span>
+          <strong>AED {{ (payment.timeAmount || 0) | number:'1.2-2' }}</strong>
+        </div>
+        <label style="display:grid;gap:.35rem;min-width:0">
+          Discount
+          <input pInputText type="number" min="0" [(ngModel)]="payment.discountAmount" (ngModelChange)="updatePlayerPayment(payment)" style="width:100%" />
+        </label>
+        <label style="display:grid;gap:.35rem;min-width:0">
+          Cash
+          <input pInputText type="number" min="0" [(ngModel)]="payment.cashAmount" (ngModelChange)="updatePlayerPayment(payment)" style="width:100%" />
+        </label>
+        <label style="display:grid;gap:.35rem;min-width:0">
+          Card
+          <input pInputText type="number" min="0" [(ngModel)]="payment.cardAmount" (ngModelChange)="updatePlayerPayment(payment)" style="width:100%" />
+        </label>
+      </div>
+
+      <div style="display:grid;gap:.25rem;justify-items:start;white-space:nowrap">
+        <span>Net AED {{ getPlayerPaymentNet(payment) | number:'1.2-2' }}</span>
+        <span>Paid AED {{ payment.paidAmount | number:'1.2-2' }}</span>
+        <strong style="color:#0f172a">Due AED {{ payment.dueAmount | number:'1.2-2' }}</strong>
+      </div>
+      <button pButton pRipple type="button" label="Generate Slip" icon="pi pi-receipt" *ngIf="!isPlayerSlipGenerated(payment)" (click)="generatePlayerSlip(payment)"></button>
+      <span *ngIf="isPlayerSlipGenerated(payment)" style="display:inline-flex;align-items:center;justify-content:center;min-height:42px;border-radius:8px;background:#e8f7df;color:#1f7a29;font-weight:900">Slip generated</span>
+    </div>
+  </div>
+
+  <div class="payment-split-total" style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.75rem;margin-top:1rem;align-items:center">
+    <strong style="margin-right:auto;color:#1f2937">{{ getSlipStatusMessage() }}</strong>
+    <span>Gross AED {{ getPaymentGrossTotal() | number:'1.2-2' }}</span>
+    <span>Discount AED {{ getPaymentDiscountTotal() | number:'1.2-2' }}</span>
+    <span>Cash AED {{ getPaymentCashTotal() | number:'1.2-2' }}</span>
+    <span>Card AED {{ getPaymentCardTotal() | number:'1.2-2' }}</span>
+    <span>Paid AED {{ getPaymentPaidTotal() | number:'1.2-2' }}</span>
+    <strong>Due AED {{ getPaymentDueTotal() | number:'1.2-2' }}</strong>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton pRipple type="button" label="Back" class="p-button-text" (click)="paymentDialog = false"></button>
+    <button pButton pRipple type="button" label="End Session" icon="pi pi-check" [disabled]="!areAllPlayerSlipsGenerated() || isCustomEndTimeInvalid()" (click)="confirmEndPayments()"></button>
   </ng-template>
 </p-dialog>
 

@@ -8,7 +8,7 @@
       <h1>Snooker Dashboard</h1>
     </div>
     <div class="dashboard-totals">
-      <span>{{ totalGames }} Games</span>
+      <span>{{ totalGames }} Games • {{ totalCounterSales }} Sales</span>
       <strong>AED {{ totalEarning | number:'1.2-2' }}</strong>
     </div>
   </div>
@@ -26,7 +26,7 @@
       (click)="selectFilter(item.key)">
       <div>
         <span>{{ item.label }}</span>
-        <strong>{{ item.games }} Games</strong>
+        <strong>{{ item.key === 'CounterSale' ? item.games + ' Sales' : item.games + ' Games' }}</strong>
         <small>AED {{ item.earning | number:'1.2-2' }}</small>
       </div>
       <i [class]="item.icon"></i>
@@ -41,6 +41,14 @@
     <div>
       <span>Received</span>
       <strong>AED {{ totalReceived | number:'1.2-2' }}</strong>
+    </div>
+    <div>
+      <span>Cash Received</span>
+      <strong>AED {{ totalCashReceived | number:'1.2-2' }}</strong>
+    </div>
+    <div>
+      <span>Card Received</span>
+      <strong>AED {{ totalCardReceived | number:'1.2-2' }}</strong>
     </div>
     <div>
       <span>Due</span>
@@ -65,9 +73,12 @@
     <div class="list-head">
       <div>
         <h2>{{ selectedFilterLabel }} Details</h2>
-        <span>{{ searchedRows.length }} sessions found</span>
+        <span>{{ searchedRows.length }} records found</span>
       </div>
-      <button pButton pRipple type="button" icon="pi pi-list" label="Show All" class="p-button-outlined" (click)="selectFilter('All')"></button>
+      <div class="dashboard-head-actions">
+        <button pButton pRipple type="button" icon="pi pi-calendar" label="Daily Sale" class="dashboard-daily-button" (click)="openDailySales()"></button>
+        <button pButton pRipple type="button" icon="pi pi-list" label="Show All" class="p-button-outlined" (click)="selectFilter('All')"></button>
+      </div>
     </div>
 
     <div class="table-tools">
@@ -92,6 +103,8 @@
         <thead>
           <tr>
             <th>Sr.</th>
+            <th>Type</th>
+            <th>Receipt</th>
             <th>Table</th>
             <th>Customer</th>
             <th>Players</th>
@@ -100,9 +113,10 @@
             <th>Games</th>
             <th>Table AED</th>
             <th>Inventory AED</th>
+            <th>Items</th>
             <th>Discount</th>
+            <th>Received</th>
             <th>Net AED</th>
-            <th>Paid AED</th>
             <th>Due AED</th>
             <th>Action</th>
           </tr>
@@ -110,17 +124,24 @@
         <tbody>
           <tr *ngFor="let row of pagedRows">
             <td>{{ row.sr }}</td>
+            <td><span class="history-type-pill">{{ getRecordTypeLabel(row) }}</span></td>
+            <td>{{ row.receiptNo || '-' }}</td>
             <td><strong>{{ row.tableName }}</strong><span>{{ row.tableType }}</span></td>
             <td>{{ row.customerName }}</td>
             <td>{{ row.players }}</td>
-            <td>{{ row.endTime ? (row.endTime | date:'dd MMM yyyy') : '-' }}</td>
+            <td>{{ row.endTime ? (row.endTime | date:'dd MMM yyyy, h:mm a') : '-' }}</td>
             <td>{{ row.totalTime }}</td>
             <td>{{ row.games }}</td>
             <td>{{ row.tableAmount | number:'1.2-2' }}</td>
             <td>{{ row.inventoryAmount | number:'1.2-2' }}</td>
+            <td>{{ row.inventoryItems }}</td>
             <td>{{ row.discountAmount | number:'1.2-2' }}</td>
+            <td>
+              <strong>{{ row.paidAmount | number:'1.2-2' }}</strong>
+              <span>Cash {{ row.cashAmount | number:'1.2-2' }}</span>
+              <span>Card {{ row.cardAmount | number:'1.2-2' }}</span>
+            </td>
             <td>{{ row.netAmount | number:'1.2-2' }}</td>
-            <td>{{ row.paidAmount | number:'1.2-2' }}</td>
             <td>{{ row.dueAmount | number:'1.2-2' }}</td>
             <td>
               <div class="dashboard-actions">
@@ -131,7 +152,7 @@
             </td>
           </tr>
           <tr *ngIf="!searchedRows.length">
-            <td colspan="14" class="empty-dashboard">No session detail found.</td>
+            <td colspan="16" class="empty-dashboard">No dashboard detail found.</td>
           </tr>
         </tbody>
       </table>
@@ -237,13 +258,18 @@
 
       <div class="receipt-lines">
         <div><span>Table</span><strong>{{ editRow.tableName }}</strong></div>
+        <div><span>Type</span><strong>{{ getRecordTypeLabel(editRow) }}</strong></div>
+        <div><span>Receipt</span><strong>{{ editRow.receiptNo || '-' }}</strong></div>
         <div><span>Players</span><strong>{{ editRow.players }}</strong></div>
         <div><span>Date</span><strong>{{ editRow.endTime ? (editRow.endTime | date:'medium') : '-' }}</strong></div>
         <div><span>Total Time</span><strong>{{ editRow.totalTime }}</strong></div>
         <div><span>Games</span><strong>{{ editRow.games }}</strong></div>
         <div><span>Table Amount</span><strong>AED {{ editRow.tableAmount | number:'1.2-2' }}</strong></div>
         <div><span>Inventory</span><strong>AED {{ editRow.inventoryAmount | number:'1.2-2' }}</strong></div>
+        <div><span>Items</span><strong>{{ editRow.inventoryItems }}</strong></div>
         <div><span>Discount</span><strong>AED {{ editRow.discountAmount | number:'1.2-2' }}</strong></div>
+        <div><span>Cash</span><strong>AED {{ editRow.cashAmount | number:'1.2-2' }}</strong></div>
+        <div><span>Card</span><strong>AED {{ editRow.cardAmount | number:'1.2-2' }}</strong></div>
         <div><span>Paid</span><strong>AED {{ editRow.paidAmount | number:'1.2-2' }}</strong></div>
       </div>
 
@@ -265,5 +291,117 @@
     <button pButton pRipple type="button" label="Cancel" class="p-button-text" (click)="editDialog = false"></button>
     <button pButton pRipple type="button" label="Print" icon="pi pi-print" class="p-button-outlined" *ngIf="editRow" (click)="printRow(editRow)"></button>
     <button pButton pRipple type="button" label="Save" icon="pi pi-check" (click)="saveEdit()"></button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="dailySaleDialog"
+  [modal]="true"
+  [style]="{ width: 'min(98vw, 1280px)' }"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="daily-sale-dialog">
+  <ng-template pTemplate="header">
+    <div class="dialog-title">
+      <span>Daily Sale</span>
+      <small>Current month. Club day counts from 12:00 PM to next day 6:00 AM.</small>
+    </div>
+  </ng-template>
+
+  <div class="daily-sale-layout">
+    <div class="daily-sale-list">
+      <button
+        type="button"
+        class="daily-sale-card"
+        *ngFor="let day of dailySales"
+        [class.daily-sale-active]="selectedDailySale?.dateKey === day.dateKey"
+        (click)="selectDailySale(day)">
+        <div>
+          <strong>{{ day.date | date:'dd MMM yyyy' }}</strong>
+          <span>{{ day.games }} games • {{ day.sales }} sales • {{ day.records.length }} records</span>
+        </div>
+        <div>
+          <small>Total</small>
+          <strong>AED {{ day.totalAmount | number:'1.2-2' }}</strong>
+        </div>
+        <div>
+          <small>Cash</small>
+          <strong>AED {{ day.cashAmount | number:'1.2-2' }}</strong>
+        </div>
+        <div>
+          <small>Card</small>
+          <strong>AED {{ day.cardAmount | number:'1.2-2' }}</strong>
+        </div>
+      </button>
+    </div>
+
+    <div class="daily-sale-detail" *ngIf="selectedDailySale">
+      <div class="daily-sale-detail-head">
+        <div>
+          <strong>{{ selectedDailySale.date | date:'dd MMM yyyy' }}</strong>
+          <span>12:00 PM to next day 6:00 AM</span>
+        </div>
+        <div>
+          <span>Total Sale</span>
+          <strong>AED {{ selectedDailySale.totalAmount | number:'1.2-2' }}</strong>
+        </div>
+        <div>
+          <span>Cash</span>
+          <strong>AED {{ selectedDailySale.cashAmount | number:'1.2-2' }}</strong>
+        </div>
+        <div>
+          <span>Card</span>
+          <strong>AED {{ selectedDailySale.cardAmount | number:'1.2-2' }}</strong>
+        </div>
+        <div>
+          <span>Due</span>
+          <strong>AED {{ selectedDailySale.dueAmount | number:'1.2-2' }}</strong>
+        </div>
+      </div>
+
+      <div class="daily-sale-table-wrap">
+        <table class="dashboard-table daily-sale-table">
+          <thead>
+            <tr>
+              <th>Sr.</th>
+              <th>Time</th>
+              <th>Type</th>
+              <th>Receipt</th>
+              <th>Customer</th>
+              <th>Table</th>
+              <th>Players</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Cash</th>
+              <th>Card</th>
+              <th>Due</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of selectedDailyRows; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>{{ row.endTime ? (row.endTime | date:'h:mm a') : '-' }}</td>
+              <td><span class="history-type-pill">{{ getRecordTypeLabel(row) }}</span></td>
+              <td>{{ row.receiptNo || '-' }}</td>
+              <td>{{ row.customerName }}</td>
+              <td>{{ row.tableName }}</td>
+              <td>{{ row.players }}</td>
+              <td>{{ row.inventoryItems }}</td>
+              <td>AED {{ row.netAmount | number:'1.2-2' }}</td>
+              <td>AED {{ row.cashAmount | number:'1.2-2' }}</td>
+              <td>AED {{ row.cardAmount | number:'1.2-2' }}</td>
+              <td>AED {{ row.dueAmount | number:'1.2-2' }}</td>
+            </tr>
+            <tr *ngIf="!selectedDailyRows.length">
+              <td colspan="12" class="empty-dashboard">No sale found for this club day.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton pRipple type="button" label="Close" class="p-button-text" (click)="dailySaleDialog = false"></button>
   </ng-template>
 </p-dialog>
