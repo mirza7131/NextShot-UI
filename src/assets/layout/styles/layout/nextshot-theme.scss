@@ -159,6 +159,34 @@
     }
 }
 
+.table-loader {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .65rem;
+    color: #1f3428;
+    font-weight: 800;
+}
+
+.table-loader i,
+.nextshot-loader i {
+    color: #635ef3;
+    font-size: 1.2rem;
+}
+
+.nextshot-loader {
+    min-height: 260px;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: .75rem;
+    color: #1f3428;
+    font-weight: 900;
+    border: 1px dashed #cdd8d0;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #fbfffb, #f4f8f4);
+}
+
 .session-dialog .session-form input,
 .session-dialog .session-form select,
 .session-dialog .session-form p-autocomplete,
@@ -167,6 +195,39 @@
 .session-dialog .player-add-row .p-autocomplete,
 .session-dialog .player-add-row .p-autocomplete-input {
     width: 100%;
+}
+
+.counter-sale-dialog .counter-customer-picker {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 112px;
+    gap: .8rem;
+    align-items: end;
+}
+
+.counter-sale-dialog .counter-customer-picker p-autocomplete,
+.counter-sale-dialog .counter-customer-picker .p-autocomplete,
+.counter-sale-dialog .counter-customer-picker .p-autocomplete-input {
+    width: 100%;
+}
+
+.counter-sale-dialog .counter-customer-picker button {
+    min-height: 2.75rem;
+}
+
+.counter-customer-option {
+    display: grid;
+    gap: .15rem;
+    min-width: 260px;
+}
+
+.counter-customer-option strong,
+.counter-customer-option small {
+    display: block;
+    line-height: 1.25;
+}
+
+.counter-customer-option small {
+    color: #64748b;
 }
 
 .session-dialog .session-form {
@@ -330,7 +391,7 @@
 }
 
 .session-dialog .inventory-bill-box {
-    grid-template-columns: minmax(0, 1fr) 86px auto;
+    grid-template-columns: minmax(170px, .8fr) minmax(280px, 1.6fr) 84px auto;
     align-items: center;
 }
 
@@ -340,7 +401,64 @@
 
 .session-dialog .inventory-bill-box .p-button {
     width: auto !important;
+    min-width: 132px;
     white-space: nowrap;
+}
+
+.session-dialog .inventory-bill-box .inventory-qty-input {
+    width: 74px !important;
+    min-width: 74px;
+    text-align: center;
+}
+
+.session-dialog .inventory-bill-box .p-autocomplete,
+.session-dialog .inventory-bill-box .p-autocomplete-input {
+    width: 100%;
+}
+
+.session-dialog .inventory-bill-box .p-autocomplete-dd {
+    display: flex;
+}
+
+.session-dialog .inventory-bill-box .p-autocomplete-dd .p-autocomplete-input {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.session-dialog .inventory-bill-box .p-autocomplete-dd .p-autocomplete-dropdown {
+    flex: 0 0 46px;
+    width: 46px !important;
+    min-width: 46px !important;
+}
+
+.inventory-dropdown-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    min-width: 0;
+}
+
+.inventory-dropdown-option div {
+    display: grid;
+    gap: .12rem;
+    min-width: 0;
+}
+
+.inventory-dropdown-option strong {
+    color: #0f172a;
+    overflow-wrap: anywhere;
+}
+
+.inventory-dropdown-option small,
+.inventory-dropdown-option span {
+    color: #64748b;
+    font-size: .82rem;
+}
+
+.inventory-dropdown-option.sale-low-stock strong,
+.inventory-dropdown-option.sale-low-stock span {
+    color: #b91c1c;
 }
 
 .session-dialog .start-time-box {

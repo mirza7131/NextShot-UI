@@ -16,8 +16,8 @@
 
 .session-body {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 420px);
+  gap: 1.25rem;
   align-items: start;
 }
 
@@ -204,6 +204,8 @@
   display: grid;
   gap: 1rem;
   padding: 1rem;
+  width: 100%;
+  min-width: 360px;
   border-radius: 8px;
   background: #071016;
   color: #fff;
@@ -230,7 +232,8 @@
 
 .receipt-lines {
   display: grid;
-  gap: .65rem;
+  gap: .75rem;
+  font-size: 1rem;
 }
 
 .bill-items {
@@ -253,7 +256,7 @@
 
 .receipt-total strong {
   color: #f97316;
-  font-size: 1.35rem;
+  font-size: 1.55rem;
 }
 
 @media (max-width: 720px) {
@@ -264,6 +267,10 @@
   .counter-sale-item-grid,
   .counter-sale-summary {
     grid-template-columns: 1fr;
+  }
+
+  .receipt-card {
+    min-width: 0;
   }
 
   .counter-sale-receipt {

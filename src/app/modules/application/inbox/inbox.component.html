@@ -100,7 +100,17 @@
 
           <label>
             Phone
-            <input pInputText type="text" [(ngModel)]="counterSalePhone" [disabled]="!!counterSaleReceipt" placeholder="03xx / 05x / phone" />
+            <input
+              pInputText
+              type="tel"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              maxlength="12"
+              [(ngModel)]="counterSalePhone"
+              [disabled]="!!counterSaleReceipt"
+              placeholder="0501234567 / 971501234567"
+              (keydown)="allowOnlyNumbers($event)"
+              (input)="onCounterSalePhoneInput()" />
           </label>
         </div>
 
@@ -117,7 +127,7 @@
 
         <div class="player-box counter-customer-box">
           <strong>Saved Customer</strong>
-          <div class="player-add-row">
+          <div class="counter-customer-picker">
             <p-autoComplete
               [(ngModel)]="counterSaleCustomer"
               [suggestions]="counterSaleSuggestions"
@@ -128,7 +138,7 @@
               (onSelect)="useCounterSaleCustomer()"
               (completeMethod)="searchCounterSaleCustomers($event)">
               <ng-template let-customer pTemplate="item">
-                <div class="player-dropdown-option">
+                <div class="counter-customer-option">
                   <div>
                     <strong>{{ customer.customerName }}</strong>
                     <small>{{ customer.phoneNo || 'No phone' }}</small>
@@ -295,7 +305,7 @@
 <p-dialog
   [(visible)]="sessionDialog"
   [modal]="true"
-  [style]="{ width: 'min(96vw, 980px)' }"
+  [style]="{ width: 'min(96vw, 1280px)' }"
   [draggable]="false"
   [resizable]="false"
   styleClass="session-dialog">
@@ -316,7 +326,16 @@
 
         <label>
           Phone
-          <input pInputText type="text" [(ngModel)]="customerPhone" placeholder="03xx / 05x / phone" />
+          <input
+            pInputText
+            type="tel"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            maxlength="12"
+            [(ngModel)]="customerPhone"
+            placeholder="0501234567 / 971501234567"
+            (keydown)="allowOnlyNumbers($event)"
+            (input)="onCustomerPhoneInput()" />
         </label>
       </div>
 
@@ -446,24 +465,33 @@
         <select [(ngModel)]="selectedInventoryBuyer">
           <option *ngFor="let buyer of getInventoryBuyerOptions(selectedTable)" [ngValue]="buyer.value">{{ buyer.label }}</option>
         </select>
-        <select [(ngModel)]="selectedInventoryItemId">
-          <option [ngValue]="null">Select item</option>
-          <option
-            *ngFor="let item of inventoryItems"
-            [ngValue]="item.id"
-            [disabled]="item.stock <= 0"
-            [class.sale-low-stock]="item.stock < 10">
-            {{ item.name }} - AED {{ item.price }} ({{ item.stock }} left){{ item.stock < 10 ? ' - LOW STOCK' : '' }}
-          </option>
-        </select>
-        <input pInputText type="number" min="1" [(ngModel)]="inventoryQty" />
+        <p-autoComplete
+          [(ngModel)]="selectedInventoryItem"
+          [suggestions]="inventorySuggestions"
+          field="name"
+          [dropdown]="true"
+          [forceSelection]="true"
+          placeholder="Search item"
+          (completeMethod)="searchInventoryItems($event)"
+          (onSelect)="onInventoryItemSelect($event.value)">
+          <ng-template let-item pTemplate="item">
+            <div class="inventory-dropdown-option" [class.sale-low-stock]="item.stock < 10">
+              <div>
+                <strong>{{ item.name }}</strong>
+                <small>{{ item.category || 'Item' }}</small>
+              </div>
+              <span>AED {{ item.price | number:'1.2-2' }} / {{ item.stock }} left</span>
+            </div>
+          </ng-template>
+        </p-autoComplete>
+        <input pInputText class="inventory-qty-input" type="number" min="1" [(ngModel)]="inventoryQty" />
         <button
           pButton
           pRipple
           type="button"
           label="Add to Bill"
           icon="pi pi-plus"
-          [disabled]="!selectedTable.tableSessionId || !selectedInventoryItemId"
+          [disabled]="!selectedTable.tableSessionId || !getSelectedInventoryItem()"
           (click)="addInventoryToBill()">
         </button>
       </div>
@@ -700,15 +728,15 @@
         </div>
         <label style="display:grid;gap:.35rem;min-width:0">
           Discount
-          <input pInputText type="number" min="0" [(ngModel)]="payment.discountAmount" (ngModelChange)="updatePlayerPayment(payment)" style="width:100%" />
+          <input pInputText type="number" min="0" [value]="payment.discountAmount" (input)="updatePlayerPaymentInput(payment, 'discount', $event)" style="width:100%" />
         </label>
         <label style="display:grid;gap:.35rem;min-width:0">
           Cash
-          <input pInputText type="number" min="0" [(ngModel)]="payment.cashAmount" (ngModelChange)="updatePlayerPayment(payment)" style="width:100%" />
+          <input pInputText type="number" min="0" [value]="payment.cashAmount" (input)="updatePlayerPaymentInput(payment, 'cash', $event)" style="width:100%" />
         </label>
         <label style="display:grid;gap:.35rem;min-width:0">
           Card
-          <input pInputText type="number" min="0" [(ngModel)]="payment.cardAmount" (ngModelChange)="updatePlayerPayment(payment)" style="width:100%" />
+          <input pInputText type="number" min="0" [value]="payment.cardAmount" (input)="updatePlayerPaymentInput(payment, 'card', $event)" style="width:100%" />
         </label>
       </div>
 

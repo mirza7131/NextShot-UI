@@ -116,7 +116,12 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let table of pagedTables">
+          <tr *ngIf="isLoading">
+            <td colspan="9" class="empty-row">
+              <span class="table-loader"><i class="pi pi-spin pi-spinner"></i> Loading tables...</span>
+            </td>
+          </tr>
+          <tr *ngFor="let table of (isLoading ? [] : pagedTables)">
             <td>{{ table.tableNo }}</td>
             <td>{{ table.tableName }}</td>
             <td>{{ table.tableType }}</td>
@@ -132,7 +137,7 @@
               </div>
             </td>
           </tr>
-          <tr *ngIf="!filteredTables.length">
+          <tr *ngIf="!isLoading && !filteredTables.length">
             <td colspan="9" class="empty-row">No tables added yet.</td>
           </tr>
         </tbody>

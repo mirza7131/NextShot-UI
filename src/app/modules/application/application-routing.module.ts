@@ -6,6 +6,7 @@ import { RegisterCompanyComponent } from './register-company/register-company.co
 import { InventoryComponent } from './inventory/inventory.component';
 import { ClubTablesComponent } from './club-tables/club-tables.component';
 import { CustomerPendingComponent } from './customer-pending/customer-pending.component';
+import { PlayersComponent } from './players/players.component';
 
 
 const routes: Routes = [
@@ -13,6 +14,7 @@ const routes: Routes = [
   { path: 'Inbox', component: InboxComponent },
   { path: 'Inventory', component: InventoryComponent },
   { path: 'Tables', component: ClubTablesComponent },
+  { path: 'Players', component: PlayersComponent },
   { path: 'CustomerPending', component: CustomerPendingComponent },
   { path: 'RegisterCompany', component: RegisterCompanyComponent },
 ];

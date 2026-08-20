@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { CommonModule, HashLocationStrategy, LocationStrategy, PathLocationStrategy } from '@angular/common';
+import { CommonModule, DATE_PIPE_DEFAULT_OPTIONS, HashLocationStrategy, LocationStrategy, PathLocationStrategy } from '@angular/common';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AppLayoutModule } from './layout/app.layout.module';
@@ -16,6 +16,7 @@ import { AuthService } from './core/auth/auth.service';
 import { CoreModule } from './core/core.module';
 import { MessagesModule } from 'primeng/messages';
 import { ToastModule } from 'primeng/toast';
+import { UAE_DATE_PIPE_TIME_ZONE } from './shared/uae-date-time';
 
 
 @NgModule({
@@ -32,6 +33,7 @@ import { ToastModule } from 'primeng/toast';
     ],
     providers: [
         { provide: LocationStrategy, useClass: PathLocationStrategy},
+        { provide: DATE_PIPE_DEFAULT_OPTIONS, useValue: { timezone: UAE_DATE_PIPE_TIME_ZONE } },
         CountryService, CustomerService, EventService, IconService, NodeService,
         PhotoService, ProductService,MessageService,AuthService
     ],

@@ -1,0 +1,140 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<section class="players-page">
+  <div class="players-header">
+    <div>
+      <p>Next Shot</p>
+      <h1>Players</h1>
+      <span>Add and manage saved players for table sessions and pending bills.</span>
+    </div>
+    <div class="players-stats">
+      <div>
+        <strong>{{ players.length }}</strong>
+        <span>Total Players</span>
+      </div>
+      <div>
+        <strong>{{ filteredPlayers.length }}</strong>
+        <span>Showing</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="players-shell">
+    <div class="player-form">
+      <div class="player-form-title">
+        <h2>{{ editingPlayer ? 'Update Player' : 'Add Player' }}</h2>
+        <span>Customer name and phone</span>
+      </div>
+
+      <label>
+        Player Name
+        <input pInputText type="text" [(ngModel)]="playerName" placeholder="Player name" />
+      </label>
+
+      <label>
+        Phone
+        <input
+          pInputText
+          type="tel"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          maxlength="12"
+          [(ngModel)]="phoneNo"
+          placeholder="0501234567 / 971501234567"
+          (keydown)="allowOnlyNumbers($event)"
+          (input)="onPhoneInput()" />
+        <small class="phone-help">UAE number only. Example: 0501234567 or 971501234567</small>
+      </label>
+
+      <button
+        pButton
+        pRipple
+        type="button"
+        [label]="editingPlayer ? 'Update Player' : 'Add Player'"
+        [icon]="editingPlayer ? 'pi pi-check' : 'pi pi-plus'"
+        [disabled]="isSaving || !playerName.trim()"
+        (click)="savePlayer()">
+      </button>
+
+      <button
+        pButton
+        pRipple
+        type="button"
+        label="Cancel"
+        icon="pi pi-times"
+        class="p-button-outlined"
+        *ngIf="editingPlayer"
+        (click)="clearForm()">
+      </button>
+    </div>
+
+    <div class="players-list">
+      <div class="players-list-title">
+        <div>
+          <h2>Player List</h2>
+          <span>{{ filteredPlayers.length }} saved player{{ filteredPlayers.length === 1 ? '' : 's' }}</span>
+        </div>
+        <div class="players-tools">
+          <input pInputText type="text" placeholder="Search name or phone" [(ngModel)]="searchText" (input)="applySearch()" />
+          <label>
+            Show
+            <select [(ngModel)]="pageSize" (change)="changePageSize()">
+              <option *ngFor="let size of pageSizeOptions" [ngValue]="size">{{ size }}</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="players-line-list">
+        <div class="player-line" *ngFor="let player of pagedPlayers; let i = index">
+          <div class="player-index">{{ pageStart + i }}</div>
+          <div class="player-avatar">{{ player.customerName.charAt(0) || 'P' }}</div>
+          <div class="player-info">
+            <strong>{{ player.customerName }}</strong>
+            <span>{{ player.phoneNo || 'No phone' }}</span>
+          </div>
+          <div class="player-balance">
+            <span>Balance</span>
+            <strong>AED {{ player.balanceAmount || 0 | number:'1.2-2' }}</strong>
+          </div>
+          <div class="player-actions">
+            <button
+              pButton
+              pRipple
+              type="button"
+              icon="pi pi-pencil"
+              class="p-button-rounded p-button-text player-edit"
+              title="Edit"
+              (click)="editPlayer(player)">
+            </button>
+
+            <button
+              pButton
+              pRipple
+              type="button"
+              icon="pi pi-trash"
+              class="p-button-rounded p-button-text player-delete"
+              title="Delete"
+              (click)="deletePlayer(player)">
+            </button>
+          </div>
+        </div>
+
+        <div class="empty-player-row" *ngIf="!isLoading && !filteredPlayers.length">No players found.</div>
+        <div class="empty-player-row" *ngIf="isLoading">
+          <span class="table-loader"><i class="pi pi-spin pi-spinner"></i> Loading players...</span>
+        </div>
+      </div>
+
+      <div class="players-pagination" *ngIf="filteredPlayers.length">
+        <span>Showing {{ pageStart }} to {{ pageEnd }} of {{ filteredPlayers.length }}</span>
+        <div>
+          <button pButton pRipple type="button" icon="pi pi-chevron-left" label="Prev" class="p-button-outlined" [disabled]="pageNumber === 1" (click)="previousPage()"></button>
+          <strong>Page {{ pageNumber }} / {{ totalPages }}</strong>
+          <button pButton pRipple type="button" icon="pi pi-chevron-right" iconPos="right" label="Next" class="p-button-outlined" [disabled]="pageNumber === totalPages" (click)="nextPage()"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

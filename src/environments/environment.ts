@@ -9,7 +9,7 @@ export const environment = {
   // apiUrl: '/api',
  // apiUrl: 'http://hisdu.com/api'
  //  apiUrl: 'https://gamatypingservices-dsfmf8ckf0asayed.canadacentral-01.azurewebsites.net/api',
-//  apiUrl: 'https://localhost:7082/api',
+  //apiUrl: 'https://localhost:7082/api',
 
      apiUrl: 'https://api.nextshotsnooker.club/api',
     apiURL: 'https://api.nextshotsnooker.club/api',
@@ -18,7 +18,7 @@ export const environment = {
    uiURL: "https://localhost:4200",
     // cdnURL : "http://116.58.20.67:1119/",
     cdnURL : "https://cdn.pshealthpunjab.gov.pk/",
-   // apiURL: "https://localhost:7082/api",
+    //apiURL: "https://localhost:7082/api",
     //apiURL: "https://gamatypingservices-dsfmf8ckf0asayed.canadacentral-01.azurewebsites.net/api",
     patientApiURL: 'https://localhost:7151/api',
     pathologyApiURL: 'https://localhost:7202/api',

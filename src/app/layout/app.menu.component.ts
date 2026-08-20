@@ -38,6 +38,7 @@ export class AppMenuComponent implements OnInit {
             items: [
                 { label: 'Table Floor', icon: 'pi pi-fw pi-th-large', routerLink: ['/application/Inbox'] },
                 { label: 'Table Setup', icon: 'pi pi-fw pi-cog', routerLink: ['/application/Tables'] },
+                { label: 'Players', icon: 'pi pi-fw pi-id-card', routerLink: ['/application/Players'] },
                 { label: 'Inventory', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/application/Inventory'] },
                 { label: 'Customer Pending', icon: 'pi pi-fw pi-wallet', routerLink: ['/application/CustomerPending'] }
             ]
@@ -429,6 +430,9 @@ export class AppMenuComponent implements OnInit {
                             label: 'Table Setup', icon: 'pi pi-fw pi-cog', routerLink: ['/application/Tables']
                         },
                         {
+                            label: 'Players', icon: 'pi pi-fw pi-id-card', routerLink: ['/application/Players']
+                        },
+                        {
                             label: 'Inventory', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/application/Inventory']
                         },
                         {
@@ -542,7 +546,49 @@ export class AppMenuComponent implements OnInit {
             ...(hasInventory ? [] : this.nextShotMenuItems)
         ];
 
-        return this.hideLegacyMenuItems([...fixedMenu, ...menuList]);
+        return this.ensurePlayersMenu(this.hideLegacyMenuItems([...fixedMenu, ...menuList]));
+    }
+
+    private ensurePlayersMenu(menu: any[]): any[] {
+        const hasPlayers = menu.some(group =>
+            group.items?.some(item => item.routerLink?.includes('/application/Players'))
+        );
+
+        if (hasPlayers) {
+            return menu;
+        }
+
+        const tablesGroup = menu.find(group =>
+            (group.label || '').trim().toLowerCase() === 'tables' ||
+            group.items?.some(item =>
+                item.routerLink?.includes('/application/Inventory') ||
+                item.routerLink?.includes('/application/Tables') ||
+                item.routerLink?.includes('/application/Inbox')
+            )
+        );
+
+        const playersItem = { label: 'Players', icon: 'pi pi-fw pi-id-card', routerLink: ['/application/Players'] };
+
+        if (!tablesGroup) {
+            return [
+                ...menu,
+                {
+                    label: 'Tables',
+                    items: [playersItem]
+                }
+            ];
+        }
+
+        const items = tablesGroup.items || [];
+        const inventoryIndex = items.findIndex(item => item.routerLink?.includes('/application/Inventory'));
+        const insertIndex = inventoryIndex > -1 ? inventoryIndex : items.length;
+        tablesGroup.items = [
+            ...items.slice(0, insertIndex),
+            playersItem,
+            ...items.slice(insertIndex)
+        ];
+
+        return menu;
     }
 
     private hideLegacyMenuItems(menu: any[]): any[] {

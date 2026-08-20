@@ -14,6 +14,7 @@ type TableType = 'Snooker' | 'Billiard';
 export class ClubTablesComponent implements OnInit {
   tables: ClubTableSetup[] = [];
   tableTypes: TableType[] = ['Snooker', 'Billiard'];
+  isLoading = false;
   isSaving = false;
   form = this.createEmptyForm();
   searchText = '';
@@ -144,15 +145,18 @@ export class ClubTablesComponent implements OnInit {
   }
 
   private loadTables(): void {
+    this.isLoading = true;
     this.inventoryService.getClubTables().subscribe({
       next: tables => {
         this.tables = tables.sort((a, b) => a.tableNo - b.tableNo);
         if (this.pageNumber > this.totalPages) {
           this.pageNumber = this.totalPages;
         }
+        this.isLoading = false;
       },
       error: error => {
         this.tables = [];
+        this.isLoading = false;
         this.messageService.add({
           severity: 'error',
           summary: 'Table Setup',

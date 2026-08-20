@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { EndPointConstant } from 'src/app/constants/endpoints.constant';
+import { parseApiDateAsUae } from 'src/app/shared/uae-date-time';
 import { environment } from 'src/environments/environment';
 
 export interface InventoryItem {
@@ -130,6 +131,7 @@ export interface InventorySaleRequest {
   cardAmount: number;
   paidAmount: number;
   dueAmount: number;
+  createdOn?: string;
 }
 
 export interface StartTableSessionRequest {
@@ -290,6 +292,13 @@ export class InventoryService {
     return this.http.post<any>(
       `${this.apiBaseUrl}${EndPointConstant.Invoice.CreateInventorySale()}`,
       request
+    );
+  }
+
+  deleteInventorySale(inventorySaleId: number): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiBaseUrl}${EndPointConstant.Invoice.DeleteInventorySale()}?inventorySaleId=${inventorySaleId}&InventorySaleId=${inventorySaleId}&id=${inventorySaleId}&Id=${inventorySaleId}`,
+      { inventorySaleId, InventorySaleId: inventorySaleId, id: inventorySaleId, Id: inventorySaleId }
     );
   }
 
@@ -461,7 +470,7 @@ export class InventoryService {
       customerName: item.customerName ?? item.CustomerName ?? item.clubCustomerName ?? item.ClubCustomerName ?? item.name ?? item.Name ?? item.playerName ?? item.PlayerName ?? '',
       phoneNo: item.phoneNo ?? item.PhoneNo ?? '',
       dueAmount: Number(item.dueAmount ?? item.DueAmount ?? item.totalDueAmount ?? item.TotalDueAmount ?? item.pendingAmount ?? item.PendingAmount ?? item.balanceAmount ?? item.BalanceAmount ?? 0),
-      lastPaymentDate: item.lastPaymentDate ?? item.LastPaymentDate ?? item.createdOn ?? item.CreatedOn ?? item.updatedOn ?? item.UpdatedOn,
+      lastPaymentDate: parseApiDateAsUae(item.lastPaymentDate ?? item.LastPaymentDate ?? item.createdOn ?? item.CreatedOn ?? item.updatedOn ?? item.UpdatedOn),
       paymentCount: item.paymentCount ?? item.PaymentCount ?? item.totalRecords ?? item.TotalRecords ?? item.count ?? item.Count ?? 0
     })).filter((item: CustomerPendingPayment) => item.clubCustomerId > 0 || item.customerName || item.dueAmount > 0);
   }
@@ -490,7 +499,7 @@ export class InventoryService {
       dueAmount: Number(item.dueAmount ?? item.DueAmount ?? 0),
       paymentStatus: item.paymentStatus ?? item.PaymentStatus ?? '',
       paymentType: item.paymentType ?? item.PaymentType ?? '',
-      createdOn: item.createdOn ?? item.CreatedOn
+      createdOn: parseApiDateAsUae(item.createdOn ?? item.CreatedOn)
     })).filter((item: CustomerPendingPaymentHistory) => item.customerPaymentId > 0 || item.dueAmount > 0);
   }
 

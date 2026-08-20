@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Subscription } from 'rxjs';
 import { ClubTableSetup, InventoryItem, InventoryService } from 'src/app/modules/application/inventory/inventory.service';
+import { formatUaeDateInput, formatUaeDisplayDate, getUaeDateParts, parseApiDateAsUae, parseUaeDateTimeLocal } from 'src/app/shared/uae-date-time';
 
 type DashboardFilter = string;
 
@@ -67,6 +68,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     currentPage = 1;
     editDialog = false;
     dailySaleDialog = false;
+    isDashboardLoading = false;
+    isDailySaleLoading = false;
     editRow: SessionHistoryRow | null = null;
     selectedDailySale: DailySaleSummary | null = null;
     inventoryItems: InventoryItem[] = [];
@@ -130,6 +133,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     openDailySales(): void {
         const sales = this.dailySales;
         this.selectedDailySale = sales.find(day => day.records.length) || sales[0] || null;
+        this.isDailySaleLoading = this.isDashboardLoading;
         this.dailySaleDialog = true;
     }
 
@@ -154,9 +158,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     deleteRow(row: SessionHistoryRow): void {
+        const recordName = row.recordType === 'CounterSale' ? 'counter sale' : 'session';
         this.confirmationService.confirm({
-            header: 'Delete Session',
-            message: `Are you sure you want to delete ${row.tableName} record for ${row.customerName}?`,
+            header: row.recordType === 'CounterSale' ? 'Delete Counter Sale' : 'Delete Session',
+            message: `Are you sure you want to delete this ${recordName} for ${row.customerName}?`,
             icon: 'pi pi-exclamation-triangle',
             acceptLabel: 'Delete',
             rejectLabel: 'Cancel',
@@ -167,17 +172,36 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     private confirmDeleteRow(row: SessionHistoryRow): void {
         const removeLocal = () => {
-            this.allRows = this.allRows.filter(item => item.tableSessionId !== row.tableSessionId);
+            this.allRows = this.allRows.filter(item => !this.isSameHistoryRow(item, row));
             this.buildSummaries();
             this.applyFilter();
             this.messageService.add({
                 severity: 'success',
                 summary: 'Deleted',
-                detail: 'Session removed from dashboard'
+                detail: row.recordType === 'CounterSale' ? 'Counter sale deleted' : 'Session removed from dashboard'
             });
         };
 
-        if (!row.tableSessionId || row.recordType === 'CounterSale') {
+        if (row.recordType === 'CounterSale') {
+            if (!row.inventorySaleId) {
+                removeLocal();
+                return;
+            }
+
+            this.inventoryService.deleteInventorySale(row.inventorySaleId).subscribe({
+                next: () => removeLocal(),
+                error: error => {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Delete Failed',
+                        detail: this.getApiErrorMessage(error, 'Unable to delete this counter sale')
+                    });
+                }
+            });
+            return;
+        }
+
+        if (!row.tableSessionId) {
             removeLocal();
             return;
         }
@@ -188,10 +212,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Delete Failed',
-                    detail: error?.error?.message || error?.message || 'Unable to delete this session'
+                    detail: this.getApiErrorMessage(error, 'Unable to delete this session')
                 });
             }
         });
+    }
+
+    private getApiErrorMessage(error: any, fallback: string): string {
+        const apiMessage = error?.error?.message || error?.error?.Message || error?.error?.title || error?.error?.Title || error?.message;
+        const statusText = error?.status ? `Status ${error.status}` : '';
+
+        return [apiMessage || fallback, statusText].filter(Boolean).join(' - ');
+    }
+
+    private isSameHistoryRow(item: SessionHistoryRow, row: SessionHistoryRow): boolean {
+        if (row.recordType === 'CounterSale') {
+            return item.recordType === 'CounterSale' && item.inventorySaleId === row.inventorySaleId;
+        }
+
+        return item.recordType === 'Session' && item.tableSessionId === row.tableSessionId;
     }
 
     addInventoryToEditRow(): void {
@@ -275,7 +314,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
                         <div class="row"><span>Table</span><strong>${row.tableName}</strong></div>
                         <div class="row"><span>Type</span><strong>${this.getRecordTypeLabel(row)}</strong></div>
                         <div class="row"><span>Receipt</span><strong>${row.receiptNo || '-'}</strong></div>
-                        <div class="row"><span>Date</span><strong>${row.endTime ? row.endTime.toLocaleString() : '-'}</strong></div>
+                        <div class="row"><span>Date</span><strong>${formatUaeDisplayDate(row.endTime)}</strong></div>
                         <div class="row"><span>Customer</span><strong>${row.customerName}</strong></div>
                         <div class="row"><span>Players</span><strong>${row.players}</strong></div>
                         <div class="row"><span>Total Time</span><strong>${row.totalTime}</strong></div>
@@ -305,7 +344,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     get totalGames(): number {
-        return this.getGameCountForRows(this.allRows);
+        return this.getSessionRecordCountForRows(this.allRows);
     }
 
     get totalRecords(): number {
@@ -337,14 +376,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     get dailySales(): DailySaleSummary[] {
-        const now = new Date();
-        const currentYear = now.getFullYear();
-        const currentMonth = now.getMonth();
-        const today = now.getDate();
+        const now = getUaeDateParts();
+        const currentYear = now.year;
+        const currentMonth = now.month;
+        const today = now.day;
         const days: DailySaleSummary[] = [];
 
         for (let day = 1; day <= today; day++) {
-            const date = new Date(currentYear, currentMonth, day);
+            const date = parseUaeDateTimeLocal(`${currentYear}-${currentMonth.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T12:00`);
             const dateKey = this.toDateKey(date);
             const records = this.allRows.filter(row => row.endTime && this.getBusinessDateKey(row.endTime) === dateKey);
 
@@ -352,7 +391,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
                 dateKey,
                 date,
                 records,
-                games: this.getGameCountForRows(records),
+                games: this.getSessionRecordCountForRows(records),
                 sales: records.filter(row => row.recordType === 'CounterSale').length,
                 totalAmount: records.reduce((total, row) => total + row.netAmount, 0),
                 cashAmount: records.reduce((total, row) => total + row.cashAmount, 0),
@@ -394,7 +433,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             row.status,
             row.totalTime,
             row.inventoryItems,
-            row.endTime ? row.endTime.toLocaleDateString() : '',
+            row.endTime ? formatUaeDisplayDate(row.endTime, { dateStyle: 'short', timeStyle: undefined }) : '',
             row.games,
             row.tableAmount,
             row.inventoryAmount,
@@ -430,32 +469,42 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     private loadDashboard(): void {
         this.historySubscription?.unsubscribe();
+        this.isDashboardLoading = true;
+        if (this.dailySaleDialog) {
+            this.isDailySaleLoading = true;
+        }
         this.historySubscription = this.inventoryService.getTableSessionHistory(this.fromDate, this.toDate).subscribe({
             next: sessions => {
                 this.allRows = this.mapHistoryRows(sessions);
                 this.buildSummaries();
                 this.applyFilter();
+                if (this.dailySaleDialog) {
+                    const sales = this.dailySales;
+                    this.selectedDailySale = this.selectedDailySale
+                        ? sales.find(day => day.dateKey === this.selectedDailySale?.dateKey) || sales.find(day => day.records.length) || sales[0] || null
+                        : sales.find(day => day.records.length) || sales[0] || null;
+                }
+                this.isDashboardLoading = false;
+                this.isDailySaleLoading = false;
             },
             error: () => {
                 this.allRows = [];
                 this.buildSummaries();
                 this.applyFilter();
+                this.isDashboardLoading = false;
+                this.isDailySaleLoading = false;
             }
         });
     }
 
     private setCurrentMonthFilter(): void {
-        const today = new Date();
-        this.fromDate = this.toInputDateValue(new Date(today.getFullYear(), today.getMonth(), 1));
-        this.toDate = this.toInputDateValue(today);
+        const today = getUaeDateParts();
+        this.fromDate = `${today.year}-${today.month.toString().padStart(2, '0')}-01`;
+        this.toDate = formatUaeDateInput();
     }
 
     private toInputDateValue(date: Date): string {
-        const year = date.getFullYear();
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const day = date.getDate().toString().padStart(2, '0');
-
-        return `${year}-${month}-${day}`;
+        return formatUaeDateInput(date);
     }
 
     private loadInventoryItems(): void {
@@ -515,7 +564,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             color,
             games: key === 'CounterSale'
                 ? rows.length
-                : this.getGameCountForRows(rows),
+                : this.getSessionRecordCountForRows(rows),
             earning: rows.reduce((total, row) => total + row.netAmount, 0)
         };
     }
@@ -539,20 +588,35 @@ export class DashboardComponent implements OnInit, OnDestroy {
                 : 'Session';
             const startTimeValue = session.startTime ?? session.StartTime;
             const endTimeValue = session.endTime ?? session.EndTime;
-            const startTime = startTimeValue ? new Date(startTimeValue) : undefined;
+            const startTime = parseApiDateAsUae(startTimeValue);
             const createdOnValue = session.createdOn ?? session.CreatedOn;
-            const endTime = endTimeValue ? new Date(endTimeValue) : (createdOnValue ? new Date(createdOnValue) : undefined);
+            const endTime = parseApiDateAsUae(endTimeValue) || parseApiDateAsUae(createdOnValue);
             const players = session.tableSessionPlayers ?? session.TableSessionPlayers ?? [];
             const games = recordType === 'CounterSale' ? 0 : Number(session.gameCount ?? session.GameCount ?? (session.tableSessionGames ?? session.TableSessionGames ?? []).length ?? 0);
             const inventoryItems = this.mapInventoryItemText(session.inventoryItems ?? session.InventoryItems ?? session.tableSessionInventoryItems ?? session.TableSessionInventoryItems ?? session.inventorySaleItems ?? session.InventorySaleItems ?? []);
             const tableAmount = recordType === 'CounterSale' ? 0 : Number(session.tableAmount ?? session.TableAmount ?? session.tableTimeAmount ?? session.TableTimeAmount ?? 0);
             const inventoryAmount = Number(session.inventoryAmount ?? session.InventoryAmount ?? (recordType === 'CounterSale' ? session.totalAmount ?? session.TotalAmount ?? 0 : 0));
             const discountAmount = Number(session.discountAmount ?? session.DiscountAmount ?? 0);
-            const cashAmount = Number(session.cashAmount ?? session.CashAmount ?? 0);
-            const cardAmount = Number(session.cardAmount ?? session.CardAmount ?? 0);
-            const paidAmount = Number(session.paidAmount ?? session.PaidAmount ?? (cashAmount + cardAmount));
-            const dueAmount = Number(session.dueAmount ?? session.DueAmount ?? 0);
-            const netAmount = Number(session.netAmount ?? session.NetAmount ?? session.totalAmount ?? session.TotalAmount ?? Math.max(0, tableAmount + inventoryAmount - discountAmount));
+            const paymentRows = session.customerPayments ?? session.CustomerPayments ?? session.clubCustomerPayments ?? session.ClubCustomerPayments ?? session.payments ?? session.Payments ?? [];
+            let cashAmount = this.getPaymentSplitAmount(session, paymentRows, 'cash');
+            let cardAmount = this.getPaymentSplitAmount(session, paymentRows, 'card');
+            const rawPaidAmount = Number(session.paidAmount ?? session.PaidAmount ?? (cashAmount + cardAmount));
+            const rawDueAmount = Number(session.dueAmount ?? session.DueAmount ?? 0);
+            const calculatedNetAmount = Math.max(0, tableAmount + inventoryAmount - discountAmount);
+            const rawNetAmount = Number(session.netAmount ?? session.NetAmount ?? session.totalAmount ?? session.TotalAmount ?? calculatedNetAmount);
+            const paidAmount = Math.max(0, rawPaidAmount || (cashAmount + cardAmount));
+            const dueAmount = Math.max(0, rawDueAmount);
+            const netAmount = Math.max(0, rawNetAmount, calculatedNetAmount, paidAmount + dueAmount);
+
+            if (!cashAmount && !cardAmount && paidAmount > 0) {
+                const paymentMethod = this.getPaymentMethod(session, paymentRows);
+
+                if (paymentMethod === 'card') {
+                    cardAmount = paidAmount;
+                } else if (paymentMethod === 'cash') {
+                    cashAmount = paidAmount;
+                }
+            }
 
             return {
                 sr: index + 1,
@@ -641,6 +705,140 @@ export class DashboardComponent implements OnInit, OnDestroy {
         return Array.from(sessionGames.values()).reduce((total, games) => total + games, 0) + looseGameCount;
     }
 
+    private getSessionRecordCountForRows(rows: SessionHistoryRow[]): number {
+        const sessionIds = new Set<string>();
+        let looseRowCount = 0;
+
+        rows
+            .filter(row => row.recordType === 'Session')
+            .forEach(row => {
+                if (row.tableSessionId > 0) {
+                    sessionIds.add(row.tableSessionId.toString());
+                    return;
+                }
+
+                looseRowCount++;
+            });
+
+        return sessionIds.size + looseRowCount;
+    }
+
+    private sumNestedAmount(items: any[], keys: string[]): number {
+        const rows = Array.isArray(items) ? items : [];
+
+        return rows.reduce((total, item) => {
+            const key = keys.find(name => item?.[name] !== undefined && item?.[name] !== null);
+            return total + Number(key ? item[key] : 0);
+        }, 0);
+    }
+
+    private getPaymentSplitAmount(session: any, paymentRows: any[], type: 'cash' | 'card'): number {
+        const explicitKeys = type === 'cash'
+            ? [
+                'cashAmount', 'CashAmount',
+                'cashReceived', 'CashReceived',
+                'cashReceivedAmount', 'CashReceivedAmount',
+                'receivedCash', 'ReceivedCash',
+                'cashPaid', 'CashPaid',
+                'cashPayment', 'CashPayment',
+                'totalCashAmount', 'TotalCashAmount',
+                'cash', 'Cash'
+            ]
+            : [
+                'cardAmount', 'CardAmount',
+                'cardReceived', 'CardReceived',
+                'cardReceivedAmount', 'CardReceivedAmount',
+                'receivedCard', 'ReceivedCard',
+                'cardPaid', 'CardPaid',
+                'cardPayment', 'CardPayment',
+                'totalCardAmount', 'TotalCardAmount',
+                'card', 'Card'
+            ];
+
+        const directAmount = this.readFirstNumber(session, explicitKeys);
+
+        if (directAmount > 0) {
+            return directAmount;
+        }
+
+        const rows = Array.isArray(paymentRows) ? paymentRows : [];
+        const nestedExplicitAmount = rows.reduce((total, row) => total + this.readFirstNumber(row, explicitKeys), 0);
+
+        if (nestedExplicitAmount > 0) {
+            return nestedExplicitAmount;
+        }
+
+        const flexibleAmount = this.findFlexibleAmount(session, type) + rows.reduce((total, row) => total + this.findFlexibleAmount(row, type), 0);
+        return Math.max(0, flexibleAmount);
+    }
+
+    private readFirstNumber(source: any, keys: string[]): number {
+        if (!source) {
+            return 0;
+        }
+
+        for (const key of keys) {
+            const value = source[key];
+            const amount = Number(value);
+
+            if (value !== undefined && value !== null && !Number.isNaN(amount) && amount > 0) {
+                return amount;
+            }
+        }
+
+        return 0;
+    }
+
+    private findFlexibleAmount(source: any, type: 'cash' | 'card'): number {
+        if (!source || typeof source !== 'object') {
+            return 0;
+        }
+
+        return Object.keys(source).reduce((total, key) => {
+            const normalizedKey = key.toLowerCase();
+            const value = source[key];
+            const amount = Number(value);
+            const isMoneyKey = normalizedKey.includes(type) &&
+                (
+                    normalizedKey.includes('amount') ||
+                    normalizedKey.includes('received') ||
+                    normalizedKey.includes('paid') ||
+                    normalizedKey.includes('payment') ||
+                    normalizedKey === type
+                );
+
+            return isMoneyKey && !Number.isNaN(amount) && amount > 0
+                ? total + amount
+                : total;
+        }, 0);
+    }
+
+    private getPaymentMethod(session: any, paymentRows: any[]): 'cash' | 'card' | '' {
+        const values = [
+            session.paymentMethod,
+            session.PaymentMethod,
+            session.paymentMode,
+            session.PaymentMode,
+            session.paymentType,
+            session.PaymentType,
+            ...(Array.isArray(paymentRows)
+                ? paymentRows.flatMap(row => [row.paymentMethod, row.PaymentMethod, row.paymentMode, row.PaymentMode, row.paymentType, row.PaymentType])
+                : [])
+        ];
+
+        const text = values.filter(Boolean).join(' ').toLowerCase();
+
+        if (text.includes('card')) {
+            return 'card';
+        }
+
+        if (text.includes('cash')) {
+            return 'cash';
+        }
+
+        return '';
+    }
+
     private mapInventoryItemText(items: any[]): string {
         const rows = Array.isArray(items) ? items : [];
         const text = rows
@@ -661,9 +859,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     private getBusinessDateKey(date: Date): string {
-        const businessDate = new Date(date);
+        const parts = getUaeDateParts(date);
+        const businessDate = parseUaeDateTimeLocal(`${parts.year}-${parts.month.toString().padStart(2, '0')}-${parts.day.toString().padStart(2, '0')}T12:00`);
 
-        if (businessDate.getHours() < 6) {
+        if (parts.hour < 6) {
             businessDate.setDate(businessDate.getDate() - 1);
         }
 
@@ -671,11 +870,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     private toDateKey(date: Date): string {
-        const year = date.getFullYear();
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const day = date.getDate().toString().padStart(2, '0');
-
-        return `${year}-${month}-${day}`;
+        return formatUaeDateInput(date);
     }
 
     private getDuration(startTime?: Date, endTime?: Date): string {

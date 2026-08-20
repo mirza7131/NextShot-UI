@@ -44,6 +44,7 @@ import { CardModule } from 'primeng/card';
 import { InventoryComponent } from './inventory/inventory.component';
 import { ClubTablesComponent } from './club-tables/club-tables.component';
 import { CustomerPendingComponent } from './customer-pending/customer-pending.component';
+import { PlayersComponent } from './players/players.component';
 
 
 
@@ -64,7 +65,8 @@ import { CustomerPendingComponent } from './customer-pending/customer-pending.co
     RegisterCompanyComponent,
     InventoryComponent,
     ClubTablesComponent,
-    CustomerPendingComponent
+    CustomerPendingComponent,
+    PlayersComponent
   ],
   imports: [
     CommonModule,
