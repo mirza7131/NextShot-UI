@@ -34,6 +34,7 @@ export class EndPointConstant {
             ChangeInventoryStatus:()=> this.Invoice.Controller + 'ChangeInventoryStatus',
             ReduceInventoryStock:()=> this.Invoice.Controller + 'ReduceInventoryStock',
             CreateInventorySale:()=> this.Invoice.Controller + 'CreateInventorySale',
+            DeleteInventorySale:()=> this.Invoice.Controller + 'DeleteInventorySale',
             StartTableSession:()=> this.Invoice.Controller + 'StartTableSession',
             EndTableSession:()=> this.Invoice.Controller + 'EndTableSession',
             GetRunningTableSessions:()=> this.Invoice.Controller + 'GetRunningTableSessions',

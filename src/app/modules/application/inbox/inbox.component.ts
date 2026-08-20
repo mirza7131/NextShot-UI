@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { forkJoin, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
+import { formatUaeDateTimeLocal, parseApiDateAsUae, parseUaeDateTimeLocal, toUaeApiDateTime } from 'src/app/shared/uae-date-time';
 import { BillItem, ClubCustomer, ClubTableSetup, InventoryItem, InventoryService, SessionPlayer } from '../inventory/inventory.service';
 
 type TableStatus = 'Available' | 'Running';
@@ -125,6 +126,8 @@ export class InboxComponent implements OnInit, OnDestroy {
   currentTime = new Date();
   inventoryItems: InventoryItem[] = [];
   selectedInventoryItemId: number | null = null;
+  selectedInventoryItem: InventoryItem | null = null;
+  inventorySuggestions: InventoryItem[] = [];
   selectedInventoryBuyer = '';
   inventoryQty = 1;
   counterSaleDialog = false;
@@ -205,19 +208,51 @@ export class InboxComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const phoneNo = this.normalizePhone(this.customerPhone);
+    if (phoneNo && !this.isValidUaePhone(phoneNo)) {
+      this.showInvalidPhoneMessage();
+      return;
+    }
+
     const request = {
       customerName: this.customerName.trim(),
-      phoneNo: this.customerPhone.trim()
+      phoneNo
     };
-    const saveRequest = this.customerId
-      ? this.inventoryService.updateClubCustomer({ ...request, clubCustomerId: this.customerId })
+
+    if (!this.customerId) {
+      this.inventoryService.searchClubCustomers(phoneNo || request.customerName).subscribe({
+        next: customers => {
+          const existingCustomer = this.findExistingCustomer(customers, request.customerName, phoneNo);
+
+          if (existingCustomer) {
+            this.messageService.add({
+              severity: 'warn',
+              summary: 'Customer Already Exists',
+              detail: `${existingCustomer.customerName} already exists`
+            });
+            return;
+          }
+
+          this.createOrUpdateCustomer(request);
+        },
+        error: () => this.createOrUpdateCustomer(request)
+      });
+      return;
+    }
+
+    this.createOrUpdateCustomer(request);
+  }
+
+  private createOrUpdateCustomer(request: { customerName: string; phoneNo: string }): void {
+    const editedCustomerId = this.customerId;
+    const saveRequest = editedCustomerId
+      ? this.inventoryService.updateClubCustomer({ ...request, clubCustomerId: editedCustomerId })
       : this.inventoryService.saveCustomer(request);
 
     saveRequest.subscribe(response => {
       const data = response?.data || response;
-      const savedCustomerName = this.customerName.trim();
-      const savedCustomerPhone = this.customerPhone.trim();
-      const editedCustomerId = this.customerId;
+      const savedCustomerName = request.customerName;
+      const savedCustomerPhone = request.phoneNo;
       this.customerId = Number(data?.clubCustomerId || data?.ClubCustomerId || data?.customerId || data?.CustomerId || data?.id || data?.Id || editedCustomerId) || undefined;
       this.selectedTable!.customerId = this.customerId;
       this.selectedTable!.customerName = savedCustomerName;
@@ -240,7 +275,7 @@ export class InboxComponent implements OnInit, OnDestroy {
 
     this.customerId = this.selectedTable.customerId;
     this.customerName = this.selectedTable.customerName || '';
-    this.customerPhone = this.selectedTable.customerPhone || '';
+    this.customerPhone = this.normalizePhone(this.selectedTable.customerPhone || '');
 
     this.messageService.add({
       severity: 'info',
@@ -274,7 +309,7 @@ export class InboxComponent implements OnInit, OnDestroy {
 
     this.customerId = customer.clubCustomerId;
     this.customerName = customer.customerName || '';
-    this.customerPhone = customer.phoneNo || '';
+    this.customerPhone = this.normalizePhone(customer.phoneNo || '');
     this.playerCustomer = null;
 
     this.messageService.add({
@@ -372,9 +407,14 @@ export class InboxComponent implements OnInit, OnDestroy {
   startSession(): void {
     const firstPlayer = this.sessionPlayers[0];
     const sessionCustomerName = this.customerName.trim() || this.selectedTable?.customerName || firstPlayer?.playerName || '';
-    const sessionCustomerPhone = this.customerPhone.trim() || this.selectedTable?.customerPhone || firstPlayer?.phoneNo || '';
+    const sessionCustomerPhone = this.normalizePhone(this.customerPhone || this.selectedTable?.customerPhone || firstPlayer?.phoneNo || '');
 
     if (!this.selectedTable || !sessionCustomerName) {
+      return;
+    }
+
+    if (sessionCustomerPhone && !this.isValidUaePhone(sessionCustomerPhone)) {
+      this.showInvalidPhoneMessage();
       return;
     }
 
@@ -385,6 +425,7 @@ export class InboxComponent implements OnInit, OnDestroy {
     }
 
     this.ensureSessionPlayers(sessionCustomerName, sessionCustomerPhone);
+    const sessionStartTime = requestedStartTime || new Date();
     this.isSaving = true;
 
     this.inventoryService.startTableSession({
@@ -400,12 +441,12 @@ export class InboxComponent implements OnInit, OnDestroy {
       hourlyRate: this.selectedTable.minuteRate * 60,
       minuteRate: this.selectedTable.minuteRate,
       gameRate: this.selectedTable.gameRate,
-      startTime: requestedStartTime?.toISOString()
+      startTime: toUaeApiDateTime(sessionStartTime)
     }).pipe(
       switchMap(response => {
         const data = response?.data || response;
         const tableSessionId = Number(data?.tableSessionId || data?.TableSessionId || data?.id || data?.Id);
-        this.applyStartedSession(this.selectedTable!, tableSessionId, requestedStartTime || data?.startTime || data?.StartTime, sessionCustomerName, sessionCustomerPhone);
+        this.applyStartedSession(this.selectedTable!, tableSessionId, sessionStartTime, sessionCustomerName, sessionCustomerPhone);
 
         const playerCalls = this.sessionPlayers.map(player =>
           this.inventoryService.addPlayerToSession(tableSessionId, player).pipe(catchError(() => of(null)))
@@ -625,8 +666,8 @@ export class InboxComponent implements OnInit, OnDestroy {
     return `${generatedCount} of ${this.playerPayments.length} slips generated`;
   }
 
-  updatePlayerPayment(payment: PlayerPayment): void {
-    const calculated = this.recalculatePlayerPayment(payment);
+  updatePlayerPayment(payment: PlayerPayment, changedField?: 'cash' | 'card' | 'discount'): void {
+    const calculated = this.recalculatePlayerPayment(payment, changedField);
     payment.amount = calculated.amount;
     payment.discountAmount = calculated.discountAmount;
     payment.cashAmount = calculated.cashAmount;
@@ -634,6 +675,51 @@ export class InboxComponent implements OnInit, OnDestroy {
     payment.paidAmount = calculated.paidAmount;
     payment.dueAmount = calculated.dueAmount;
     this.generatedSlipPlayers = this.generatedSlipPlayers.filter(playerName => playerName !== payment.playerName);
+  }
+
+  updatePlayerPaymentAmount(payment: PlayerPayment, field: 'cash' | 'card' | 'discount', value: any): void {
+    const amount = Math.max(0, Number(value) || 0);
+
+    if (field === 'cash') {
+      payment.cashAmount = amount;
+    } else if (field === 'card') {
+      payment.cardAmount = amount;
+    } else {
+      payment.discountAmount = amount;
+    }
+
+    this.updatePlayerPayment(payment, field);
+  }
+
+  updatePlayerPaymentInput(payment: PlayerPayment, field: 'cash' | 'card' | 'discount', event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const amount = this.toMoney(Number(input.value) || 0);
+
+    if (field === 'cash') {
+      payment.cashAmount = amount;
+    } else if (field === 'card') {
+      payment.cardAmount = amount;
+    } else {
+      payment.discountAmount = amount;
+    }
+
+    this.updatePlayerPayment(payment, field);
+
+    const correctedValue = field === 'cash'
+      ? payment.cashAmount
+      : field === 'card'
+        ? payment.cardAmount
+        : payment.discountAmount;
+
+    input.value = this.formatPaymentInputValue(correctedValue);
+  }
+
+  private formatPaymentInputValue(value: number): string {
+    return this.toMoney(value).toFixed(2);
+  }
+
+  private toMoney(value: number): number {
+    return Math.max(0, Math.round((Number(value) || 0) * 100) / 100);
   }
 
   getGameCountOptions(): number[] {
@@ -675,6 +761,36 @@ export class InboxComponent implements OnInit, OnDestroy {
 
     const invoice = showFinalSlip ? this.createInvoicePreview(this.selectedTable) : null;
     const tableSessionId = this.selectedTable.tableSessionId;
+    const playerPayments = this.playerPayments.map(payment => {
+      const calculated = this.recalculatePlayerPayment(payment);
+
+      return {
+        clubCustomerId: calculated.clubCustomerId,
+        ClubCustomerId: calculated.clubCustomerId,
+        playerName: calculated.playerName,
+        PlayerName: calculated.playerName,
+        gameCount: calculated.gameCount,
+        GameCount: calculated.gameCount,
+        timeAmount: calculated.timeAmount || 0,
+        TimeAmount: calculated.timeAmount || 0,
+        inventoryAmount: calculated.inventoryAmount || 0,
+        InventoryAmount: calculated.inventoryAmount || 0,
+        amount: calculated.amount || 0,
+        Amount: calculated.amount || 0,
+        discountAmount: calculated.discountAmount || 0,
+        DiscountAmount: calculated.discountAmount || 0,
+        cashAmount: calculated.cashAmount || 0,
+        CashAmount: calculated.cashAmount || 0,
+        cardAmount: calculated.cardAmount || 0,
+        CardAmount: calculated.cardAmount || 0,
+        paidAmount: calculated.paidAmount || 0,
+        PaidAmount: calculated.paidAmount || 0,
+        dueAmount: calculated.dueAmount || 0,
+        DueAmount: calculated.dueAmount || 0
+      };
+    });
+    const cashAmount = playerPayments.reduce((total, payment) => total + Number(payment.cashAmount || 0), 0);
+    const cardAmount = playerPayments.reduce((total, payment) => total + Number(payment.cardAmount || 0), 0);
 
     const closeSession = () => {
       if (tableSessionId) {
@@ -694,14 +810,20 @@ export class InboxComponent implements OnInit, OnDestroy {
 
     this.inventoryService.endTableSession({
       tableSessionId,
-      endTime: this.toDateTimeLocalValue(this.getSelectedEndTime()),
+      endTime: toUaeApiDateTime(this.getSelectedEndTime()),
       playType: this.selectedTable.playType || this.playType,
       hourlyRate: this.selectedTable.minuteRate * 60,
       minuteRate: this.selectedTable.minuteRate,
       gameRate: this.selectedTable.gameRate,
       discountAmount: this.discountAmount || 0,
+      cashAmount,
+      CashAmount: cashAmount,
+      cardAmount,
+      CardAmount: cardAmount,
       paidAmount: this.paidAmount || 0,
-      playerPayments: this.playerPayments
+      PaidAmount: this.paidAmount || 0,
+      playerPayments,
+      PlayerPayments: playerPayments
     }).subscribe(() => closeSession());
   }
 
@@ -753,6 +875,8 @@ export class InboxComponent implements OnInit, OnDestroy {
     }
 
     this.counterSaleCustomerId = this.counterSaleCustomer.clubCustomerId;
+    this.counterSaleCustomerName = this.counterSaleCustomer.customerName || this.counterSaleCustomerName;
+    this.counterSalePhone = this.normalizePhone(this.counterSaleCustomer.phoneNo || this.counterSalePhone);
     this.counterSaleReceipt = null;
   }
 
@@ -760,6 +884,26 @@ export class InboxComponent implements OnInit, OnDestroy {
     this.counterSaleCustomerId = undefined;
     this.counterSaleCustomer = null;
     this.counterSaleReceipt = null;
+  }
+
+  onCustomerPhoneInput(): void {
+    this.customerPhone = this.normalizePhone(this.customerPhone).slice(0, 12);
+  }
+
+  onCounterSalePhoneInput(): void {
+    this.counterSalePhone = this.normalizePhone(this.counterSalePhone).slice(0, 12);
+  }
+
+  allowOnlyNumbers(event: KeyboardEvent): void {
+    const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
+
+    if (allowedKeys.includes(event.key) || event.ctrlKey || event.metaKey) {
+      return;
+    }
+
+    if (!/^\d$/.test(event.key)) {
+      event.preventDefault();
+    }
   }
 
   saveCounterSaleCustomer(): void {
@@ -772,24 +916,56 @@ export class InboxComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const phoneNo = this.normalizePhone(this.counterSalePhone);
+    if (phoneNo && !this.isValidUaePhone(phoneNo)) {
+      this.showInvalidPhoneMessage();
+      return;
+    }
+
     const request = {
       customerName: this.counterSaleCustomerName.trim(),
-      phoneNo: this.counterSalePhone.trim()
+      phoneNo
     };
 
-    const saveRequest = this.counterSaleCustomerId
-      ? this.inventoryService.updateClubCustomer({ ...request, clubCustomerId: this.counterSaleCustomerId })
+    if (!this.counterSaleCustomerId) {
+      this.inventoryService.searchClubCustomers(phoneNo || request.customerName).subscribe({
+        next: customers => {
+          const existingCustomer = this.findExistingCustomer(customers, request.customerName, phoneNo);
+
+          if (existingCustomer) {
+            this.messageService.add({
+              severity: 'warn',
+              summary: 'Customer Already Exists',
+              detail: `${existingCustomer.customerName} already exists`
+            });
+            return;
+          }
+
+          this.createOrUpdateCounterSaleCustomer(request);
+        },
+        error: () => this.createOrUpdateCounterSaleCustomer(request)
+      });
+      return;
+    }
+
+    this.createOrUpdateCounterSaleCustomer(request);
+  }
+
+  private createOrUpdateCounterSaleCustomer(request: { customerName: string; phoneNo: string }): void {
+    const editedCustomerId = this.counterSaleCustomerId;
+    const saveRequest = editedCustomerId
+      ? this.inventoryService.updateClubCustomer({ ...request, clubCustomerId: editedCustomerId })
       : this.inventoryService.saveCustomer(request);
 
     saveRequest.subscribe({
       next: response => {
         const data = response?.data || response || {};
-        this.counterSaleCustomerId = Number(data?.clubCustomerId || data?.ClubCustomerId || this.counterSaleCustomerId) || undefined;
+        this.counterSaleCustomerId = Number(data?.clubCustomerId || data?.ClubCustomerId || editedCustomerId) || undefined;
         this.applyEditedPlayerToDropdown(this.counterSaleCustomerId, request.customerName, request.phoneNo);
         this.messageService.add({
           severity: 'success',
-          summary: this.counterSaleCustomerId ? 'Customer Saved' : 'Customer Added',
-          detail: 'Customer saved successfully'
+          summary: editedCustomerId ? 'Customer Saved' : 'Customer Added',
+          detail: editedCustomerId ? 'Customer saved successfully' : 'Customer added successfully'
         });
       },
       error: error => {
@@ -827,7 +1003,7 @@ export class InboxComponent implements OnInit, OnDestroy {
   }
 
   getCounterSaleCustomerPhone(): string {
-    return this.counterSaleCustomer?.phoneNo || this.counterSalePhone.trim();
+    return this.normalizePhone(this.counterSaleCustomer?.phoneNo || this.counterSalePhone);
   }
 
   isCounterSalePaymentOverPaid(): boolean {
@@ -916,13 +1092,19 @@ export class InboxComponent implements OnInit, OnDestroy {
     const cardAmount = Math.max(0, Number(this.counterSaleCard) || 0);
     const paidAmount = cashAmount + cardAmount;
     const dueAmount = Math.max(0, netAmount - paidAmount);
+    const customerPhone = this.getCounterSaleCustomerPhone();
+
+    if (customerPhone && !this.isValidUaePhone(customerPhone)) {
+      this.showInvalidPhoneMessage();
+      return;
+    }
 
     const firstItem = this.counterSaleItems[0];
 
     this.isSaving = true;
     this.inventoryService.createInventorySale({
       customerName: this.getCounterSaleCustomerName(),
-      phoneNo: this.getCounterSaleCustomerPhone(),
+      phoneNo: customerPhone,
       clubCustomerId: this.counterSaleCustomerId,
       inventoryItemId: firstItem.itemId,
       quantity: firstItem.quantity,
@@ -938,7 +1120,8 @@ export class InboxComponent implements OnInit, OnDestroy {
       cashAmount,
       cardAmount,
       paidAmount,
-      dueAmount
+      dueAmount,
+      createdOn: toUaeApiDateTime()
     }).subscribe({
       next: response => {
         const data = response?.data || response || {};
@@ -946,7 +1129,7 @@ export class InboxComponent implements OnInit, OnDestroy {
         this.counterSaleReceipt = {
           receiptNo: data.receiptNo || data.ReceiptNo || this.createReceiptNo(0),
           customerName: this.getCounterSaleCustomerName(),
-          customerPhone: this.getCounterSaleCustomerPhone(),
+          customerPhone,
           items: this.counterSaleItems.map(item => ({ ...item })),
           totalAmount: netAmount,
           discountAmount,
@@ -954,7 +1137,7 @@ export class InboxComponent implements OnInit, OnDestroy {
           cardAmount,
           paidAmount,
           dueAmount,
-          createdOn: new Date()
+          createdOn: parseApiDateAsUae(data.createdOn || data.CreatedOn) || new Date()
         };
         this.loadInventoryItems();
         this.messageService.add({
@@ -1087,11 +1270,12 @@ export class InboxComponent implements OnInit, OnDestroy {
   }
 
   addInventoryToBill(): void {
-    if (!this.selectedTable || !this.selectedInventoryItemId || this.inventoryQty <= 0 || !this.selectedTable.tableSessionId) {
+    const item = this.getSelectedInventoryItem();
+
+    if (!this.selectedTable || !item || this.inventoryQty <= 0 || !this.selectedTable.tableSessionId) {
       return;
     }
 
-    const item = this.inventoryItems.find(x => x.id === Number(this.selectedInventoryItemId));
     if (!item || item.stock < this.inventoryQty) {
       return;
     }
@@ -1111,11 +1295,31 @@ export class InboxComponent implements OnInit, OnDestroy {
         }
 
         this.selectedInventoryItemId = null;
+        this.selectedInventoryItem = null;
         this.selectedInventoryBuyer = this.getDefaultInventoryBuyer(this.selectedTable!);
         this.inventoryQty = 1;
         this.paidAmount = this.getNetAmount(this.selectedTable!);
         this.loadInventoryItems();
       });
+  }
+
+  searchInventoryItems(event: { query: string }): void {
+    const search = (event.query || '').trim().toLowerCase();
+
+    this.inventorySuggestions = this.inventoryItems.filter(item =>
+      !search ||
+      item.name.toLowerCase().includes(search) ||
+      item.category?.toLowerCase().includes(search) ||
+      item.price.toString().includes(search)
+    );
+  }
+
+  onInventoryItemSelect(item: InventoryItem): void {
+    this.selectedInventoryItemId = item?.id || null;
+  }
+
+  getSelectedInventoryItem(): InventoryItem | undefined {
+    return this.selectedInventoryItem || this.inventoryItems.find(x => x.id === Number(this.selectedInventoryItemId));
   }
 
   getInventoryTotal(table: ClubTable): number {
@@ -1407,7 +1611,7 @@ export class InboxComponent implements OnInit, OnDestroy {
     }).filter(payment => payment.amount > 0 || splitPayers.includes(payment.playerName));
   }
 
-  private recalculatePlayerPayment(payment: PlayerPayment): PlayerPayment {
+  private recalculatePlayerPayment(payment: PlayerPayment, changedField?: 'cash' | 'card' | 'discount'): PlayerPayment {
     const gameRate = this.selectedTable?.gameRate || 0;
     const gameCount = Math.max(0, Number(payment.gameCount) || 0);
     const timeAmount = Number(payment.timeAmount) || 0;
@@ -1415,11 +1619,27 @@ export class InboxComponent implements OnInit, OnDestroy {
     const amount = this.selectedTable?.sessionMode === 'Time'
       ? timeAmount + inventoryAmount
       : gameCount * gameRate + inventoryAmount;
-    const discountAmount = Math.max(0, Math.min(Number(payment.discountAmount) || 0, amount));
-    const netAmount = Math.max(0, amount - discountAmount);
-    const cashAmount = Math.max(0, Number(payment.cashAmount ?? payment.paidAmount) || 0);
-    const cardAmount = Math.max(0, Number(payment.cardAmount) || 0);
-    const paidAmount = Math.max(0, Math.min(cashAmount + cardAmount, netAmount));
+    const discountAmount = this.toMoney(Math.min(Number(payment.discountAmount) || 0, amount));
+    const netAmount = this.toMoney(amount - discountAmount);
+    let cashAmount = this.toMoney(Number(payment.cashAmount ?? payment.paidAmount) || 0);
+    let cardAmount = this.toMoney(Number(payment.cardAmount) || 0);
+
+    if (cashAmount + cardAmount > netAmount) {
+      if (changedField === 'card') {
+        cardAmount = Math.min(cardAmount, netAmount);
+        cashAmount = this.toMoney(Math.min(cashAmount, Math.max(0, netAmount - cardAmount)));
+      } else if (changedField === 'discount') {
+        const paidTotal = cashAmount + cardAmount;
+        const ratio = paidTotal > 0 ? netAmount / paidTotal : 0;
+        cashAmount = this.toMoney(Math.floor(cashAmount * ratio * 100) / 100);
+        cardAmount = this.toMoney(netAmount - cashAmount);
+      } else {
+        cashAmount = this.toMoney(Math.min(cashAmount, netAmount));
+        cardAmount = this.toMoney(Math.min(cardAmount, Math.max(0, netAmount - cashAmount)));
+      }
+    }
+
+    const paidAmount = this.toMoney(cashAmount + cardAmount);
 
     return {
       ...payment,
@@ -1431,7 +1651,7 @@ export class InboxComponent implements OnInit, OnDestroy {
       cashAmount,
       cardAmount,
       paidAmount,
-      dueAmount: Math.max(0, netAmount - paidAmount)
+      dueAmount: this.toMoney(netAmount - paidAmount)
     };
   }
 
@@ -1548,6 +1768,22 @@ export class InboxComponent implements OnInit, OnDestroy {
     return this.selectedInventoryBuyer || this.getDefaultInventoryBuyer(this.selectedTable);
   }
 
+  private normalizePhone(value: string | undefined): string {
+    return (value || '').replace(/\D/g, '');
+  }
+
+  private isValidUaePhone(phoneNo: string): boolean {
+    return /^05\d{8}$/.test(phoneNo) || /^9715\d{8}$/.test(phoneNo) || /^0[234679]\d{7}$/.test(phoneNo) || /^971[234679]\d{7}$/.test(phoneNo);
+  }
+
+  private showInvalidPhoneMessage(): void {
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'Phone Number',
+      detail: 'Enter UAE number only, like 0501234567 or 971501234567'
+    });
+  }
+
   private getSelectedInventoryBuyerCustomerId(buyerName: string): number | undefined {
     return this.selectedTable?.players?.find(player => player.playerName === buyerName)?.clubCustomerId
       || (this.selectedTable?.customerName === buyerName ? this.selectedTable.customerId : undefined);
@@ -1565,7 +1801,7 @@ export class InboxComponent implements OnInit, OnDestroy {
       return undefined;
     }
 
-    const date = new Date(this.customStartTime);
+    const date = parseUaeDateTimeLocal(this.customStartTime);
     return Number.isNaN(date.getTime()) ? undefined : date;
   }
 
@@ -1574,7 +1810,7 @@ export class InboxComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    const date = new Date(this.customStartTime);
+    const date = parseUaeDateTimeLocal(this.customStartTime);
     return !Number.isNaN(date.getTime()) && date.getTime() > Date.now();
   }
 
@@ -1605,24 +1841,15 @@ export class InboxComponent implements OnInit, OnDestroy {
   }
 
   private toDateTimeLocalValue(date: Date): string {
-    const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-    return offsetDate.toISOString().slice(0, 16);
+    return formatUaeDateTimeLocal(date);
   }
 
   private parseDateTimeLocalValue(value: string): Date {
-    const [datePart, timePart = '00:00'] = value.split('T');
-    const [year, month, day] = datePart.split('-').map(Number);
-    const [hour, minute] = timePart.split(':').map(Number);
-
-    if (!year || !month || !day || Number.isNaN(hour) || Number.isNaN(minute)) {
-      return new Date(NaN);
-    }
-
-    return new Date(year, month - 1, day, hour, minute, 0, 0);
+    return parseUaeDateTimeLocal(value);
   }
 
   private toMinuteTimestamp(date: Date): number {
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), 0, 0).getTime();
+    return Math.floor(date.getTime() / 60000) * 60000;
   }
 
   private applyEditedPlayerToDropdown(customerId: number | undefined, customerName: string, phoneNo: string): void {
@@ -1820,7 +2047,7 @@ export class InboxComponent implements OnInit, OnDestroy {
 
           table.status = 'Running';
           table.tableSessionId = session.tableSessionId;
-          table.startTime = new Date(session.startTime);
+          table.startTime = this.parseRunningSessionStartTime(session.startTime) || new Date();
           table.receiptNo = session.receiptNo || this.createReceiptNo(table.id);
           table.customerId = session.clubCustomerId;
           table.customerName = session.customerName;
@@ -1847,7 +2074,7 @@ export class InboxComponent implements OnInit, OnDestroy {
           }));
           table.gameItems = (session.tableSessionGames || []).map((game: any) => ({
             amount: Number(game.amount ?? game.Amount ?? game.gameRate ?? game.GameRate ?? game.rate ?? game.Rate ?? table.gameRate ?? 0),
-            createdOn: new Date(game.createdOn ?? game.CreatedOn ?? new Date()),
+            createdOn: parseApiDateAsUae(game.createdOn ?? game.CreatedOn) || new Date(),
             gameNo: game.gameNo ?? game.GameNo,
             winnerName: game.winnerName ?? game.WinnerName,
             loserName: game.loserName ?? game.LoserName,
@@ -1866,7 +2093,7 @@ export class InboxComponent implements OnInit, OnDestroy {
   }
 
   private applyStartedSession(table: ClubTable, tableSessionId: number, apiStartTime?: string | Date, customerName?: string, customerPhone?: string): void {
-    const startTime = apiStartTime ? new Date(apiStartTime) : new Date();
+    const startTime = parseApiDateAsUae(apiStartTime) || new Date();
 
     table.status = 'Running';
     table.startTime = startTime;
@@ -1881,6 +2108,58 @@ export class InboxComponent implements OnInit, OnDestroy {
     table.gameItems = [];
     table.billItems = [];
     table.tableSessionId = Number(tableSessionId) || undefined;
+  }
+
+  private parseRunningSessionStartTime(value?: string | Date): Date | undefined {
+    const parsed = parseApiDateAsUae(value);
+
+    if (!parsed || value instanceof Date) {
+      return parsed;
+    }
+
+    const rawValue = value.toString();
+    const hasTimeZone = /[zZ]$|[+-]\d{2}:?\d{2}$/.test(rawValue);
+
+    if (hasTimeZone) {
+      return parsed;
+    }
+
+    const rawDatePart = rawValue.slice(0, 19);
+    const nativeLocal = new Date(rawDatePart);
+    const nativeUtc = new Date(`${rawDatePart.replace(' ', 'T')}Z`);
+    const twoHours = 2 * 60 * 60 * 1000;
+    const candidates = [
+      parsed,
+      nativeLocal,
+      nativeUtc,
+      new Date(parsed.getTime() + twoHours),
+      new Date(parsed.getTime() - twoHours)
+    ].filter(date => !Number.isNaN(date.getTime()));
+
+    const latestAllowedTime = Date.now() + 60000;
+    const pastCandidates = candidates
+      .filter(date => date.getTime() <= latestAllowedTime)
+      .sort((a, b) => b.getTime() - a.getTime());
+
+    return pastCandidates[0] || parsed;
+  }
+
+  private findExistingCustomer(customers: ClubCustomer[], customerName: string, phoneNo: string): ClubCustomer | undefined {
+    const normalizedName = this.normalizeText(customerName);
+    const normalizedPhone = this.normalizePhone(phoneNo);
+
+    return (customers || []).find(customer => {
+      const customerPhone = this.normalizePhone(customer.phoneNo || '');
+      const customerNameValue = this.normalizeText(customer.customerName || '');
+
+      return normalizedPhone
+        ? customerPhone === normalizedPhone
+        : customerNameValue === normalizedName;
+    });
+  }
+
+  private normalizeText(value: string): string {
+    return (value || '').trim().toLowerCase();
   }
 
   private resetTable(table: ClubTable): void {

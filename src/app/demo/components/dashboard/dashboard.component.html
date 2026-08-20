@@ -8,7 +8,7 @@
       <h1>Snooker Dashboard</h1>
     </div>
     <div class="dashboard-totals">
-      <span>{{ totalGames }} Games • {{ totalCounterSales }} Sales</span>
+      <span>{{ totalGames }} Sessions • {{ totalCounterSales }} Sales</span>
       <strong>AED {{ totalEarning | number:'1.2-2' }}</strong>
     </div>
   </div>
@@ -26,7 +26,7 @@
       (click)="selectFilter(item.key)">
       <div>
         <span>{{ item.label }}</span>
-        <strong>{{ item.key === 'CounterSale' ? item.games + ' Sales' : item.games + ' Games' }}</strong>
+        <strong>{{ item.key === 'CounterSale' ? item.games + ' Sales' : item.games + ' Sessions' }}</strong>
         <small>AED {{ item.earning | number:'1.2-2' }}</small>
       </div>
       <i [class]="item.icon"></i>
@@ -122,7 +122,12 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let row of pagedRows">
+          <tr *ngIf="isDashboardLoading">
+            <td colspan="17" class="empty-dashboard">
+              <span class="table-loader"><i class="pi pi-spin pi-spinner"></i> Loading dashboard records...</span>
+            </td>
+          </tr>
+          <tr *ngFor="let row of (isDashboardLoading ? [] : pagedRows)">
             <td>{{ row.sr }}</td>
             <td><span class="history-type-pill">{{ getRecordTypeLabel(row) }}</span></td>
             <td>{{ row.receiptNo || '-' }}</td>
@@ -151,8 +156,8 @@
               </div>
             </td>
           </tr>
-          <tr *ngIf="!searchedRows.length">
-            <td colspan="16" class="empty-dashboard">No dashboard detail found.</td>
+          <tr *ngIf="!isDashboardLoading && !searchedRows.length">
+            <td colspan="17" class="empty-dashboard">No dashboard detail found.</td>
           </tr>
         </tbody>
       </table>
@@ -308,7 +313,12 @@
     </div>
   </ng-template>
 
-  <div class="daily-sale-layout">
+  <div class="nextshot-loader" *ngIf="isDailySaleLoading || isDashboardLoading">
+    <i class="pi pi-spin pi-spinner"></i>
+    <span>Loading daily sale...</span>
+  </div>
+
+  <div class="daily-sale-layout" *ngIf="!(isDailySaleLoading || isDashboardLoading)">
     <div class="daily-sale-list">
       <button
         type="button"
@@ -318,7 +328,7 @@
         (click)="selectDailySale(day)">
         <div>
           <strong>{{ day.date | date:'dd MMM yyyy' }}</strong>
-          <span>{{ day.games }} games • {{ day.sales }} sales • {{ day.records.length }} records</span>
+          <span>{{ day.games }} sessions • {{ day.sales }} sales • {{ day.records.length }} records</span>
         </div>
         <div>
           <small>Total</small>

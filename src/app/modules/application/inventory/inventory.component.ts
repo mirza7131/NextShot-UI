@@ -15,6 +15,7 @@ export class InventoryComponent implements OnInit {
   stock: number = 0;
   editingItem: InventoryItem | null = null;
   searchText = '';
+  isLoading = false;
   pageNumber = 1;
   pageSize = 5;
   pageSizeOptions = [5, 10, 20, 50];
@@ -152,10 +153,18 @@ export class InventoryComponent implements OnInit {
   }
 
   private loadItems(): void {
-    this.inventoryService.getItems().subscribe(items => {
-      this.items = items;
-      if (this.pageNumber > this.totalPages) {
-        this.pageNumber = this.totalPages;
+    this.isLoading = true;
+    this.inventoryService.getItems().subscribe({
+      next: items => {
+        this.items = items;
+        if (this.pageNumber > this.totalPages) {
+          this.pageNumber = this.totalPages;
+        }
+        this.isLoading = false;
+      },
+      error: () => {
+        this.items = [];
+        this.isLoading = false;
       }
     });
   }

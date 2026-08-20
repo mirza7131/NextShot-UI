@@ -62,7 +62,9 @@
           <td colspan="7" class="empty-row">No pending customer amount found.</td>
         </tr>
         <tr *ngIf="isLoading">
-          <td colspan="7" class="empty-row">Loading pending records...</td>
+          <td colspan="7" class="empty-row">
+            <span class="table-loader"><i class="pi pi-spin pi-spinner"></i> Loading pending records...</span>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -154,7 +156,9 @@
             <td colspan="12" class="empty-row">No payment history found.</td>
           </tr>
           <tr *ngIf="isHistoryLoading">
-            <td colspan="12" class="empty-row">Loading history...</td>
+            <td colspan="12" class="empty-row">
+              <span class="table-loader"><i class="pi pi-spin pi-spinner"></i> Loading history...</span>
+            </td>
           </tr>
         </tbody>
       </table>
